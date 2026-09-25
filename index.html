@@ -2,662 +2,100 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>De Goudmarsjan - Inkoop</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>DE GOUDMARSJAN — Inkoop</title>
 <style>
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f5f1e8;
-    color: #171717;
-}
-
-header {
-    background: #111;
-    color: white;
-    padding: 20px;
-    text-align: center;
-}
-
-header h1 {
-    margin: 0;
-    font-size: 28px;
-    letter-spacing: 2px;
-}
-
-header p {
-    margin: 5px 0 0;
-    color: #d5b45a;
-    font-weight: bold;
-}
-
-.container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-}
-
-.card {
-    background: white;
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 18px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-}
-
-h2 { margin-top: 0; }
-
-.gold-price {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-input, select {
-    width: 100%;
-    padding: 14px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
-}
-
-.gold-price input { max-width: 220px; }
-
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
-    gap: 10px;
-    align-items: end;
-}
-
-button {
-    border: 0;
-    border-radius: 8px;
-    padding: 14px 18px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.primary {
-    background: #c7a84b;
-    color: #111;
-}
-
-.dark {
-    background: #111;
-    color: white;
-}
-
-.delete {
-    background: #eee;
-    color: #b00000;
-}
-
-.add {
-    margin-top: 15px;
-    width: 100%;
-}
-
-.total {
-    background: #111;
-    color: white;
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.total strong {
-    font-size: 28px;
-    color: #e0bd55;
-}
-
-.customer-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 18px;
-}
-
-.empty {
-    color: #777;
-    text-align: center;
-    padding: 10px;
-}
-
-.settings {
-    background: #f7f7f7;
-    padding: 15px;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-
-.rate-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-}
-
-.rate-grid label {
-    font-size: 13px;
-    font-weight: bold;
-}
-
-.rate-grid input {
-    margin-top: 5px;
-}
-
-@media(max-width:700px) {
-    .grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .customer-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .rate-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .actions {
-        grid-template-columns: 1fr;
-    }
-}
+*{box-sizing:border-box}:root{--g:#c7a84b;--g2:#e0bd55;--b:#111;--bg:#f5f1e8;--muted:#777;--border:#d8d8d8;--red:#a9001b}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#171717}header{background:#111;color:#fff;padding:18px;text-align:center;position:sticky;top:0;z-index:5}header h1{margin:0;font-size:27px;letter-spacing:2px}header p{margin:5px 0 0;color:var(--g2);font-weight:bold}.container{max-width:1100px;margin:auto;padding:18px}.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 15px #00000012}h2{margin:0 0 14px;font-size:20px}h3{font-size:16px;margin:16px 0 9px}label{display:block;font-size:13px;font-weight:bold;margin-bottom:5px}input,select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:#fff}textarea{min-height:80px}.g2,.g3,.g4{display:grid;gap:12px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}button{border:0;border-radius:8px;padding:12px 15px;font-size:15px;font-weight:bold;cursor:pointer}.primary{background:var(--g);color:#111}.dark{background:#111;color:#fff}.light{background:#eee}.danger{background:#f7dfe3;color:var(--red)}.green{background:#dff3e9;color:#17683f}.full{width:100%}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.settings{background:#f7f7f7;padding:14px;border-radius:10px;margin-top:10px}.rates{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.item{border:1px solid var(--border);border-radius:12px;padding:14px;margin:12px 0;background:#fcfcfc}.itemhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.itemgrid{display:grid;grid-template-columns:1.1fr .65fr .8fr .8fr .85fr .9fr;gap:8px;align-items:end}.value{background:#f1f1f1;padding:12px;border-radius:8px;min-height:44px}.mini,.note{font-size:12px;color:var(--muted)}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.stat{background:#f7f7f7;border-radius:10px;padding:13px}.stat small{display:block;color:var(--muted);margin-bottom:5px}.stat strong{font-size:19px}.total{background:#111;color:#fff;padding:18px;border-radius:12px;margin-top:14px;display:flex;justify-content:space-between;align-items:center}.total strong{font-size:28px;color:var(--g2)}.warning{background:#fff0f0;border:1px solid #e4a6ad;color:#8b0018;padding:12px;border-radius:9px;margin-top:12px;font-weight:bold}.ok{background:#effaf4;border:1px solid #b7dfc9;color:#17683f;padding:12px;border-radius:9px;margin-top:12px}.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.history{border-bottom:1px solid #ddd;padding:12px 0}.badge{display:inline-block;padding:4px 8px;border-radius:99px;background:#eee;font-size:12px;font-weight:bold}@media(max-width:850px){.g4,.g3{grid-template-columns:1fr 1fr}.rates{grid-template-columns:1fr 1fr}.summary{grid-template-columns:1fr 1fr}.actions{grid-template-columns:1fr 1fr}.itemgrid{grid-template-columns:1fr 1fr}}@media(max-width:600px){.container{padding:10px}.card{padding:14px}.g2,.g3,.g4{grid-template-columns:1fr}.summary,.actions{grid-template-columns:1fr}.itemgrid{grid-template-columns:1fr 1fr}header h1{font-size:22px}}@media print{header,.noprint{display:none!important}body{background:#fff}.container{max-width:none;padding:0}.card{box-shadow:none}}
 </style>
 </head>
-
 <body>
-
-<header>
-    <h1>DE GOUDMARSJAN</h1>
-    <p>EDELMETALEN — INKOOP</p>
-</header>
-
+<header><h1>DE GOUDMARSJAN</h1><p>EDELMETALEN — INKOOP</p></header>
 <div class="container">
+<div class="card">
+<h2>🟡 Marktprijs & instellingen</h2>
+<div class="g3">
+<div><label>24K / 999 goudprijs per gram (€)</label><input id="goldPrice" type="number" step="0.01" min="0" oninput="calculate()"></div>
+<div><label>Verwachte verkoopprijs (€) — optioneel</label><input id="resalePrice" type="number" step="0.01" min="0" oninput="calculate()"></div>
+<div><label>Betalingswijze</label><select id="paymentMethod" onchange="calculate()"><option value="overschrijving">Bankoverschrijving</option><option value="cash">Cash</option><option value="anders">Andere</option></select></div>
+</div>
+<details style="margin-top:15px"><summary>⚙️ Mijn inkooppercentages per karaat</summary><div class="settings"><div class="rates">
+<div><label>9K %</label><input id="rate9" type="number" min="0" max="100" step=".1" oninput="saveSettings();calculate()"></div>
+<div><label>14K %</label><input id="rate14" type="number" min="0" max="100" step=".1" oninput="saveSettings();calculate()"></div>
+<div><label>18K %</label><input id="rate18" type="number" min="0" max="100" step=".1" oninput="saveSettings();calculate()"></div>
+<div><label>22K %</label><input id="rate22" type="number" min="0" max="100" step=".1" oninput="saveSettings();calculate()"></div>
+<div><label>24K %</label><input id="rate24" type="number" min="0" max="100" step=".1" oninput="saveSettings();calculate()"></div>
+</div><p class="note">Dit percentage bepaalt hoeveel van de berekende metaalwaarde je als inkoopprijs aanbiedt. De resterende ruimte is niet automatisch je uiteindelijke winst.</p></div></details>
+</div>
 
-    <div class="card">
-        <h2>🟡 Goudprijs</h2>
+<div class="card">
+<h2>👤 Klantgegevens</h2>
+<div class="g3">
+<div><label>Voornaam *</label><input id="firstName"></div><div><label>Achternaam *</label><input id="lastName"></div><div><label>Geboortedatum *</label><input id="birthDate" type="date"></div>
+<div><label>Telefoon</label><input id="phone" type="tel"></div><div><label>IBAN</label><input id="iban" placeholder="BE00 0000 0000 0000"></div><div><label>ID-document gecontroleerd?</label><select id="idChecked"><option value="ja">Ja</option><option value="nee">Nee</option></select></div>
+<div><label>Type ID-document</label><select id="idType"><option value="">— Kies —</option><option>Identiteitskaart</option><option>Paspoort</option><option>Verblijfskaart</option><option>Rijbewijs</option><option>Ander</option></select></div>
+<div><label>Documentnummer</label><input id="idNumber"></div><div><label>Opmerking klant</label><input id="customerNote"></div>
+</div>
+<h3>📍 Adres</h3><div class="g4"><div><label>Straat</label><input id="street"></div><div><label>Nr.</label><input id="houseNumber"></div><div><label>Postcode</label><input id="postalCode"></div><div><label>Gemeente</label><input id="city"></div></div>
+</div>
 
-        <div class="gold-price">
-            <input
-                id="goldPrice"
-                type="number"
-                step="0.01"
-                value="105"
-                oninput="calculate()"
-            >
-            <strong>€/g — 24K</strong>
-        </div>
+<div class="card">
+<h2>💰 Inkoopstukken</h2><div id="items"></div><button class="primary full noprint" onclick="addItem()">＋ STUK TOEVOEGEN</button>
+<div class="summary"><div class="stat"><small>Metaalwaarde</small><strong id="marketTotal">€ 0,00</strong></div><div class="stat"><small>Gem. inkooppercentage</small><strong id="rateTotal">—</strong></div><div class="stat"><small>Inkoopprijs</small><strong id="purchaseTotal">€ 0,00</strong></div><div class="stat"><small>Ruimte t.o.v. metaalwaarde</small><strong id="discountTotal">€ 0,00</strong></div></div>
+<div id="cashWarning"></div>
+<div class="total"><span>TOTALE INKOOP</span><strong id="total">€ 0,00</strong></div>
+<div class="settings" style="margin-top:12px"><b>📈 Verwachte bruto winst</b><div class="g3" style="margin-top:10px"><div><span class="mini">Verkoopprijs</span><div class="value" id="resaleDisplay">€ 0,00</div></div><div><span class="mini">Bruto winst</span><div class="value" id="profitDisplay">€ 0,00</div></div><div><span class="mini">Marge op verkoopprijs</span><div class="value" id="marginDisplay">—</div></div></div></div>
+</div>
 
-        <details style="margin-top:15px;">
-            <summary><b>⚙️ Mijn inkooppercentages</b></summary>
+<div class="card"><h2>📝 Extra</h2><div class="g2"><div><label>Opmerking aankoop</label><textarea id="purchaseNote" placeholder="Bijv. stenen verwijderd, beschadiging, bijzondere afspraak..."></textarea></div><div><label>Intern referentienummer</label><input id="reference"></div></div></div>
 
-            <div class="settings">
-                <div class="rate-grid">
+<div class="card noprint"><h2>🧾 Aankoop</h2><div class="actions">
+<button class="dark" onclick="savePurchase()">💾 OPSLAAN</button><button class="primary" onclick="printReceipt()">🧾 BON MAKEN</button><button class="green" onclick="newPurchase()">＋ NIEUWE INKOOP</button><button class="light" onclick="exportBackup()">⬇️ BACK-UP</button>
+</div><div class="row" style="margin-top:10px"><button class="light" onclick="document.getElementById('backupFile').click()">⬆️ BACK-UP TERUGZETTEN</button><button class="light" onclick="exportCSV()">📊 HISTORIE ALS CSV</button><button class="danger" onclick="clearHistory()">🗑️ ALLE HISTORIE WISSEN</button><input id="backupFile" type="file" accept=".json" style="display:none" onchange="importBackup(event)"></div>
+<p class="note">Aankopen en klantgegevens blijven lokaal in deze browser. Ze worden niet automatisch naar GitHub gestuurd. Maak regelmatig een back-up.</p></div>
 
-                    <label>
-                        9K %
-                        <input id="rate9" type="number" value="65" oninput="calculate()">
-                    </label>
-
-                    <label>
-                        14K %
-                        <input id="rate14" type="number" value="70" oninput="calculate()">
-                    </label>
-
-                    <label>
-                        18K %
-                        <input id="rate18" type="number" value="75" oninput="calculate()">
-                    </label>
-
-                    <label>
-                        22K %
-                        <input id="rate22" type="number" value="80" oninput="calculate()">
-                    </label>
-
-                    <label>
-                        24K %
-                        <input id="rate24" type="number" value="90" oninput="calculate()">
-                    </label>
-
-                </div>
-            </div>
-        </details>
-    </div>
-
-    <div class="card">
-
-        <h2>👤 Klant</h2>
-
-        <div class="customer-grid">
-            <input id="customerName" placeholder="Naam klant">
-            <input id="customerPhone" placeholder="Telefoonnummer">
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h2>💰 Inkoop</h2>
-
-        <div id="items"></div>
-
-        <button class="primary add" onclick="addItem()">
-            + STUK TOEVOEGEN
-        </button>
-
-        <div class="total">
-            <span>TOTALE INKOOP</span>
-            <strong id="total">€ 0,00</strong>
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h2>🧾 Aankoop</h2>
-
-        <div class="actions">
-            <button class="dark" onclick="savePurchase()">
-                💾 INKOOP OPSLAAN
-            </button>
-
-            <button class="primary" onclick="printReceipt()">
-                🧾 BON MAKEN
-            </button>
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h2>📋 Vorige inkopen</h2>
-
-        <div id="history" class="empty">
-            Nog geen inkopen opgeslagen.
-        </div>
-
-    </div>
-
+<div class="card noprint"><h2>📋 Vorige inkopen</h2><input id="historySearch" placeholder="Zoek op naam, nummer of datum..." oninput="renderHistory()"><div id="history" style="margin-top:10px">Nog geen inkopen opgeslagen.</div></div>
 </div>
 
 <script>
-
-let items = [];
-let purchases = JSON.parse(localStorage.getItem("goudmarsjan_purchases") || "[]");
-
-const purity = {
-    "9K": 0.375,
-    "14K": 0.585,
-    "18K": 0.750,
-    "22K": 0.916,
-    "24K": 1.000
-};
-
-function addItem() {
-    items.push({
-        karat: "18K",
-        weight: 0
-    });
-
-    renderItems();
-    calculate();
-}
-
-function removeItem(index) {
-    items.splice(index, 1);
-    renderItems();
-    calculate();
-}
-
-function renderItems() {
-
-    const container = document.getElementById("items");
-
-    if (items.length === 0) {
-        container.innerHTML = `
-            <div class="empty">
-                Nog geen stukken toegevoegd.
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = items.map((item, index) => {
-
-        return `
-        <div class="grid" style="margin-bottom:12px;">
-
-            <select onchange="changeKarat(${index}, this.value)">
-                <option ${item.karat === "9K" ? "selected" : ""}>9K</option>
-                <option ${item.karat === "14K" ? "selected" : ""}>14K</option>
-                <option ${item.karat === "18K" ? "selected" : ""}>18K</option>
-                <option ${item.karat === "22K" ? "selected" : ""}>22K</option>
-                <option ${item.karat === "24K" ? "selected" : ""}>24K</option>
-            </select>
-
-            <input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="Gewicht in gram"
-                value="${item.weight || ""}"
-                oninput="changeWeight(${index}, this.value)"
-            >
-
-            <input
-                type="text"
-                readonly
-                value="${formatEuro(calculateItem(item))}"
-            >
-
-            <button class="delete" onclick="removeItem(${index})">
-                ✕
-            </button>
-
-        </div>
-        `;
-
-    }).join("");
-}
-
-function changeKarat(index, value) {
-    items[index].karat = value;
-    renderItems();
-    calculate();
-}
-
-function changeWeight(index, value) {
-    items[index].weight = parseFloat(value) || 0;
-    calculate();
-}
-
-function getRate(karat) {
-
-    if (karat === "9K")
-        return parseFloat(document.getElementById("rate9").value) || 0;
-
-    if (karat === "14K")
-        return parseFloat(document.getElementById("rate14").value) || 0;
-
-    if (karat === "18K")
-        return parseFloat(document.getElementById("rate18").value) || 0;
-
-    if (karat === "22K")
-        return parseFloat(document.getElementById("rate22").value) || 0;
-
-    if (karat === "24K")
-        return parseFloat(document.getElementById("rate24").value) || 0;
-
-    return 0;
-}
-
-function calculateItem(item) {
-
-    const goldPrice =
-        parseFloat(document.getElementById("goldPrice").value) || 0;
-
-    const pureGold =
-        (item.weight || 0) * purity[item.karat];
-
-    const marketValue =
-        pureGold * goldPrice;
-
-    const rate =
-        getRate(item.karat) / 100;
-
-    return marketValue * rate;
-}
-
-function calculate() {
-
-    let total = 0;
-
-    items.forEach(item => {
-        total += calculateItem(item);
-    });
-
-    document.getElementById("total").innerText =
-        formatEuro(total);
-
-}
-
-function formatEuro(value) {
-
-    return new Intl.NumberFormat("nl-BE", {
-        style: "currency",
-        currency: "EUR"
-    }).format(value || 0);
-
-}
-
-function savePurchase() {
-
-    if (items.length === 0) {
-        alert("Voeg eerst minstens één stuk toe.");
-        return;
-    }
-
-    const total =
-        items.reduce((sum, item) => sum + calculateItem(item), 0);
-
-    const purchase = {
-
-        id:
-            "GM-" +
-            new Date().getFullYear() +
-            "-" +
-            String(purchases.length + 1).padStart(4, "0"),
-
-        date:
-            new Date().toLocaleString("nl-BE"),
-
-        customer:
-            document.getElementById("customerName").value || "Onbekend",
-
-        phone:
-            document.getElementById("customerPhone").value || "",
-
-        items:
-            JSON.parse(JSON.stringify(items)),
-
-        total:
-            total
-    };
-
-    purchases.unshift(purchase);
-
-    localStorage.setItem(
-        "goudmarsjan_purchases",
-        JSON.stringify(purchases)
-    );
-
-    renderHistory();
-
-    alert("Inkoop opgeslagen!\n\n" + purchase.id);
-}
-
-function renderHistory() {
-
-    const container =
-        document.getElementById("history");
-
-    if (purchases.length === 0) {
-        container.innerHTML =
-            "Nog geen inkopen opgeslagen.";
-        return;
-    }
-
-    container.innerHTML =
-        purchases.slice(0, 20).map(p => {
-
-            return `
-            <div style="
-                border-bottom:1px solid #ddd;
-                padding:12px 0;
-            ">
-
-                <strong>${p.id}</strong><br>
-
-                ${p.customer}<br>
-
-                <small>${p.date}</small>
-
-                <div style="
-                    font-weight:bold;
-                    margin-top:5px;
-                ">
-                    ${formatEuro(p.total)}
-                </div>
-
-            </div>
-            `;
-
-        }).join("");
-}
-
-function printReceipt() {
-
-    if (items.length === 0) {
-        alert("Voeg eerst minstens één stuk toe.");
-        return;
-    }
-
-    const customer =
-        document.getElementById("customerName").value || "Onbekend";
-
-    const phone =
-        document.getElementById("customerPhone").value || "";
-
-    const total =
-        items.reduce((sum, item) => sum + calculateItem(item), 0);
-
-    const rows =
-        items.map(item => {
-
-            return `
-            <tr>
-                <td>${item.karat}</td>
-                <td>${(item.weight || 0).toFixed(2)} g</td>
-                <td>${formatEuro(calculateItem(item))}</td>
-            </tr>
-            `;
-
-        }).join("");
-
-    const receipt = `
-    <!DOCTYPE html>
-
-    <html lang="nl">
-
-    <head>
-
-        <meta charset="UTF-8">
-
-        <title>Goudmarsjan aankoopbon</title>
-
-        <style>
-
-            body {
-                font-family: Arial;
-                padding:40px;
-                max-width:700px;
-                margin:auto;
-            }
-
-            h1 {
-                letter-spacing:2px;
-            }
-
-            table {
-                width:100%;
-                border-collapse:collapse;
-                margin-top:30px;
-            }
-
-            th, td {
-                border-bottom:1px solid #ddd;
-                padding:12px;
-                text-align:left;
-            }
-
-            .total {
-                font-size:24px;
-                font-weight:bold;
-                margin-top:30px;
-            }
-
-        </style>
-
-    </head>
-
-    <body>
-
-        <h1>DE GOUDMARSJAN</h1>
-
-        <h3>EDELMETALEN — AANKOOPBON</h3>
-
-        <p>
-            <b>Klant:</b> ${customer}<br>
-            <b>Telefoon:</b> ${phone}<br>
-            <b>Datum:</b> ${new Date().toLocaleString("nl-BE")}
-        </p>
-
-        <table>
-
-            <tr>
-                <th>Karaat</th>
-                <th>Gewicht</th>
-                <th>Inkoopwaarde</th>
-            </tr>
-
-            ${rows}
-
-        </table>
-
-        <div class="total">
-            TOTAAL: ${formatEuro(total)}
-        </div>
-
-        <br><br>
-
-        <p>
-            DE GOUDMARSJAN<br>
-            EDELMETALEN
-        </p>
-
-    </body>
-
-    </html>
-    `;
-
-    const win =
-        window.open("", "_blank");
-
-    win.document.write(receipt);
-    win.document.close();
-
-    win.print();
-}
-
-addItem();
-renderHistory();
-calculate();
-
+const purity={9:.375,14:.585,18:.75,22:.916,24:1};
+const defaults={goldPrice:105,rate9:65,rate14:70,rate18:75,rate22:80,rate24:90};
+let items=[],purchases=JSON.parse(localStorage.getItem("goudmarsjan_purchases")||"[]");
+const $=id=>document.getElementById(id), euro=v=>new Intl.NumberFormat("nl-BE",{style:"currency",currency:"EUR"}).format(Number(v)||0), num=id=>parseFloat($(id).value)||0;
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+function loadSettings(){let s=JSON.parse(localStorage.getItem("goudmarsjan_settings")||"{}");Object.keys(defaults).forEach(k=>$(k).value=s[k]??defaults[k])}
+function saveSettings(){localStorage.setItem("goudmarsjan_settings",JSON.stringify({goldPrice:num("goldPrice"),rate9:num("rate9"),rate14:num("rate14"),rate18:num("rate18"),rate22:num("rate22"),rate24:num("rate24")}))}
+function getRate(k){return num("rate"+k)}
+function addItem(){items.push({type:"Juweel",description:"",karat:18,weight:0,nonGold:0});renderItems();calculate()}
+function removeItem(i){items.splice(i,1);renderItems();calculate()}
+function updateItem(i,k,v){items[i][k]=(k==="weight"||k==="nonGold")?(parseFloat(v)||0):(k==="karat"?parseInt(v):v);calculate()}
+function calc(it){let net=Math.max(0,(it.weight||0)-(it.nonGold||0)),pure=net*purity[it.karat],market=pure*num("goldPrice"),rate=getRate(it.karat)/100;return{net,pure,market,offer:market*rate,rate:rate*100}}
+function renderItems(){let c=$("items");if(!items.length){c.innerHTML='<div style="text-align:center;color:#777;padding:15px">Nog geen stukken toegevoegd.</div>';return}c.innerHTML=items.map((it,i)=>{let x=calc(it);return `<div class="item"><div class="itemhead"><b>Stuk ${i+1}</b><button class="danger" onclick="removeItem(${i})">✕ VERWIJDER</button></div><div class="itemgrid">
+<div><label>Type</label><select onchange="updateItem(${i},'type',this.value)">${["Juweel","Ring","Ketting","Armband","Oorbellen","Munt","Bar","Horloge","Ander"].map(v=>`<option ${it.type===v?"selected":""}>${v}</option>`).join("")}</select></div>
+<div><label>Karaat</label><select onchange="updateItem(${i},'karat',this.value)">${[9,14,18,22,24].map(v=>`<option value="${v}" ${it.karat===v?"selected":""}>${v}K</option>`).join("")}</select></div>
+<div><label>Bruto gram</label><input type="number" min="0" step=".01" value="${it.weight||""}" oninput="updateItem(${i},'weight',this.value)"></div>
+<div><label>Niet-goud gram</label><input type="number" min="0" step=".01" value="${it.nonGold||""}" oninput="updateItem(${i},'nonGold',this.value)"></div>
+<div><label>Netto goud</label><div class="value">${x.net.toFixed(2)} g</div></div><div><label>Inkoop</label><div class="value"><b>${euro(x.offer)}</b></div></div></div>
+<div style="margin-top:8px"><label>Omschrijving</label><input value="${esc(it.description)}" oninput="updateItem(${i},'description',this.value)" placeholder="Bijv. gouden ring met steen"></div><div class="mini" style="margin-top:8px">Metaalwaarde: ${euro(x.market)} · ${x.rate.toFixed(1)}% · Ruimte: ${euro(x.market-x.offer)}</div></div>`}).join("")}
+function calculate(){saveSettings();let market=0,offer=0;items.forEach(it=>{let x=calc(it);market+=x.market;offer+=x.offer});$("marketTotal").textContent=euro(market);$("purchaseTotal").textContent=euro(offer);$("total").textContent=euro(offer);$("discountTotal").textContent=euro(market-offer);$("rateTotal").textContent=market?(offer/market*100).toFixed(1)+"%":"—";let resale=num("resalePrice"),profit=resale-offer;$("resaleDisplay").textContent=euro(resale);$("profitDisplay").textContent=euro(profit);$("marginDisplay").textContent=resale?(profit/resale*100).toFixed(1)+"%":"—";let method=$("paymentMethod").value;$("cashWarning").innerHTML=method==="cash"&&offer>500?`<div class="warning">⚠️ CASH ${euro(offer)} — boven €500. Kies een andere betalingswijze.</div>`:method==="cash"?`<div class="ok">✓ Cash ${euro(offer)} — onder €500.</div>`:"";renderItems()}
+function customer(){return{firstName:$("firstName").value.trim(),lastName:$("lastName").value.trim(),birthDate:$("birthDate").value,phone:$("phone").value.trim(),iban:$("iban").value.trim(),idChecked:$("idChecked").value,idType:$("idType").value,idNumber:$("idNumber").value.trim(),street:$("street").value.trim(),houseNumber:$("houseNumber").value.trim(),postalCode:$("postalCode").value.trim(),city:$("city").value.trim(),note:$("customerNote").value.trim()}}
+function data(){let market=items.reduce((s,it)=>s+calc(it).market,0),total=items.reduce((s,it)=>s+calc(it).offer,0),resale=num("resalePrice");return{id:"GM-"+new Date().getFullYear()+"-"+String(Date.now()).slice(-6),date:new Date().toISOString(),customer:customer(),paymentMethod:$("paymentMethod").value,items:JSON.parse(JSON.stringify(items)),goldPrice:num("goldPrice"),marketValue:market,total,resalePrice:resale,profit:resale-total,note:$("purchaseNote").value.trim(),reference:$("reference").value.trim()}}
+function valid(){let c=customer();if(!c.firstName||!c.lastName||!c.birthDate){alert("Vul voornaam, achternaam en geboortedatum in.");return false}if(c.idChecked!=="ja"){alert("Controleer het ID-document.");return false}if(!items.length){alert("Voeg minstens één stuk toe.");return false}let total=items.reduce((s,it)=>s+calc(it).offer,0);if($("paymentMethod").value==="cash"&&total>500){alert("Cash boven €500 kan hier niet worden opgeslagen.");return false}return true}
+function savePurchase(){if(!valid())return;let p=data();purchases.unshift(p);localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));renderHistory();alert("Inkoop opgeslagen!\n\n"+p.id)}
+function renderHistory(){let q=($("historySearch").value||"").toLowerCase(),arr=purchases.filter(p=>[p.id,p.date,p.customer?.firstName,p.customer?.lastName,p.reference].join(" ").toLowerCase().includes(q)).slice(0,50);$("history").innerHTML=arr.length?arr.map(p=>`<div class="history"><b>${esc(p.id)}</b> <span class="badge">${esc(p.paymentMethod||"")}</span><br>${esc(p.customer?.firstName||"")} ${esc(p.customer?.lastName||"")}<br><small>${new Date(p.date).toLocaleString("nl-BE")}</small><div><b>${euro(p.total)}</b></div><div class="row" style="margin-top:8px"><button class="light" onclick="printSaved('${p.id}')">🧾 BON</button><button class="danger" onclick="deletePurchase('${p.id}')">🗑️ VERWIJDER</button></div></div>`).join(""):'<div style="text-align:center;color:#777;padding:15px">Geen inkopen gevonden.</div>'}
+function deletePurchase(id){if(!confirm("Deze aankoop verwijderen?"))return;purchases=purchases.filter(p=>p.id!==id);localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));renderHistory()}
+function clearHistory(){if(!confirm("ALLE opgeslagen inkopen verwijderen?"))return;purchases=[];localStorage.removeItem("goudmarsjan_purchases");renderHistory()}
+function newPurchase(){if(!confirm("Nieuwe inkoop starten? Niet-opgeslagen gegevens gaan verloren."))return;["firstName","lastName","birthDate","phone","iban","idNumber","street","houseNumber","postalCode","city","customerNote","purchaseNote","reference","resalePrice"].forEach(id=>$(id).value="");$("idChecked").value="ja";$("idType").value="";$("paymentMethod").value="overschrijving";items=[];addItem()}
+function storedRate(k){let s=JSON.parse(localStorage.getItem("goudmarsjan_settings")||"{}");return Number(s["rate"+k])||defaults["rate"+k]}
+function receipt(p){let c=p.customer||{},addr=[c.street&&c.houseNumber?c.street+" "+c.houseNumber:c.street,c.postalCode&&c.city?c.postalCode+" "+c.city:c.city].filter(Boolean).join(", "),rows=(p.items||[]).map(it=>{let net=Math.max(0,(it.weight||0)-(it.nonGold||0)),market=net*(purity[it.karat]||0)*(p.goldPrice||0),offer=market*storedRate(it.karat)/100;return`<tr><td>${esc(it.type)}</td><td>${it.karat}K</td><td>${net.toFixed(2)} g</td><td>${euro(offer)}</td></tr>`}).join("");return`<!doctype html><html><head><meta charset="UTF-8"><title>${esc(p.id)}</title><style>body{font-family:Arial;max-width:800px;margin:auto;padding:30px}h1{letter-spacing:2px}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left}.total{font-size:24px;font-weight:bold;margin-top:25px}.small{font-size:12px;color:#666}</style></head><body><h1>DE GOUDMARSJAN</h1><h3>EDELMETALEN — AANKOOPBON</h3><p><b>Referentie:</b> ${esc(p.id)}<br><b>Datum:</b> ${new Date(p.date).toLocaleString("nl-BE")}</p><p><b>Klant:</b> ${esc(c.firstName||"")} ${esc(c.lastName||"")}<br><b>Geboortedatum:</b> ${esc(c.birthDate||"")}<br><b>Telefoon:</b> ${esc(c.phone||"")}<br><b>Adres:</b> ${esc(addr)}<br><b>IBAN:</b> ${esc(c.iban||"")}</p><table><tr><th>Type</th><th>Karaat</th><th>Netto goud</th><th>Inkoop</th></tr>${rows}</table><p>24K marktprijs: ${euro(p.goldPrice)}</p><div class="total">TOTAAL: ${euro(p.total)}</div><p>Betalingswijze: ${esc(p.paymentMethod||"")}</p>${p.reference?`<p>Interne referentie: ${esc(p.reference)}</p>`:""}${p.note?`<p><b>Opmerking:</b> ${esc(p.note)}</p>`:""}<hr><p class="small">DE GOUDMARSJAN — EDELMETALEN</p></body></html>`}
+function openPrint(p){let w=window.open("","_blank");if(!w){alert("Sta pop-ups toe voor de aankoopbon.");return}w.document.write(receipt(p));w.document.close();setTimeout(()=>w.print(),300)}
+function printReceipt(){if(valid())openPrint(data())}function printSaved(id){let p=purchases.find(x=>x.id===id);if(p)openPrint(p)}
+function download(name,data,type){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function exportBackup(){download("goudmarsjan-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify({version:2,exportedAt:new Date().toISOString(),settings:JSON.parse(localStorage.getItem("goudmarsjan_settings")||"{}"),purchases},null,2),"application/json")}
+function importBackup(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!Array.isArray(d.purchases))throw 0;if(!confirm("Bestaande historie vervangen door deze back-up?"))return;purchases=d.purchases;localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));if(d.settings)localStorage.setItem("goudmarsjan_settings",JSON.stringify(d.settings));loadSettings();renderHistory();calculate();alert("Back-up teruggezet.")}catch(x){alert("Ongeldig back-upbestand.")}};r.readAsText(f);e.target.value=""}
+function exportCSV(){let h=["ID","Datum","Voornaam","Achternaam","Geboortedatum","Telefoon","IBAN","Adres","Betaling","Metaalwaarde","Inkoop","Verkoopprijs","Bruto winst","Referentie"],rows=purchases.map(p=>{let c=p.customer||{},a=[c.street&&c.houseNumber?c.street+" "+c.houseNumber:c.street,c.postalCode&&c.city?c.postalCode+" "+c.city:c.city].filter(Boolean).join(", ");return[p.id,new Date(p.date).toLocaleString("nl-BE"),c.firstName,c.lastName,c.birthDate,c.phone,c.iban,a,p.paymentMethod,p.marketValue,p.total,p.resalePrice,p.profit,p.reference]});download("goudmarsjan-historie.csv","\ufeff"+[h,...rows].map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(";")).join("\n"),"text/csv;charset=utf-8")}
+loadSettings();addItem();renderHistory();calculate();
 </script>
-
 </body>
 </html>
