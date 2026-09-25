@@ -8,6 +8,33 @@
 <style>
 *{box-sizing:border-box}:root{--g:#c7a84b;--g2:#e0bd55;--b:#111;--bg:#f5f1e8;--muted:#777;--border:#d8d8d8;--red:#a9001b}
 body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#171717}header{background:#111;color:#fff;padding:18px;text-align:center;position:sticky;top:0;z-index:5}header h1{margin:0;font-size:27px;letter-spacing:2px}header p{margin:5px 0 0;color:var(--g2);font-weight:bold}.container{max-width:1100px;margin:auto;padding:18px}.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 3px 15px #00000012}h2{margin:0 0 14px;font-size:20px}h3{font-size:16px;margin:16px 0 9px}label{display:block;font-size:13px;font-weight:bold;margin-bottom:5px}input,select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:#fff}textarea{min-height:80px}.g2,.g3,.g4{display:grid;gap:12px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}button{border:0;border-radius:8px;padding:12px 15px;font-size:15px;font-weight:bold;cursor:pointer}.primary{background:var(--g);color:#111}.dark{background:#111;color:#fff}.light{background:#eee}.danger{background:#f7dfe3;color:var(--red)}.green{background:#dff3e9;color:#17683f}.full{width:100%}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.settings{background:#f7f7f7;padding:14px;border-radius:10px;margin-top:10px}.rates{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.item{border:1px solid var(--border);border-radius:12px;padding:14px;margin:12px 0;background:#fcfcfc}.itemhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.itemgrid{display:grid;grid-template-columns:1.1fr .65fr .8fr .8fr .85fr .9fr;gap:8px;align-items:end}.value{background:#f1f1f1;padding:12px;border-radius:8px;min-height:44px}.mini,.note{font-size:12px;color:var(--muted)}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.stat{background:#f7f7f7;border-radius:10px;padding:13px}.stat small{display:block;color:var(--muted);margin-bottom:5px}.stat strong{font-size:19px}.total{background:#111;color:#fff;padding:18px;border-radius:12px;margin-top:14px;display:flex;justify-content:space-between;align-items:center}.total strong{font-size:28px;color:var(--g2)}.warning{background:#fff0f0;border:1px solid #e4a6ad;color:#8b0018;padding:12px;border-radius:9px;margin-top:12px;font-weight:bold}.ok{background:#effaf4;border:1px solid #b7dfc9;color:#17683f;padding:12px;border-radius:9px;margin-top:12px}.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.history{border-bottom:1px solid #ddd;padding:12px 0}.badge{display:inline-block;padding:4px 8px;border-radius:99px;background:#eee;font-size:12px;font-weight:bold}@media(max-width:850px){.g4,.g3{grid-template-columns:1fr 1fr}.rates{grid-template-columns:1fr 1fr}.summary{grid-template-columns:1fr 1fr}.actions{grid-template-columns:1fr 1fr}.itemgrid{grid-template-columns:1fr 1fr}}@media(max-width:600px){.container{padding:10px}.card{padding:14px}.g2,.g3,.g4{grid-template-columns:1fr}.summary,.actions{grid-template-columns:1fr}.itemgrid{grid-template-columns:1fr 1fr}header h1{font-size:22px}}@media print{header,.noprint{display:none!important}body{background:#fff}.container{max-width:none;padding:0}.card{box-shadow:none}}
+
+/* PIN LOCK */
+#pinLock{
+  position:fixed;inset:0;background:#111;z-index:99999;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+#pinLock.hidden{display:none}
+.pin-box{
+  width:min(390px,100%);background:#fff;border-radius:18px;padding:28px;
+  text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)
+}
+.pin-logo{
+  width:78px;height:78px;margin:0 auto 14px;border-radius:18px;
+  background:#111;display:flex;align-items:center;justify-content:center;
+  color:#e0bd55;font-weight:900;font-size:25px;letter-spacing:2px
+}
+.pin-box h2{margin:0 0 8px}.pin-box p{color:#666;font-size:14px}
+.pin-dots{font-size:27px;letter-spacing:8px;height:42px;margin:14px 0;color:#111}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.pin-pad button{
+  background:#f0f0f0;color:#111;border-radius:12px;padding:18px 10px;
+  font-size:22px;font-weight:700
+}
+.pin-pad button:active{transform:scale(.97)}
+.pin-error{color:#b00020;font-weight:700;min-height:20px;font-size:13px;margin-top:8px}
+.pin-small{font-size:11px;color:#888;margin-top:14px}
+
 </style>
 
 <link rel="manifest" href="manifest.json">
@@ -19,6 +46,32 @@ body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#171717}he
 
 </head>
 <body>
+
+<div id="pinLock">
+  <div class="pin-box">
+    <div class="pin-logo">GM</div>
+    <h2 id="pinTitle">DE GOUDMARSJAN</h2>
+    <p id="pinSubtitle">Kies een 4-cijferige pincode voor deze tablet.</p>
+    <div id="pinDots" class="pin-dots">○ ○ ○ ○</div>
+    <div id="pinError" class="pin-error"></div>
+    <div class="pin-pad">
+      <button type="button" onclick="pinPress('1')">1</button>
+      <button type="button" onclick="pinPress('2')">2</button>
+      <button type="button" onclick="pinPress('3')">3</button>
+      <button type="button" onclick="pinPress('4')">4</button>
+      <button type="button" onclick="pinPress('5')">5</button>
+      <button type="button" onclick="pinPress('6')">6</button>
+      <button type="button" onclick="pinPress('7')">7</button>
+      <button type="button" onclick="pinPress('8')">8</button>
+      <button type="button" onclick="pinPress('9')">9</button>
+      <button type="button" onclick="pinClear()">⌫</button>
+      <button type="button" onclick="pinPress('0')">0</button>
+      <button type="button" onclick="pinEnter()">✓</button>
+    </div>
+    <div class="pin-small">De pincode wordt lokaal op dit toestel bewaard.</div>
+  </div>
+</div>
+
 <header><h1>DE GOUDMARSJAN</h1><p>EDELMETALEN — INKOOP</p></header>
 <div class="container">
 <div class="card">
@@ -96,26 +149,98 @@ function deletePurchase(id){if(!confirm("Deze aankoop verwijderen?"))return;purc
 function clearHistory(){if(!confirm("ALLE opgeslagen inkopen verwijderen?"))return;purchases=[];localStorage.removeItem("goudmarsjan_purchases");renderHistory()}
 function newPurchase(){if(!confirm("Nieuwe inkoop starten? Niet-opgeslagen gegevens gaan verloren."))return;["firstName","lastName","birthDate","phone","iban","idNumber","street","houseNumber","postalCode","city","customerNote","purchaseNote","reference","resalePrice"].forEach(id=>$(id).value="");$("idChecked").value="ja";$("idType").value="";$("paymentMethod").value="overschrijving";items=[];addItem()}
 function storedRate(k){let s=JSON.parse(localStorage.getItem("goudmarsjan_settings")||"{}");return Number(s["rate"+k])||defaults["rate"+k]}
-function receipt(p){let c=p.customer||{},addr=[c.street&&c.houseNumber?c.street+" "+c.houseNumber:c.street,c.postalCode&&c.city?c.postalCode+" "+c.city:c.city].filter(Boolean).join(", "),rows=(p.items||[]).map(it=>{let net=Math.max(0,(it.weight||0)-(it.nonGold||0)),market=net*(purity[it.karat]||0)*(p.goldPrice||0),offer=market*storedRate(it.karat)/100;return`<tr><td>${esc(it.type)}</td><td>${it.karat}K</td><td>${net.toFixed(2)} g</td><td>${euro(offer)}</td></tr>`}).join("");return`<!doctype html><html><head><meta charset="UTF-8"><title>${esc(p.id)}</title><style>body{font-family:Arial;max-width:800px;margin:auto;padding:30px}h1{letter-spacing:2px}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left}.total{font-size:24px;font-weight:bold;margin-top:25px}.small{font-size:12px;color:#666}</style></head><body><h1>DE GOUDMARSJAN</h1><h3>EDELMETALEN — AANKOOPBON</h3><p><b>Referentie:</b> ${esc(p.id)}<br><b>Datum:</b> ${new Date(p.date).toLocaleString("nl-BE")}</p><p><b>Klant:</b> ${esc(c.firstName||"")} ${esc(c.lastName||"")}<br><b>Geboortedatum:</b> ${esc(c.birthDate||"")}<br><b>Telefoon:</b> ${esc(c.phone||"")}<br><b>Adres:</b> ${esc(addr)}<br><b>IBAN:</b> ${esc(c.iban||"")}</p><table><tr><th>Type</th><th>Karaat</th><th>Netto goud</th><th>Inkoop</th></tr>${rows}</table><p>24K marktprijs: ${euro(p.goldPrice)}</p><div class="total">TOTAAL: ${euro(p.total)}</div><p>Betalingswijze: ${esc(p.paymentMethod||"")}</p>${p.reference?`<p>Interne referentie: ${esc(p.reference)}</p>`:""}${p.note?`<p><b>Opmerking:</b> ${esc(p.note)}</p>`:""}<hr><p class="small">DE GOUDMARSJAN — EDELMETALEN</p>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
-}
-let deferredInstallPrompt;
-window.addEventListener("beforeinstallprompt", e => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-});
-</script>
-
-</body></html>`}
+function receipt(p){let c=p.customer||{},addr=[c.street&&c.houseNumber?c.street+" "+c.houseNumber:c.street,c.postalCode&&c.city?c.postalCode+" "+c.city:c.city].filter(Boolean).join(", "),rows=(p.items||[]).map(it=>{let net=Math.max(0,(it.weight||0)-(it.nonGold||0)),market=net*(purity[it.karat]||0)*(p.goldPrice||0),offer=market*storedRate(it.karat)/100;return`<tr><td>${esc(it.type)}</td><td>${it.karat}K</td><td>${net.toFixed(2)} g</td><td>${euro(offer)}</td></tr>`}).join("");return`<!doctype html><html><head><meta charset="UTF-8"><title>${esc(p.id)}</title><style>body{font-family:Arial;max-width:800px;margin:auto;padding:30px}h1{letter-spacing:2px}table{width:100%;border-collapse:collapse;margin-top:25px}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left}.total{font-size:24px;font-weight:bold;margin-top:25px}.small{font-size:12px;color:#666}</style></head><body><h1>DE GOUDMARSJAN</h1><h3>EDELMETALEN — AANKOOPBON</h3><p><b>Referentie:</b> ${esc(p.id)}<br><b>Datum:</b> ${new Date(p.date).toLocaleString("nl-BE")}</p><p><b>Klant:</b> ${esc(c.firstName||"")} ${esc(c.lastName||"")}<br><b>Geboortedatum:</b> ${esc(c.birthDate||"")}<br><b>Telefoon:</b> ${esc(c.phone||"")}<br><b>Adres:</b> ${esc(addr)}<br><b>IBAN:</b> ${esc(c.iban||"")}</p><table><tr><th>Type</th><th>Karaat</th><th>Netto goud</th><th>Inkoop</th></tr>${rows}</table><p>24K marktprijs: ${euro(p.goldPrice)}</p><div class="total">TOTAAL: ${euro(p.total)}</div><p>Betalingswijze: ${esc(p.paymentMethod||"")}</p>${p.reference?`<p>Interne referentie: ${esc(p.reference)}</p>`:""}${p.note?`<p><b>Opmerking:</b> ${esc(p.note)}</p>`:""}<hr><p class="small">DE GOUDMARSJAN — EDELMETALEN</p></body></html>`}
 function openPrint(p){let w=window.open("","_blank");if(!w){alert("Sta pop-ups toe voor de aankoopbon.");return}w.document.write(receipt(p));w.document.close();setTimeout(()=>w.print(),300)}
 function printReceipt(){if(valid())openPrint(data())}function printSaved(id){let p=purchases.find(x=>x.id===id);if(p)openPrint(p)}
 function download(name,data,type){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function exportBackup(){download("goudmarsjan-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify({version:2,exportedAt:new Date().toISOString(),settings:JSON.parse(localStorage.getItem("goudmarsjan_settings")||"{}"),purchases},null,2),"application/json")}
 function importBackup(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!Array.isArray(d.purchases))throw 0;if(!confirm("Bestaande historie vervangen door deze back-up?"))return;purchases=d.purchases;localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));if(d.settings)localStorage.setItem("goudmarsjan_settings",JSON.stringify(d.settings));loadSettings();renderHistory();calculate();alert("Back-up teruggezet.")}catch(x){alert("Ongeldig back-upbestand.")}};r.readAsText(f);e.target.value=""}
 function exportCSV(){let h=["ID","Datum","Voornaam","Achternaam","Geboortedatum","Telefoon","IBAN","Adres","Betaling","Metaalwaarde","Inkoop","Verkoopprijs","Bruto winst","Referentie"],rows=purchases.map(p=>{let c=p.customer||{},a=[c.street&&c.houseNumber?c.street+" "+c.houseNumber:c.street,c.postalCode&&c.city?c.postalCode+" "+c.city:c.city].filter(Boolean).join(", ");return[p.id,new Date(p.date).toLocaleString("nl-BE"),c.firstName,c.lastName,c.birthDate,c.phone,c.iban,a,p.paymentMethod,p.marketValue,p.total,p.resalePrice,p.profit,p.reference]});download("goudmarsjan-historie.csv","\ufeff"+[h,...rows].map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(";")).join("\n"),"text/csv;charset=utf-8")}
+
+// ===== PIN-BEVEILIGING =====
+let enteredPin="";
+let pinMode="login";
+let firstPin="";
+const PIN_KEY="goudmarsjan_pin_v1";
+
+function updatePinDots(){
+  $("pinDots").textContent = enteredPin.length ? ("● ".repeat(enteredPin.length)+"○ ".repeat(4-enteredPin.length)).trim() : "○ ○ ○ ○";
+}
+function pinPress(n){
+  if(enteredPin.length>=4)return;
+  enteredPin+=n;
+  $("pinError").textContent="";
+  updatePinDots();
+  if(enteredPin.length===4) setTimeout(pinEnter,120);
+}
+function pinClear(){
+  enteredPin=enteredPin.slice(0,-1);
+  $("pinError").textContent="";
+  updatePinDots();
+}
+async function pinEnter(){
+  if(enteredPin.length!==4)return;
+  if(pinMode==="setup"){
+    if(!firstPin){
+      firstPin=enteredPin;
+      enteredPin="";
+      $("pinTitle").textContent="Bevestig je pincode";
+      $("pinSubtitle").textContent="Voer dezelfde 4 cijfers opnieuw in.";
+      updatePinDots();
+      return;
+    }
+    if(enteredPin!==firstPin){
+      firstPin=""; enteredPin="";
+      $("pinTitle").textContent="Kies een 4-cijferige pincode";
+      $("pinSubtitle").textContent="De codes kwamen niet overeen. Probeer opnieuw.";
+      $("pinError").textContent="Pincode komt niet overeen.";
+      updatePinDots(); return;
+    }
+    localStorage.setItem(PIN_KEY, await hashPin(enteredPin));
+    unlockApp();
+    return;
+  }
+  const saved=localStorage.getItem(PIN_KEY);
+  const hashed=await hashPin(enteredPin);
+  if(hashed===saved){
+    unlockApp();
+  }else{
+    enteredPin="";
+    $("pinError").textContent="Verkeerde pincode.";
+    updatePinDots();
+  }
+}
+async function hashPin(pin){
+  const data=new TextEncoder().encode(pin);
+  const buf=await crypto.subtle.digest("SHA-256",data);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function unlockApp(){
+  $("pinLock").classList.add("hidden");
+  enteredPin=""; firstPin="";
+}
+async function initPin(){
+  const saved=localStorage.getItem(PIN_KEY);
+  if(saved){
+    pinMode="login";
+    $("pinTitle").textContent="DE GOUDMARSJAN";
+    $("pinSubtitle").textContent="Voer je 4-cijferige pincode in.";
+  }else{
+    pinMode="setup";
+    $("pinTitle").textContent="Kies een 4-cijferige pincode";
+    $("pinSubtitle").textContent="Deze code beschermt de app op dit toestel.";
+  }
+  updatePinDots();
+}
+initPin();
+
 loadSettings();addItem();renderHistory();calculate();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+}
 </script>
 </body>
 </html>
