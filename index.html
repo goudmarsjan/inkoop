@@ -9,6 +9,13 @@
 
 <title>DE GOUDMARSJAN — Inkoop</title>
 
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Goudmarsjan">
+
 <style>
 *{box-sizing:border-box}
 
@@ -19,14 +26,14 @@
   --bg:#f5f1e8;
   --muted:#777;
   --border:#d8d8d8;
-  --red:#a9001b
+  --red:#a9001b;
 }
 
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:var(--bg);
-  color:#171717
+  color:#171717;
 }
 
 header{
@@ -36,25 +43,25 @@ header{
   text-align:center;
   position:sticky;
   top:0;
-  z-index:5
+  z-index:5;
 }
 
 header h1{
   margin:0;
   font-size:27px;
-  letter-spacing:2px
+  letter-spacing:2px;
 }
 
 header p{
   margin:5px 0 0;
   color:var(--g2);
-  font-weight:bold
+  font-weight:bold;
 }
 
 .container{
   max-width:1100px;
   margin:auto;
-  padding:18px
+  padding:18px;
 }
 
 .card{
@@ -62,24 +69,24 @@ header p{
   border-radius:14px;
   padding:18px;
   margin-bottom:16px;
-  box-shadow:0 3px 15px #00000012
+  box-shadow:0 3px 15px #00000012;
 }
 
 h2{
   margin:0 0 14px;
-  font-size:20px
+  font-size:20px;
 }
 
 h3{
   font-size:16px;
-  margin:16px 0 9px
+  margin:16px 0 9px;
 }
 
 label{
   display:block;
   font-size:13px;
   font-weight:bold;
-  margin-bottom:5px
+  margin-bottom:5px;
 }
 
 input,
@@ -90,35 +97,38 @@ textarea{
   border:1px solid var(--border);
   border-radius:8px;
   font-size:16px;
-  background:#fff
+  background:#fff;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled{
+  background:#eeeeee;
+  color:#666;
+  cursor:not-allowed;
 }
 
 textarea{
-  min-height:80px
-}
-
-input[readonly]{
-  background:#f1f1f1;
-  color:#555
+  min-height:80px;
 }
 
 .g2,
 .g3,
 .g4{
   display:grid;
-  gap:12px
+  gap:12px;
 }
 
 .g2{
-  grid-template-columns:1fr 1fr
+  grid-template-columns:1fr 1fr;
 }
 
 .g3{
-  grid-template-columns:repeat(3,1fr)
+  grid-template-columns:repeat(3,1fr);
 }
 
 .g4{
-  grid-template-columns:repeat(4,1fr)
+  grid-template-columns:repeat(4,1fr);
 }
 
 button{
@@ -127,58 +137,63 @@ button{
   padding:12px 15px;
   font-size:15px;
   font-weight:bold;
-  cursor:pointer
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
 }
 
 .primary{
   background:var(--g);
-  color:#111
+  color:#111;
 }
 
 .dark{
   background:#111;
-  color:#fff
+  color:#fff;
 }
 
 .light{
-  background:#eee
+  background:#eee;
 }
 
 .danger{
   background:#f7dfe3;
-  color:var(--red)
+  color:var(--red);
 }
 
 .green{
   background:#dff3e9;
-  color:#17683f
+  color:#17683f;
 }
 
 .full{
-  width:100%
+  width:100%;
 }
 
 .row{
   display:flex;
   gap:10px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 .row>*{
-  flex:1
+  flex:1;
 }
 
 .settings{
   background:#f7f7f7;
   padding:14px;
   border-radius:10px;
-  margin-top:10px
+  margin-top:10px;
 }
 
 .rates{
   display:grid;
   grid-template-columns:repeat(5,1fr);
-  gap:10px
+  gap:10px;
 }
 
 .item{
@@ -186,57 +201,57 @@ button{
   border-radius:12px;
   padding:14px;
   margin:12px 0;
-  background:#fcfcfc
+  background:#fcfcfc;
 }
 
 .itemhead{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:10px
+  margin-bottom:10px;
 }
 
 .itemgrid{
   display:grid;
   grid-template-columns:1fr .9fr .75fr .75fr .8fr .9fr .9fr;
   gap:8px;
-  align-items:end
+  align-items:end;
 }
 
 .value{
   background:#f1f1f1;
   padding:12px;
   border-radius:8px;
-  min-height:44px
+  min-height:44px;
 }
 
 .mini,
 .note{
   font-size:12px;
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .summary{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:10px;
-  margin-top:14px
+  margin-top:14px;
 }
 
 .stat{
   background:#f7f7f7;
   border-radius:10px;
-  padding:13px
+  padding:13px;
 }
 
 .stat small{
   display:block;
   color:var(--muted);
-  margin-bottom:5px
+  margin-bottom:5px;
 }
 
 .stat strong{
-  font-size:19px
+  font-size:19px;
 }
 
 .total{
@@ -247,12 +262,12 @@ button{
   margin-top:14px;
   display:flex;
   justify-content:space-between;
-  align-items:center
+  align-items:center;
 }
 
 .total strong{
   font-size:28px;
-  color:var(--g2)
+  color:var(--g2);
 }
 
 .warning{
@@ -262,7 +277,7 @@ button{
   padding:12px;
   border-radius:9px;
   margin-top:12px;
-  font-weight:bold
+  font-weight:bold;
 }
 
 .ok{
@@ -271,18 +286,18 @@ button{
   color:#17683f;
   padding:12px;
   border-radius:9px;
-  margin-top:12px
+  margin-top:12px;
 }
 
 .actions{
   display:grid;
   grid-template-columns:repeat(4,1fr);
-  gap:10px
+  gap:10px;
 }
 
 .history{
   border-bottom:1px solid #ddd;
-  padding:12px 0
+  padding:12px 0;
 }
 
 .badge{
@@ -291,7 +306,7 @@ button{
   border-radius:99px;
   background:#eee;
   font-size:12px;
-  font-weight:bold
+  font-weight:bold;
 }
 
 /* LOGIN */
@@ -304,11 +319,11 @@ button{
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:20px
+  padding:20px;
 }
 
 #authLock.hidden{
-  display:none
+  display:none;
 }
 
 .auth-box{
@@ -317,7 +332,7 @@ button{
   border-radius:18px;
   padding:28px;
   text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,.4)
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
 }
 
 .auth-logo{
@@ -332,16 +347,20 @@ button{
   color:#e0bd55;
   font-weight:900;
   font-size:25px;
-  letter-spacing:2px
+  letter-spacing:2px;
 }
 
 .auth-box h2{
-  margin:0 0 8px
+  margin:0 0 8px;
 }
 
 .auth-box p{
   color:#666;
-  font-size:14px
+  font-size:14px;
+}
+
+.auth-box input{
+  margin:7px 0;
 }
 
 .auth-error{
@@ -349,14 +368,8 @@ button{
   font-weight:700;
   min-height:20px;
   font-size:13px;
-  margin-top:8px
+  margin-top:8px;
 }
-
-.auth-box input{
-  margin:7px 0
-}
-
-/* GEBRUIKER */
 
 .userbar{
   background:#fff;
@@ -368,11 +381,11 @@ button{
   justify-content:space-between;
   align-items:center;
   gap:10px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 .userbar small{
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .member-row{
@@ -382,80 +395,85 @@ button{
   gap:10px;
   padding:10px 0;
   border-bottom:1px solid #ddd;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 
 .member-row:last-child{
-  border-bottom:0
+  border-bottom:0;
 }
 
 .member-info{
-  min-width:220px
+  min-width:220px;
 }
 
 .member-info b{
-  display:block
+  display:block;
 }
 
 .member-info small{
-  color:var(--muted)
+  color:var(--muted);
 }
 
-.owner-only{
-  display:none
+.owner-only-note{
+  background:#fff7dc;
+  border:1px solid #e7cb70;
+  padding:10px;
+  border-radius:8px;
+  font-size:13px;
+  margin-top:10px;
 }
 
 @media(max-width:850px){
 
   .g4,
   .g3{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 
   .rates{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 
   .summary{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 
   .actions{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 
   .itemgrid{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 }
 
 @media(max-width:600px){
 
   .container{
-    padding:10px
+    padding:10px;
   }
 
   .card{
-    padding:14px
+    padding:14px;
   }
 
   .g2,
   .g3,
   .g4{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 
   .summary,
   .actions{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 
   .itemgrid{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 
   header h1{
-    font-size:22px
+    font-size:22px;
   }
 }
 
@@ -463,37 +481,30 @@ button{
 
   header,
   .noprint{
-    display:none!important
+    display:none!important;
   }
 
   body{
-    background:#fff
+    background:#fff;
   }
 
   .container{
     max-width:none;
-    padding:0
+    padding:0;
   }
 
   .card{
-    box-shadow:none
+    box-shadow:none;
   }
 }
 </style>
-
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Goudmarsjan">
-<meta name="theme-color" content="#111111">
-
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- =========================================================
+     SUPABASE LOGIN
+========================================================= -->
 
 <div id="authLock">
 
@@ -531,11 +542,13 @@ button{
       INLOGGEN
     </button>
 
-    <div id="authError" class="auth-error"></div>
+    <div
+      id="authError"
+      class="auth-error"
+    ></div>
 
-    <p class="note">
+    <p>
       Elke werknemer gebruikt een eigen account.
-      De eigenaar bepaalt wie toegang heeft.
     </p>
 
   </div>
@@ -556,7 +569,10 @@ button{
 
 <div class="container">
 
-<!-- INGelogde gebruiker -->
+
+<!-- =========================================================
+     USER BAR
+========================================================= -->
 
 <div class="userbar noprint">
 
@@ -584,7 +600,9 @@ button{
 </div>
 
 
-<!-- WERKNEMERSBEHEER -->
+<!-- =========================================================
+     OWNER PANEL
+========================================================= -->
 
 <div
   id="ownerPanel"
@@ -597,8 +615,7 @@ button{
   </h2>
 
   <p class="note">
-    Alleen jij als hoofd/eigenaar ziet dit.
-    Een werknemer moet eerst een eigen Supabase-account hebben.
+    Alleen jij als hoofd/eigenaar ziet dit gedeelte.
   </p>
 
   <div class="g3">
@@ -617,6 +634,7 @@ button{
 
     </div>
 
+
     <div>
 
       <label>
@@ -629,6 +647,7 @@ button{
       >
 
     </div>
+
 
     <div style="display:flex;align-items:end">
 
@@ -651,7 +670,9 @@ button{
 </div>
 
 
-<!-- MARKTPRIJZEN -->
+<!-- =========================================================
+     MARKTPRIJZEN
+========================================================= -->
 
 <div class="card">
 
@@ -677,6 +698,7 @@ button{
 
     </div>
 
+
     <div>
 
       <label>
@@ -693,10 +715,11 @@ button{
 
     </div>
 
+
     <div>
 
       <label>
-        Verwachte verkoopprijs (€) — optioneel
+        Verwachte verkoopprijs (€)
       </label>
 
       <input
@@ -708,6 +731,7 @@ button{
       >
 
     </div>
+
 
     <div>
 
@@ -739,11 +763,10 @@ button{
   </div>
 
 
-  <!-- ALLEEN OWNER -->
+  <!-- ALLEEN OWNER KAN PERCENTAGES OPENEN -->
 
   <details
     id="settingsDetails"
-    class="owner-only"
     style="margin-top:15px"
   >
 
@@ -751,16 +774,22 @@ button{
       ⚙️ Mijn inkooppercentages
     </summary>
 
+
     <div class="settings">
 
       <h3>
         Goud
       </h3>
 
+
       <div class="rates">
 
         <div>
-          <label>9K %</label>
+
+          <label>
+            9K %
+          </label>
+
           <input
             id="rate9"
             type="number"
@@ -769,10 +798,16 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
+
         <div>
-          <label>14K %</label>
+
+          <label>
+            14K %
+          </label>
+
           <input
             id="rate14"
             type="number"
@@ -781,10 +816,16 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
+
         <div>
-          <label>18K %</label>
+
+          <label>
+            18K %
+          </label>
+
           <input
             id="rate18"
             type="number"
@@ -793,10 +834,16 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
+
         <div>
-          <label>22K %</label>
+
+          <label>
+            22K %
+          </label>
+
           <input
             id="rate22"
             type="number"
@@ -805,10 +852,16 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
+
         <div>
-          <label>24K %</label>
+
+          <label>
+            24K %
+          </label>
+
           <input
             id="rate24"
             type="number"
@@ -817,6 +870,7 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
       </div>
@@ -826,10 +880,15 @@ button{
         Zilver
       </h3>
 
+
       <div class="rates">
 
         <div>
-          <label>800 ‰ %</label>
+
+          <label>
+            800 ‰ %
+          </label>
+
           <input
             id="srate800"
             type="number"
@@ -838,10 +897,16 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
+
         <div>
-          <label>835 ‰ %</label>
+
+          <label>
+            835 ‰ %
+          </label>
+
           <input
             id="srate835"
             type="number"
@@ -850,10 +915,16 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
+
         <div>
-          <label>925 ‰ %</label>
+
+          <label>
+            925 ‰ %
+          </label>
+
           <input
             id="srate925"
             type="number"
@@ -862,10 +933,16 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
+
         <div>
-          <label>999 ‰ %</label>
+
+          <label>
+            999 ‰ %
+          </label>
+
           <input
             id="srate999"
             type="number"
@@ -874,6 +951,7 @@ button{
             step=".1"
             oninput="saveSettings();calculate()"
           >
+
         </div>
 
       </div>
@@ -887,10 +965,22 @@ button{
 
   </details>
 
+
+  <div
+    id="employeeSettingsNotice"
+    class="owner-only-note"
+    style="display:none"
+  >
+    🔒 De marktprijzen en inkooppercentages worden door het
+    hoofd beheerd. Je kunt deze instellingen niet wijzigen.
+  </div>
+
 </div>
 
 
-<!-- KLANT -->
+<!-- =========================================================
+     KLANT
+========================================================= -->
 
 <div class="card">
 
@@ -898,35 +988,72 @@ button{
     👤 Klantgegevens
   </h2>
 
+
   <div class="g3">
 
     <div>
-      <label>Voornaam *</label>
+
+      <label>
+        Voornaam *
+      </label>
+
       <input id="firstName">
+
     </div>
 
+
     <div>
-      <label>Achternaam *</label>
+
+      <label>
+        Achternaam *
+      </label>
+
       <input id="lastName">
+
     </div>
 
-    <div>
-      <label>Geboortedatum *</label>
-      <input id="birthDate" type="date">
-    </div>
 
     <div>
-      <label>Telefoon</label>
-      <input id="phone" type="tel">
+
+      <label>
+        Geboortedatum *
+      </label>
+
+      <input
+        id="birthDate"
+        type="date"
+      >
+
     </div>
 
+
     <div>
-      <label>IBAN</label>
+
+      <label>
+        Telefoon
+      </label>
+
+      <input
+        id="phone"
+        type="tel"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        IBAN
+      </label>
+
       <input
         id="iban"
         placeholder="BE00 0000 0000 0000"
       >
+
     </div>
+
 
     <div>
 
@@ -947,6 +1074,7 @@ button{
       </select>
 
     </div>
+
 
     <div>
 
@@ -984,6 +1112,7 @@ button{
 
     </div>
 
+
     <div>
 
       <label>
@@ -993,6 +1122,7 @@ button{
       <input id="idNumber">
 
     </div>
+
 
     <div>
 
@@ -1011,26 +1141,50 @@ button{
     📍 Adres
   </h3>
 
+
   <div class="g4">
 
     <div>
-      <label>Straat</label>
+
+      <label>
+        Straat
+      </label>
+
       <input id="street">
+
     </div>
 
+
     <div>
-      <label>Nr.</label>
+
+      <label>
+        Nr.
+      </label>
+
       <input id="houseNumber">
+
     </div>
 
+
     <div>
-      <label>Postcode</label>
+
+      <label>
+        Postcode
+      </label>
+
       <input id="postalCode">
+
     </div>
 
+
     <div>
-      <label>Gemeente</label>
+
+      <label>
+        Gemeente
+      </label>
+
       <input id="city">
+
     </div>
 
   </div>
@@ -1038,7 +1192,9 @@ button{
 </div>
 
 
-<!-- INKOOPSTUKKEN -->
+<!-- =========================================================
+     INKOOPSTUKKEN
+========================================================= -->
 
 <div class="card">
 
@@ -1046,7 +1202,9 @@ button{
     💰 Inkoopstukken
   </h2>
 
+
   <div id="items"></div>
+
 
   <button
     class="primary full noprint"
@@ -1059,33 +1217,54 @@ button{
   <div class="summary">
 
     <div class="stat">
-      <small>Metaalwaarde</small>
+
+      <small>
+        Metaalwaarde
+      </small>
+
       <strong id="marketTotal">
         € 0,00
       </strong>
+
     </div>
 
+
     <div class="stat">
-      <small>Gem. inkooppercentage</small>
+
+      <small>
+        Gem. inkooppercentage
+      </small>
+
       <strong id="rateTotal">
         —
       </strong>
+
     </div>
 
+
     <div class="stat">
-      <small>Inkoopprijs</small>
+
+      <small>
+        Inkoopprijs
+      </small>
+
       <strong id="purchaseTotal">
         € 0,00
       </strong>
+
     </div>
 
+
     <div class="stat">
+
       <small>
         Ruimte t.o.v. metaalwaarde
       </small>
+
       <strong id="discountTotal">
         € 0,00
       </strong>
+
     </div>
 
   </div>
@@ -1116,6 +1295,7 @@ button{
       📈 Verwachte bruto winst
     </b>
 
+
     <div
       class="g3"
       style="margin-top:10px"
@@ -1136,6 +1316,7 @@ button{
 
       </div>
 
+
       <div>
 
         <span class="mini">
@@ -1150,6 +1331,7 @@ button{
         </div>
 
       </div>
+
 
       <div>
 
@@ -1173,13 +1355,16 @@ button{
 </div>
 
 
-<!-- EXTRA -->
+<!-- =========================================================
+     EXTRA
+========================================================= -->
 
 <div class="card">
 
   <h2>
     📝 Extra
   </h2>
+
 
   <div class="g2">
 
@@ -1196,6 +1381,7 @@ button{
 
     </div>
 
+
     <div>
 
       <label>
@@ -1211,13 +1397,16 @@ button{
 </div>
 
 
-<!-- AANKOOP -->
+<!-- =========================================================
+     OPSLAAN
+========================================================= -->
 
 <div class="card noprint">
 
   <h2>
     🧾 Aankoop
   </h2>
+
 
   <div class="actions">
 
@@ -1228,6 +1417,7 @@ button{
       💾 OPSLAAN
     </button>
 
+
     <button
       class="primary"
       onclick="printReceipt()"
@@ -1235,12 +1425,14 @@ button{
       🧾 BON MAKEN
     </button>
 
+
     <button
       class="green"
       onclick="newPurchase()"
     >
       ＋ NIEUWE INKOOP
     </button>
+
 
     <button
       class="light"
@@ -1264,6 +1456,7 @@ button{
       ⬆️ BACK-UP TERUGZETTEN
     </button>
 
+
     <button
       class="light"
       onclick="exportCSV()"
@@ -1271,12 +1464,14 @@ button{
       📊 HISTORIE ALS CSV
     </button>
 
+
     <button
       class="danger"
       onclick="clearHistory()"
     >
       🗑️ ALLE HISTORIE WISSEN
     </button>
+
 
     <input
       id="backupFile"
@@ -1288,6 +1483,7 @@ button{
 
   </div>
 
+
   <p class="note">
     Aankopen en klantgegevens worden aan je beveiligde
     Supabase-bedrijfsaccount gekoppeld.
@@ -1296,7 +1492,9 @@ button{
 </div>
 
 
-<!-- HISTORIE -->
+<!-- =========================================================
+     HISTORIE
+========================================================= -->
 
 <div class="card noprint">
 
@@ -1304,11 +1502,13 @@ button{
     📋 Vorige inkopen
   </h2>
 
+
   <input
     id="historySearch"
     placeholder="Zoek op naam, nummer of datum..."
     oninput="renderHistory()"
   >
+
 
   <div
     id="history"
@@ -1342,7 +1542,7 @@ const sb =
 
 
 /* =========================================================
-   DATA
+   INSTELLINGEN
 ========================================================= */
 
 const purity = {
@@ -1408,7 +1608,7 @@ const $ =
 
 
 const euro =
-  v =>
+  value =>
     new Intl.NumberFormat(
       "nl-BE",
       {
@@ -1416,7 +1616,7 @@ const euro =
         currency:"EUR"
       }
     ).format(
-      Number(v)||0
+      Number(value) || 0
     );
 
 
@@ -1432,14 +1632,13 @@ const esc =
     String(s ?? "")
       .replace(
         /[&<>"']/g,
-        m =>
-          ({
-            "&":"&amp;",
-            "<":"&lt;",
-            ">":"&gt;",
-            '"':"&quot;",
-            "'":"&#039;"
-          }[m])
+        m => ({
+          "&":"&amp;",
+          "<":"&lt;",
+          ">":"&gt;",
+          '"':"&quot;",
+          "'":"&#039;"
+        }[m])
       );
 
 
@@ -1456,17 +1655,16 @@ function loadSettings(){
       ) || "{}"
     );
 
-  Object.keys(defaults)
-    .forEach(k=>{
 
-      let el = $(k);
+  Object.keys(defaults)
+    .forEach(key => {
+
+      let el = $(key);
 
       if(el){
-
         el.value =
-          st[k] ??
-          defaults[k];
-
+          st[key] ??
+          defaults[key];
       }
 
     });
@@ -1479,14 +1677,16 @@ function saveSettingsLocal(){
   let st = {};
 
   Object.keys(defaults)
-    .forEach(k=>{
+    .forEach(key => {
 
-      let el = $(k);
+      let el = $(key);
 
-      if(el)
-        st[k] = num(k);
+      if(el){
+        st[key] = num(key);
+      }
 
     });
+
 
   localStorage.setItem(
     "goudmarsjan_settings",
@@ -1498,16 +1698,30 @@ function saveSettingsLocal(){
 
 function saveSettings(){
 
-  saveSettingsLocal();
+  /* werknemers kunnen deze functie
+     niet gebruiken omdat hun velden
+     disabled zijn */
 
   if(
-    currentBusinessId &&
-    currentMember?.role === "owner"
+    currentMember &&
+    currentMember.role !== "owner"
   ){
+    return;
+  }
+
+
+  saveSettingsLocal();
+
+
+  if(currentBusinessId){
 
     saveCloudSettings()
       .catch(
-        ()=>{}
+        e =>
+          console.warn(
+            "Cloud settings:",
+            e
+          )
       );
 
   }
@@ -1520,13 +1734,43 @@ function getRate(
   fineness
 ){
 
-  return num(
+  let id =
     (
       metal === "zilver"
         ? "srate"
         : "rate"
-    ) + fineness
-  );
+    ) + fineness;
+
+
+  return num(id);
+
+}
+
+
+function storedRate(
+  metal,
+  fineness
+){
+
+  let st =
+    JSON.parse(
+      localStorage.getItem(
+        "goudmarsjan_settings"
+      ) || "{}"
+    );
+
+
+  let key =
+    (
+      metal === "zilver"
+        ? "srate"
+        : "rate"
+    ) + fineness;
+
+
+  return Number(
+    st[key]
+  ) || defaults[key];
 
 }
 
@@ -1557,6 +1801,7 @@ function addItem(){
 
   });
 
+
   renderItems();
 
   calculate();
@@ -1566,10 +1811,7 @@ function addItem(){
 
 function removeItem(i){
 
-  items.splice(
-    i,
-    1
-  );
+  items.splice(i,1);
 
   renderItems();
 
@@ -1578,37 +1820,30 @@ function removeItem(i){
 }
 
 
-/*
-  BELANGRIJK:
-  Deze functie rebuildt NIET de inputs.
-
-  Daardoor blijft het numerieke toetsenbord open
-  terwijl je gram/bedrag ingeeft.
-*/
-
 function updateItem(
   i,
-  k,
-  v
+  key,
+  value
 ){
 
   if(
-    k === "weight" ||
-    k === "nonGold" ||
-    k === "manualOffer"
+    key === "weight" ||
+    key === "nonGold" ||
+    key === "manualOffer"
   ){
 
-    items[i][k] =
-      parseFloat(v) || 0;
+    items[i][key] =
+      parseFloat(value) || 0;
 
   }
 
   else if(
-    k === "fineness"
+    key === "fineness"
   ){
 
     items[i].fineness =
-      parseInt(v) || 0;
+      parseInt(value) || 0;
+
 
     if(
       items[i].metal === "goud"
@@ -1623,9 +1858,23 @@ function updateItem(
 
   else{
 
-    items[i][k] = v;
+    items[i][key] =
+      value;
 
   }
+
+
+  /*
+    BELANGRIJK:
+
+    Hier wordt NIET opnieuw
+    renderItems() uitgevoerd.
+
+    Daardoor blijft het
+    toetsenbord open wanneer
+    je bijvoorbeeld 12.50
+    gram ingeeft.
+  */
 
   calculate();
 
@@ -1638,6 +1887,8 @@ function calc(it){
     it.metal || "goud";
 
 
+  /* VERZILVERD */
+
   if(
     metal === "verzilverd"
   ){
@@ -1645,14 +1896,16 @@ function calc(it){
     let net =
       Math.max(
         0,
-        (it.weight||0) -
-        (it.nonGold||0)
+        (it.weight || 0) -
+        (it.nonGold || 0)
       );
+
 
     let offer =
       parseFloat(
         it.manualOffer
       ) || 0;
+
 
     return {
 
@@ -1677,6 +1930,8 @@ function calc(it){
   }
 
 
+  /* GOUD / ZILVER */
+
   let fineness =
     it.fineness ||
     (
@@ -1689,16 +1944,16 @@ function calc(it){
   let net =
     Math.max(
       0,
-      (it.weight||0) -
-      (it.nonGold||0)
+      (it.weight || 0) -
+      (it.nonGold || 0)
     );
 
 
   let pure =
     net *
     (
-      purity[metal]?.[fineness]
-      || 0
+      purity[metal]?.[fineness] ||
+      0
     );
 
 
@@ -1752,15 +2007,13 @@ function calc(it){
 
 function renderItems(){
 
-  let c =
+  let container =
     $("items");
 
 
-  if(
-    !items.length
-  ){
+  if(!items.length){
 
-    c.innerHTML =
+    container.innerHTML =
       '<div style="text-align:center;color:#777;padding:15px">Nog geen stukken toegevoegd.</div>';
 
     return;
@@ -1768,434 +2021,417 @@ function renderItems(){
   }
 
 
-  c.innerHTML =
-    items
-      .map(
-        (it,i)=>{
+  container.innerHTML =
+    items.map(
+      (it,i) => {
 
-          let x =
-            calc(it);
-
-          let metal =
-            it.metal || "goud";
-
-          let fineness =
-            x.fineness;
+        let x =
+          calc(it);
 
 
-          let purityOptions =
-            metal === "goud"
-              ? [9,14,18,22,24]
-              : (
-                  metal === "zilver"
-                    ? [800,835,925,999]
-                    : []
-                );
+        let metal =
+          it.metal || "goud";
 
 
-          let purityLabel =
-            metal === "goud"
-              ? "Karaat"
-              : (
-                  metal === "zilver"
-                    ? "Zuiverheid"
-                    : "—"
-                );
+        let fineness =
+          x.fineness;
 
 
-          return `
+        let purityOptions =
+          metal === "goud"
+            ? [9,14,18,22,24]
+            : metal === "zilver"
+              ? [800,835,925,999]
+              : [];
+
+
+        let purityLabel =
+          metal === "goud"
+            ? "Karaat"
+            : metal === "zilver"
+              ? "Zuiverheid"
+              : "—";
+
+
+        return `
 
 <div class="item">
 
-  <div class="itemhead">
-
-    <b>
-      Stuk ${i+1}
-    </b>
-
-    <button
-      class="danger"
-      onclick="removeItem(${i})"
-    >
-      ✕ VERWIJDER
-    </button>
-
-  </div>
-
-
-  <div class="itemgrid">
-
-
-    <div>
-
-      <label>
-        Metaal
-      </label>
-
-      <select
-        onchange="
-          updateItem(
-            ${i},
-            'metal',
-            this.value
-          );
-          renderItems();
-          calculate()
-        "
-      >
-
-        <option
-          value="goud"
-          ${metal==="goud"?"selected":""}
-        >
-          🟡 Goud
-        </option>
-
-        <option
-          value="zilver"
-          ${metal==="zilver"?"selected":""}
-        >
-          ⚪ Zilver
-        </option>
-
-        <option
-          value="verzilverd"
-          ${metal==="verzilverd"?"selected":""}
-        >
-          ⚪ Verzilverd
-        </option>
-
-      </select>
-
-    </div>
-
-
-    <div>
-
-      <label>
-        ${purityLabel}
-      </label>
-
-      ${
-        metal==="verzilverd"
-
-        ? `
-          <div class="value">
-            Geen zilvergehalte berekend
-          </div>
-        `
-
-        : `
-
-          <select
-            onchange="
-              updateItem(
-                ${i},
-                'fineness',
-                this.value
-              );
-              renderItems();
-              calculate()
-            "
-          >
-
-            ${
-              purityOptions
-                .map(
-                  v =>
-                    `
-                    <option
-                      value="${v}"
-                      ${
-                        fineness===v
-                          ? "selected"
-                          : ""
-                      }
-                    >
-                      ${
-                        metal==="goud"
-                          ? v+"K"
-                          : v+"‰"
-                      }
-                    </option>
-                    `
-                )
-                .join("")
-            }
-
-          </select>
-
-        `
-      }
-
-    </div>
-
-
-    <div>
-
-      <label>
-        Bruto gram
-      </label>
-
-      <input
-        type="number"
-        min="0"
-        step=".01"
-        value="${it.weight||""}"
-        oninput="
-          updateItem(
-            ${i},
-            'weight',
-            this.value
-          )
-        "
-      >
-
-    </div>
-
-
-    <div>
-
-      <label>
-        ${
-          metal==="goud"
-            ? "Niet-goud"
-            : "Niet-metaal"
-        }
-        gram
-      </label>
-
-      <input
-        type="number"
-        min="0"
-        step=".01"
-        value="${it.nonGold||""}"
-        oninput="
-          updateItem(
-            ${i},
-            'nonGold',
-            this.value
-          )
-        "
-      >
-
-    </div>
-
-
-    <div>
-
-      <label>
-        Netto ${metal}
-      </label>
-
-      <div
-        class="value"
-        id="net_${i}"
-      >
-        ${x.net.toFixed(2)} g
-      </div>
-
-    </div>
-
-
-    <div>
-
-      <label>
-        Metaalwaarde
-      </label>
-
-      <div
-        class="value"
-        id="market_${i}"
-      >
-        ${euro(x.market)}
-      </div>
-
-    </div>
-
-
-    ${
-      metal==="verzilverd"
-
-      ? `
-
-        <div>
-
-          <label>
-            Inkoopprijs verzilverd (€)
-          </label>
-
-          <input
-            type="number"
-            min="0"
-            step=".01"
-            value="${it.manualOffer||""}"
-            oninput="
-              updateItem(
-                ${i},
-                'manualOffer',
-                this.value
-              )
-            "
-          >
-
-        </div>
-
-      `
-
-      : ""
-    }
-
-
-    <div>
-
-      <label>
-        Inkoop
-      </label>
-
-      <div
-        class="value"
-        id="offer_${i}"
-      >
-        <b>
-          ${euro(x.offer)}
-        </b>
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div
-    style="margin-top:8px"
-  >
-
-    <label>
-      Omschrijving
-    </label>
-
-    <input
-      value="${esc(it.description)}"
-      oninput="
-        updateItem(
-          ${i},
-          'description',
-          this.value
-        )
-      "
-      placeholder="Bijv. gouden ring / zilveren ketting"
-    >
-
-  </div>
-
-
-  <div
-    class="mini"
-    id="mini_${i}"
-    style="margin-top:8px"
-  >
-
-    ${
-      metal==="verzilverd"
-        ? "Verzilverd"
-        : metal==="goud"
-          ? x.fineness+"K"
-          : "Zilver "+x.fineness+"‰"
-    }
-
-    · Metaalwaarde:
-    ${euro(x.market)}
-
-    · ${x.rate.toFixed(1)}%
-
-    · Ruimte:
-    ${euro(x.market-x.offer)}
-
-  </div>
+<div class="itemhead">
+
+<b>
+Stuk ${i+1}
+</b>
+
+<button
+class="danger"
+onclick="removeItem(${i})"
+>
+✕ VERWIJDER
+</button>
+
+</div>
+
+
+<div class="itemgrid">
+
+
+<div>
+
+<label>
+Metaal
+</label>
+
+<select
+onchange="
+updateItem(${i},'metal',this.value);
+renderItems();
+calculate()
+"
+>
+
+<option
+value="goud"
+${metal==="goud"?"selected":""}
+>
+🟡 Goud
+</option>
+
+<option
+value="zilver"
+${metal==="zilver"?"selected":""}
+>
+⚪ Zilver
+</option>
+
+<option
+value="verzilverd"
+${metal==="verzilverd"?"selected":""}
+>
+⚪ Verzilverd
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label>
+${purityLabel}
+</label>
+
+
+${
+metal === "verzilverd"
+
+? `
+<div class="value">
+Geen zilvergehalte berekend
+</div>
+`
+
+: `
+
+<select
+onchange="
+updateItem(${i},'fineness',this.value);
+renderItems();
+calculate()
+"
+>
+
+${purityOptions.map(
+v =>
+`
+
+<option
+value="${v}"
+${fineness===v?"selected":""}
+>
+
+${
+metal==="goud"
+  ? v+"K"
+  : v+"‰"
+}
+
+</option>
+
+`
+).join("")}
+
+</select>
+
+`
+
+}
+
+</div>
+
+
+<div>
+
+<label>
+Bruto gram
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.weight || ""}"
+oninput="
+updateItem(
+${i},
+'weight',
+this.value
+)
+"
+>
+
+</div>
+
+
+<div>
+
+<label>
+${
+metal==="goud"
+  ? "Niet-goud"
+  : "Niet-metaal"
+}
+gram
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.nonGold || ""}"
+oninput="
+updateItem(
+${i},
+'nonGold',
+this.value
+)
+"
+>
+
+</div>
+
+
+<div>
+
+<label>
+Netto ${metal}
+</label>
+
+<div
+class="value"
+id="net_${i}"
+>
+${x.net.toFixed(2)} g
+</div>
+
+</div>
+
+
+<div>
+
+<label>
+Metaalwaarde
+</label>
+
+<div
+class="value"
+id="market_${i}"
+>
+${euro(x.market)}
+</div>
+
+</div>
+
+
+${
+metal === "verzilverd"
+
+? `
+
+<div>
+
+<label>
+Inkoopprijs verzilverd (€)
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.manualOffer || ""}"
+oninput="
+updateItem(
+${i},
+'manualOffer',
+this.value
+)
+"
+>
+
+</div>
+
+`
+
+: ""
+
+}
+
+
+<div>
+
+<label>
+Inkoop
+</label>
+
+<div
+class="value"
+id="offer_${i}"
+>
+<b>
+${euro(x.offer)}
+</b>
+</div>
+
+</div>
+
+
+</div>
+
+
+<div style="margin-top:8px">
+
+<label>
+Omschrijving
+</label>
+
+<input
+value="${esc(it.description)}"
+oninput="
+updateItem(
+${i},
+'description',
+this.value
+)
+"
+placeholder="Bijv. gouden ring / zilveren ketting"
+>
+
+</div>
+
+
+<div
+class="mini"
+id="mini_${i}"
+style="margin-top:8px"
+>
+
+${
+metal==="verzilverd"
+  ? "Verzilverd"
+  : metal==="goud"
+    ? x.fineness+"K"
+    : "Zilver "+x.fineness+"‰"
+}
+
+ · Metaalwaarde:
+${euro(x.market)}
+
+ ·
+${x.rate.toFixed(1)}%
+
+ · Ruimte:
+${euro(x.market-x.offer)}
+
+</div>
+
 
 </div>
 
 `;
 
-        }
-      )
-      .join("");
+      }
+    ).join("");
 
 }
 
 
 /* =========================================================
-   UPDATE DISPLAY ZONDER INPUTS TE REBUILDEN
+   UPDATE ITEM DISPLAY
 ========================================================= */
 
 function updateItemDisplay(){
 
   items.forEach(
-    (it,i)=>{
+    (it,i) => {
 
       let x =
         calc(it);
 
 
-      if(
-        $("net_"+i)
-      ){
-
+      if($("net_"+i)){
         $("net_"+i)
           .textContent =
-          x.net.toFixed(2)
-          + " g";
-
+          x.net.toFixed(2)+" g";
       }
 
 
-      if(
-        $("market_"+i)
-      ){
-
+      if($("market_"+i)){
         $("market_"+i)
           .textContent =
           euro(x.market);
-
       }
 
 
-      if(
-        $("offer_"+i)
-      ){
-
+      if($("offer_"+i)){
         $("offer_"+i)
           .innerHTML =
-          "<b>"
-          + euro(x.offer)
-          + "</b>";
-
+          "<b>"+
+          euro(x.offer)+
+          "</b>";
       }
 
 
-      if(
-        $("mini_"+i)
-      ){
+      if($("mini_"+i)){
 
         $("mini_"+i)
           .textContent =
 
           (
-            it.metal==="verzilverd"
+            it.metal === "verzilverd"
+
               ? "Verzilverd"
-              : it.metal==="goud"
+
+              : it.metal === "goud"
+
                 ? x.fineness+"K"
+
                 : "Zilver "+x.fineness+"‰"
+
           )
 
-          + " · Metaalwaarde: "
+          +" · Metaalwaarde: "
           + euro(x.market)
 
-          + " · "
+          +" · "
           + x.rate.toFixed(1)
-          + "% · Ruimte: "
-          + euro(x.market-x.offer);
+          +"%"
+
+          +" · Ruimte: "
+          + euro(
+              x.market -
+              x.offer
+            );
 
       }
 
@@ -2206,7 +2442,7 @@ function updateItemDisplay(){
 
 
 /* =========================================================
-   CALCULATE
+   BEREKENING
 ========================================================= */
 
 function calculate(){
@@ -2215,11 +2451,12 @@ function calculate(){
 
 
   let market = 0;
+
   let offer = 0;
 
 
   items.forEach(
-    it=>{
+    it => {
 
       let x =
         calc(it);
@@ -2252,7 +2489,7 @@ function calculate(){
   $("discountTotal")
     .textContent =
     euro(
-      market-offer
+      market - offer
     );
 
 
@@ -2263,8 +2500,7 @@ function calculate(){
           offer /
           market *
           100
-        ).toFixed(1)
-        + "%"
+        ).toFixed(1)+"%"
       : "—";
 
 
@@ -2273,7 +2509,7 @@ function calculate(){
 
 
   let profit =
-    resale-offer;
+    resale - offer;
 
 
   $("resaleDisplay")
@@ -2293,8 +2529,7 @@ function calculate(){
           profit /
           resale *
           100
-        ).toFixed(1)
-        + "%"
+        ).toFixed(1)+"%"
       : "—";
 
 
@@ -2302,30 +2537,40 @@ function calculate(){
     $("paymentMethod").value;
 
 
-  $("cashWarning")
-    .innerHTML =
-
+  if(
     method === "cash" &&
     offer > 500
+  ){
 
-      ? `
-        <div class="warning">
-          ⚠️ CASH ${euro(offer)}
-          — boven €500.
-          Kies een andere betalingswijze.
-        </div>
-      `
+    $("cashWarning").innerHTML =
 
-      : method === "cash"
+      `<div class="warning">
+      ⚠️ CASH ${euro(offer)}
+      — boven €500.
+      Kies een andere betalingswijze.
+      </div>`;
 
-        ? `
-          <div class="ok">
-            ✓ Cash ${euro(offer)}
-            — onder €500.
-          </div>
-        `
+  }
 
-        : "";
+  else if(
+    method === "cash"
+  ){
+
+    $("cashWarning").innerHTML =
+
+      `<div class="ok">
+      ✓ Cash ${euro(offer)}
+      — onder €500.
+      </div>`;
+
+  }
+
+  else{
+
+    $("cashWarning")
+      .innerHTML = "";
+
+  }
 
 
   updateItemDisplay();
@@ -2334,7 +2579,7 @@ function calculate(){
 
 
 /* =========================================================
-   CUSTOMER
+   KLANT
 ========================================================= */
 
 function customer(){
@@ -2352,8 +2597,7 @@ function customer(){
         .trim(),
 
     birthDate:
-      $("birthDate")
-        .value,
+      $("birthDate").value,
 
     phone:
       $("phone")
@@ -2366,12 +2610,10 @@ function customer(){
         .trim(),
 
     idChecked:
-      $("idChecked")
-        .value,
+      $("idChecked").value,
 
     idType:
-      $("idType")
-        .value,
+      $("idType").value,
 
     idNumber:
       $("idNumber")
@@ -2409,23 +2651,23 @@ function customer(){
 
 
 /* =========================================================
-   PURCHASE DATA
+   DATA
 ========================================================= */
 
 function data(){
 
   let market =
     items.reduce(
-      (s,it)=>
-        s+calc(it).market,
+      (sum,it) =>
+        sum + calc(it).market,
       0
     );
 
 
   let total =
     items.reduce(
-      (s,it)=>
-        s+calc(it).offer,
+      (sum,it) =>
+        sum + calc(it).offer,
       0
     );
 
@@ -2437,10 +2679,12 @@ function data(){
   return {
 
     id:
-      "GM-"
-      + new Date().getFullYear()
-      + "-"
-      + String(Date.now()).slice(-6),
+      "GM-" +
+      new Date().getFullYear() +
+      "-" +
+      String(
+        Date.now()
+      ).slice(-6),
 
     date:
       new Date().toISOString(),
@@ -2462,19 +2706,17 @@ function data(){
     silverPrice:
       num("silverPrice"),
 
-    /* INTERN */
     marketValue:
       market,
 
     total:
-
       total,
 
     resalePrice:
       resale,
 
     profit:
-      resale-total,
+      resale - total,
 
     note:
       $("purchaseNote")
@@ -2492,7 +2734,7 @@ function data(){
 
 
 /* =========================================================
-   VALIDATE
+   VALIDATIE
 ========================================================= */
 
 function valid(){
@@ -2544,8 +2786,8 @@ function valid(){
 
   let total =
     items.reduce(
-      (s,it)=>
-        s+calc(it).offer,
+      (sum,it) =>
+        sum + calc(it).offer,
       0
     );
 
@@ -2584,14 +2826,12 @@ function valid(){
 
 
 /* =========================================================
-   SAVE PURCHASE
+   OPSLAAN
 ========================================================= */
 
 async function savePurchase(){
 
-  if(
-    !valid()
-  )
+  if(!valid())
     return;
 
 
@@ -2617,8 +2857,8 @@ async function savePurchase(){
 
 
     alert(
-      "Inkoop opgeslagen in de cloud!\n\n"
-      + p.id
+      "Inkoop opgeslagen in de cloud!\n\n"+
+      p.id
     );
 
   }
@@ -2627,9 +2867,10 @@ async function savePurchase(){
 
     console.error(e);
 
+
     alert(
-      "De aankoop kon niet naar Supabase worden opgeslagen.\n\n"
-      + (e.message || e)
+      "De aankoop kon niet naar Supabase worden opgeslagen.\n\n"+
+      (e.message || e)
     );
 
   }
@@ -2638,7 +2879,7 @@ async function savePurchase(){
 
 
 /* =========================================================
-   HISTORY
+   HISTORIE
 ========================================================= */
 
 function renderHistory(){
@@ -2646,9 +2887,9 @@ function renderHistory(){
   let q =
     (
       $("historySearch")
-        ?.value || ""
-    )
-      .toLowerCase();
+        ?.value ||
+      ""
+    ).toLowerCase();
 
 
   let arr =
@@ -2674,74 +2915,66 @@ function renderHistory(){
 
     arr.length
 
-      ? arr
-          .map(
-            p =>
-              `
+      ? arr.map(
+          p => `
 
 <div class="history">
 
-  <b>
-    ${esc(p.id)}
-  </b>
+<b>
+${esc(p.id)}
+</b>
 
-  <span class="badge">
-    ${esc(p.paymentMethod || "")}
-  </span>
+<span class="badge">
+${esc(p.paymentMethod || "")}
+</span>
 
-  <br>
+<br>
 
-  ${esc(p.customer?.firstName || "")}
-  ${esc(p.customer?.lastName || "")}
+${esc(p.customer?.firstName || "")}
+${esc(p.customer?.lastName || "")}
 
-  <br>
+<br>
 
-  <small>
-    ${new Date(p.date).toLocaleString("nl-BE")}
-  </small>
+<small>
+${new Date(p.date)
+  .toLocaleString("nl-BE")}
+</small>
 
-  <div>
-    <b>
-      ${euro(p.total)}
-    </b>
-  </div>
+<div>
+<b>
+${euro(p.total)}
+</b>
+</div>
 
-  <div
-    class="row"
-    style="margin-top:8px"
-  >
+<div
+class="row"
+style="margin-top:8px"
+>
 
-    <button
-      class="light"
-      onclick="printSaved('${p.id}')"
-    >
-      🧾 BON
-    </button>
+<button
+class="light"
+onclick="printSaved('${p.id}')"
+>
+🧾 BON
+</button>
 
-    <button
-      class="danger"
-      onclick="deletePurchase('${p.id}')"
-    >
-      🗑️ VERWIJDER
-    </button>
+<button
+class="danger"
+onclick="deletePurchase('${p.id}')"
+>
+🗑️ VERWIJDER
+</button>
 
-  </div>
+</div>
 
 </div>
 
 `
-          )
-          .join("")
+        ).join("")
 
       :
 
-        `
-        <div
-          style="text-align:center;color:#777;padding:15px"
-        >
-          Geen inkopen gevonden.
-        </div>
-        `;
+      '<div style="text-align:center;color:#777;padding:15px">Geen inkopen gevonden.</div>';
 
 }
 
@@ -2769,8 +3002,8 @@ async function deletePurchase(id){
   catch(e){
 
     alert(
-      "Kon de cloud-aankoop niet verwijderen: "
-      + (e.message || e)
+      "Kon de cloud-aankoop niet verwijderen:\n"+
+      (e.message || e)
     );
 
     return;
@@ -2803,7 +3036,7 @@ async function clearHistory(){
 
   if(
     !confirm(
-      "ALLE opgeslagen inkopen verwijderen?\n\nDit verwijdert de cloudhistorie van het bedrijf."
+      "ALLE opgeslagen inkopen verwijderen?"
     )
   )
     return;
@@ -2844,7 +3077,7 @@ async function clearHistory(){
 
 
 /* =========================================================
-   NEW PURCHASE
+   NIEUWE INKOOP
 ========================================================= */
 
 function newPurchase(){
@@ -2874,21 +3107,21 @@ function newPurchase(){
     "resalePrice"
   ]
   .forEach(
-    id => {
-      $(id).value = "";
-    }
+    id =>
+      $(id).value = ""
   );
 
 
-  $("idChecked").value =
-    "ja";
+  $("idChecked")
+    .value = "ja";
 
 
-  $("idType").value =
-    "";
+  $("idType")
+    .value = "";
 
 
-  $("paymentMethod").value =
+  $("paymentMethod")
+    .value =
     "overschrijving";
 
 
@@ -2901,40 +3134,9 @@ function newPurchase(){
 
 
 /* =========================================================
-   RECEIPT
+   BON
    GEEN METAALWAARDE OP KLANTENBON
 ========================================================= */
-
-function storedRate(
-  metal,
-  fineness
-){
-
-  let st =
-    JSON.parse(
-      localStorage.getItem(
-        "goudmarsjan_settings"
-      ) || "{}"
-    );
-
-
-  let key =
-    (
-      metal === "zilver"
-        ? "srate"
-        : "rate"
-    )
-    + fineness;
-
-
-  return (
-    Number(st[key])
-    ||
-    defaults[key]
-  );
-
-}
-
 
 function receipt(p){
 
@@ -2946,21 +3148,17 @@ function receipt(p){
     [
       c.street &&
       c.houseNumber
-        ? c.street
-          + " "
-          + c.houseNumber
+        ? c.street+" "+c.houseNumber
         : c.street,
 
       c.postalCode &&
       c.city
-        ? c.postalCode
-          + " "
-          + c.city
+        ? c.postalCode+" "+c.city
         : c.city
 
     ]
-      .filter(Boolean)
-      .join(", ");
+    .filter(Boolean)
+    .join(", ");
 
 
   let rows =
@@ -2969,7 +3167,8 @@ function receipt(p){
         it => {
 
           let metal =
-            it.metal || "goud";
+            it.metal ||
+            "goud";
 
 
           let f =
@@ -3005,26 +3204,21 @@ function receipt(p){
 
           else{
 
-            let pure =
+            let market =
               net *
               (
-                purity[metal]?.[f]
-                || 0
+                purity[metal]?.[f] ||
+                0
+              ) *
+              (
+                metal === "zilver"
+                  ? (
+                      p.silverPrice || 0
+                    )
+                  : (
+                      p.goldPrice || 0
+                    )
               );
-
-
-            let price =
-              metal === "zilver"
-                ? (
-                    p.silverPrice || 0
-                  )
-                : (
-                    p.goldPrice || 0
-                  );
-
-
-            let market =
-              pure * price;
 
 
             offer =
@@ -3032,45 +3226,52 @@ function receipt(p){
               storedRate(
                 metal,
                 f
-              )
-              / 100;
+              ) /
+              100;
 
           }
 
 
           let label =
             metal === "goud"
-              ? f + "K"
+              ? f+"K"
               : metal === "zilver"
-                ? "Zilver " + f + "‰"
+                ? "Zilver "+f+"‰"
                 : "Verzilverd";
 
 
           /*
              BELANGRIJK:
-             hier staat bewust GEEN
-             metaalwaarde.
+
+             Hier wordt GEEN marketValue
+             naar de klant gestuurd.
+
+             Alleen:
+             Type
+             Metaal/zuiverheid
+             Netto gram
+             Inkoop
           */
 
           return `
 
 <tr>
 
-  <td>
-    ${esc(it.type)}
-  </td>
+<td>
+${esc(it.type)}
+</td>
 
-  <td>
-    ${label}
-  </td>
+<td>
+${label}
+</td>
 
-  <td>
-    ${net.toFixed(2)} g
-  </td>
+<td>
+${net.toFixed(2)} g
+</td>
 
-  <td>
-    ${euro(offer)}
-  </td>
+<td>
+${euro(offer)}
+</td>
 
 </tr>
 
@@ -3092,8 +3293,9 @@ function receipt(p){
 <meta charset="UTF-8">
 
 <title>
-  ${esc(p.id)}
+${esc(p.id)}
 </title>
+
 
 <style>
 
@@ -3101,88 +3303,116 @@ body{
   font-family:Arial;
   max-width:850px;
   margin:auto;
-  padding:30px
+  padding:30px;
 }
 
 h1{
-  letter-spacing:2px
+  letter-spacing:2px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:25px
+  margin-top:25px;
 }
 
 th,
 td{
   padding:9px;
   border-bottom:1px solid #ddd;
-  text-align:left
+  text-align:left;
 }
 
 .total{
   font-size:24px;
   font-weight:bold;
-  margin-top:25px
+  margin-top:25px;
 }
 
 .small{
   font-size:12px;
-  color:#666
+  color:#666;
 }
 
 </style>
 
 </head>
 
+
 <body>
 
+
 <h1>
-  DE GOUDMARSJAN
+DE GOUDMARSJAN
 </h1>
 
+
 <h3>
-  EDELMETALEN — AANKOOPBON
+EDELMETALEN — AANKOOPBON
 </h3>
+
 
 <p>
 
-<b>Referentie:</b>
+<b>
+Referentie:
+</b>
+
 ${esc(p.id)}
 
 <br>
 
-<b>Datum:</b>
-${new Date(p.date).toLocaleString("nl-BE")}
+<b>
+Datum:
+</b>
+
+${new Date(
+  p.date
+)
+.toLocaleString("nl-BE")}
 
 </p>
 
 
 <p>
 
-<b>Klant:</b>
+<b>
+Klant:
+</b>
+
 ${esc(c.firstName || "")}
 ${esc(c.lastName || "")}
 
 <br>
 
-<b>Geboortedatum:</b>
+<b>
+Geboortedatum:
+</b>
+
 ${esc(c.birthDate || "")}
 
 <br>
 
-<b>Telefoon:</b>
+<b>
+Telefoon:
+</b>
+
 ${esc(c.phone || "")}
 
 <br>
 
-<b>Adres:</b>
+<b>
+Adres:
+</b>
+
 ${esc(addr)}
 
 <br>
 
-<b>IBAN:</b>
+<b>
+IBAN:
+</b>
+
 ${esc(c.iban || "")}
 
 </p>
@@ -3193,19 +3423,19 @@ ${esc(c.iban || "")}
 <tr>
 
 <th>
-  Type
+Type
 </th>
 
 <th>
-  Metaal/zuiverheid
+Metaal/zuiverheid
 </th>
 
 <th>
-  Netto gram
+Netto gram
 </th>
 
 <th>
-  Inkoop
+Inkoop
 </th>
 
 </tr>
@@ -3226,32 +3456,38 @@ ${euro(p.total)}
 <p>
 
 Betalingswijze:
-${esc(p.paymentMethod || "")}
+${esc(
+  p.paymentMethod || ""
+)}
 
 </p>
 
 
 ${
-  p.reference
-    ? `
-      <p>
-        Interne referentie:
-        ${esc(p.reference)}
-      </p>
-    `
-    : ""
+p.reference
+  ? `
+<p>
+Interne referentie:
+${esc(p.reference)}
+</p>
+`
+  : ""
 }
 
 
 ${
-  p.note
-    ? `
-      <p>
-        <b>Opmerking:</b>
-        ${esc(p.note)}
-      </p>
-    `
-    : ""
+p.note
+  ? `
+<p>
+<b>
+Opmerking:
+</b>
+
+${esc(p.note)}
+
+</p>
+`
+  : ""
 }
 
 
@@ -3298,11 +3534,12 @@ function openPrint(p){
     receipt(p)
   );
 
+
   w.document.close();
 
 
   setTimeout(
-    ()=>w.print(),
+    () => w.print(),
     300
   );
 
@@ -3311,15 +3548,10 @@ function openPrint(p){
 
 function printReceipt(){
 
-  if(
-    valid()
-  ){
-
+  if(valid())
     openPrint(
       data()
     );
-
-  }
 
 }
 
@@ -3349,9 +3581,7 @@ function download(
 ){
 
   let a =
-    document.createElement(
-      "a"
-    );
+    document.createElement("a");
 
 
   a.href =
@@ -3371,11 +3601,10 @@ function download(
 
 
   setTimeout(
-    ()=>{
+    () =>
       URL.revokeObjectURL(
         a.href
-      );
-    },
+      ),
     1000
   );
 
@@ -3386,11 +3615,11 @@ function exportBackup(){
 
   download(
 
-    "goudmarsjan-backup-"
-    + new Date()
-        .toISOString()
-        .slice(0,10)
-    + ".json",
+    "goudmarsjan-backup-"+
+    new Date()
+      .toISOString()
+      .slice(0,10)+
+    ".json",
 
     JSON.stringify(
       {
@@ -3431,7 +3660,7 @@ function importBackup(e){
 
 
   r.onload =
-    ()=>{
+    () => {
 
       try{
 
@@ -3489,7 +3718,8 @@ function importBackup(e){
 
 
         alert(
-          "Back-up teruggezet.\n\nLet op: deze import zet de cloud niet automatisch terug."
+          "Back-up teruggezet.\n\n"+
+          "Let op: deze import zet de cloud niet automatisch terug."
         );
 
       }
@@ -3507,6 +3737,7 @@ function importBackup(e){
 
   r.readAsText(f);
 
+
   e.target.value = "";
 
 }
@@ -3514,6 +3745,7 @@ function importBackup(e){
 
 /* =========================================================
    CSV
+   INTERNE CSV MAG METAALWAARDE WEL BEVATTEN
 ========================================================= */
 
 function exportCSV(){
@@ -3551,21 +3783,17 @@ function exportCSV(){
           [
             c.street &&
             c.houseNumber
-              ? c.street
-                + " "
-                + c.houseNumber
+              ? c.street+" "+c.houseNumber
               : c.street,
 
             c.postalCode &&
             c.city
-              ? c.postalCode
-                + " "
-                + c.city
+              ? c.postalCode+" "+c.city
               : c.city
 
           ]
-            .filter(Boolean)
-            .join(", ");
+          .filter(Boolean)
+          .join(", ");
 
 
         return [
@@ -3591,12 +3819,6 @@ function exportCSV(){
           a,
 
           p.paymentMethod,
-
-          /*
-             INTERNE EXPORT:
-             metaalwaarde blijft hier
-             wel beschikbaar.
-          */
 
           p.marketValue,
 
@@ -3624,7 +3846,14 @@ function exportCSV(){
                       : ""
                   );
 
-                return `${m} ${f} ${it.weight||0}g`;
+                return (
+                  m+
+                  " "+
+                  f+
+                  " "+
+                  (it.weight || 0)+
+                  "g"
+                );
 
               }
             )
@@ -3640,21 +3869,19 @@ function exportCSV(){
 
     "goudmarsjan-historie.csv",
 
-    "\ufeff"
-    +
-    [
-      h,
-      ...rows
-    ]
+    "\ufeff"+
+    [h,...rows]
       .map(
         r =>
-          r
-            .map(
-              v =>
-                `"${String(v??"")
-                  .replace(/"/g,'""')}"`
-            )
-            .join(";")
+          r.map(
+            v =>
+              `"${String(v ?? "")
+                .replace(
+                  /"/g,
+                  '""'
+                )}"`
+          )
+          .join(";")
       )
       .join("\n"),
 
@@ -3666,7 +3893,7 @@ function exportCSV(){
 
 
 /* =========================================================
-   SUPABASE AUTH
+   AUTH
 ========================================================= */
 
 async function login(){
@@ -3730,6 +3957,105 @@ async function logout(){
 }
 
 
+/* =========================================================
+   ROLE PERMISSIONS
+========================================================= */
+
+function applyRolePermissions(){
+
+  let owner =
+    currentMember?.role === "owner";
+
+
+  /* Eigenaar ziet beheer */
+
+  $("ownerPanel")
+    .style.display =
+      owner
+        ? "block"
+        : "none";
+
+
+  /* Werknemer ziet geen
+     inkooppercentages */
+
+  $("settingsDetails")
+    .style.display =
+      owner
+        ? "block"
+        : "none";
+
+
+  $("employeeSettingsNotice")
+    .style.display =
+      owner
+        ? "none"
+        : "block";
+
+
+  /*
+    Marktprijzen zijn voor
+    werknemers alleen-lezen.
+
+    De werknemer kan ze wel
+    gebruiken voor berekeningen.
+  */
+
+  [
+    "goldPrice",
+    "silverPrice",
+    "resalePrice"
+  ]
+  .forEach(
+    id => {
+
+      if($(id)){
+
+        $(id).disabled =
+          !owner;
+
+      }
+
+    }
+  );
+
+
+  /*
+    Inkooppercentages:
+    alleen eigenaar.
+  */
+
+  [
+    "rate9",
+    "rate14",
+    "rate18",
+    "rate22",
+    "rate24",
+    "srate800",
+    "srate835",
+    "srate925",
+    "srate999"
+  ]
+  .forEach(
+    id => {
+
+      if($(id)){
+
+        $(id).disabled =
+          !owner;
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   AUTH INIT
+========================================================= */
+
 async function initAuth(){
 
   const {
@@ -3753,7 +4079,7 @@ async function initAuth(){
     async(
       _event,
       session
-    )=>{
+    ) => {
 
       if(session){
 
@@ -3776,10 +4102,12 @@ async function initAuth(){
 
 
 /* =========================================================
-   LOGIN + ROL
+   LOGGED IN
 ========================================================= */
 
-async function onLoggedIn(user){
+async function onLoggedIn(
+  user
+){
 
   currentUser =
     user;
@@ -3820,6 +4148,7 @@ async function onLoggedIn(user){
 
     await sb.auth.signOut();
 
+
     return;
 
   }
@@ -3851,42 +4180,7 @@ async function onLoggedIn(user){
       : "Werknemer";
 
 
-  let isOwner =
-    member.role === "owner";
-
-
-  $("ownerPanel")
-    .style.display =
-    isOwner
-      ? "block"
-      : "none";
-
-
-  $("settingsDetails")
-    .style.display =
-    isOwner
-      ? "block"
-      : "none";
-
-
-  /*
-    Werknemers mogen de marktprijs zien,
-    maar niet wijzigen.
-  */
-
-  $("goldPrice")
-    .readOnly =
-    !isOwner;
-
-
-  $("silverPrice")
-    .readOnly =
-    !isOwner;
-
-
-  $("resalePrice")
-    .readOnly =
-    !isOwner;
+  applyRolePermissions();
 
 
   loadSettings();
@@ -3895,7 +4189,9 @@ async function onLoggedIn(user){
   await loadCloudData();
 
 
-  if(isOwner){
+  if(
+    member.role === "owner"
+  ){
 
     await loadMembers();
 
@@ -3918,13 +4214,20 @@ async function onLoggedIn(user){
 }
 
 
+/* =========================================================
+   LOGGED OUT
+========================================================= */
+
 function onLoggedOut(){
 
-  currentUser = null;
+  currentUser =
+    null;
 
-  currentMember = null;
+  currentMember =
+    null;
 
-  currentBusinessId = null;
+  currentBusinessId =
+    null;
 
 
   $("authLock")
@@ -3933,11 +4236,6 @@ function onLoggedOut(){
 
 
   $("ownerPanel")
-    .style.display =
-    "none";
-
-
-  $("settingsDetails")
     .style.display =
     "none";
 
@@ -3955,7 +4253,7 @@ function onLoggedOut(){
 
 
 /* =========================================================
-   WERKNEMERS
+   MEMBERS
 ========================================================= */
 
 async function loadMembers(){
@@ -3994,9 +4292,7 @@ async function loadMembers(){
       .innerHTML =
       `
       <div class="warning">
-        Werknemers konden niet geladen worden.
-        <br><br>
-        ${esc(error.message)}
+      Werknemers konden niet geladen worden.
       </div>
       `;
 
@@ -4020,24 +4316,24 @@ async function loadMembers(){
 
 <div class="member-row">
 
-  <div class="member-info">
+<div class="member-info">
 
-    <b>
-      ${esc(
-        m.display_name ||
-        "Hoofd"
-      )}
-    </b>
+<b>
+${esc(
+  m.display_name ||
+  m.user_id
+)}
+</b>
 
-    <small>
-      HOOFD / EIGENAAR · Actief
-    </small>
+<small>
+Hoofd / eigenaar · Actief
+</small>
 
-  </div>
+</div>
 
-  <span class="badge">
-    HOOFD
-  </span>
+<span class="badge">
+HOOFD
+</span>
 
 </div>
 
@@ -4050,71 +4346,62 @@ async function loadMembers(){
 
 <div class="member-row">
 
-  <div class="member-info">
+<div class="member-info">
 
-    <b>
-      ${esc(
-        m.display_name ||
-        m.user_id
-      )}
-    </b>
+<b>
+${esc(
+  m.display_name ||
+  m.user_id
+)}
+</b>
 
-    <small>
+<small>
+Werknemer ·
+${m.active
+  ? "Actief"
+  : "Gedeactiveerd"}
+</small>
 
-      Werknemer ·
-      ${
-        m.active
-          ? "Actief"
-          : "Gedeactiveerd"
-      }
-
-    </small>
-
-  </div>
+</div>
 
 
-  <div
-    class="row"
-    style="max-width:360px"
-  >
+<div class="row">
 
-    <button
-      class="${
-        m.active
-          ? "danger"
-          : "green"
-      }"
-      onclick="
-        toggleEmployee(
-          '${m.user_id}',
-          ${m.active}
-        )
-      "
-    >
+<button
+class="${m.active
+  ? "danger"
+  : "green"}"
+onclick="
+toggleEmployee(
+'${m.user_id}',
+${m.active}
+)
+"
+>
 
-      ${
-        m.active
-          ? "DEACTIVEREN"
-          : "ACTIVEREN"
-      }
+${
+  m.active
+    ? "DEACTIVEREN"
+    : "ACTIVEREN"
+}
 
-    </button>
+</button>
 
 
-    <button
-      class="danger"
-      onclick="
-        removeEmployee(
-          '${m.user_id}'
-        )
-      "
-    >
+<button
+class="danger"
+onclick="
+deleteEmployee(
+'${m.user_id}'
+)
+"
+>
 
-      🗑️ VERWIJDEREN
+VERWIJDEREN
 
-    </button>
+</button>
 
-  </div>
+</div>
 
 </div>
 
@@ -4128,7 +4415,7 @@ async function loadMembers(){
 
       `
       <div class="note">
-        Nog geen werknemers.
+      Nog geen werknemers.
       </div>
       `;
 
@@ -4184,15 +4471,15 @@ async function addEmployee(){
   if(res.error){
 
     /*
-      Voor compatibiliteit met
-      de eerdere functieversie.
+      Sommige functies gebruiken
+      andere parameterbenamingen.
     */
 
     res =
       await sb.rpc(
         "add_employee_by_email",
         {
-          email,
+          email:email,
           display_name:
             name || email
         }
@@ -4204,10 +4491,10 @@ async function addEmployee(){
   if(res.error){
 
     alert(
-      "Werknemer toevoegen mislukt.\n\n"
-      + res.error.message
-      + "\n\n"
-      + "De werknemer moet eerst een Supabase-account hebben."
+      "Werknemer toevoegen mislukt.\n\n"+
+      res.error.message+
+      "\n\n"+
+      "Controleer of de werknemer al een Supabase-account heeft."
     );
 
     return;
@@ -4264,7 +4551,8 @@ async function toggleEmployee(
     await sb
       .from("business_members")
       .update({
-        active:!active
+        active:
+          !active
       })
       .eq(
         "business_id",
@@ -4279,8 +4567,8 @@ async function toggleEmployee(
   if(error){
 
     alert(
-      "Wijzigen mislukt:\n\n"
-      + error.message
+      "Wijzigen mislukt:\n"+
+      error.message
     );
 
     return;
@@ -4294,10 +4582,10 @@ async function toggleEmployee(
 
 
 /* =========================================================
-   VERWIJDER WERKNEMER
+   VERWIJDEREN WERKNEMER
 ========================================================= */
 
-async function removeEmployee(
+async function deleteEmployee(
   userId
 ){
 
@@ -4309,8 +4597,8 @@ async function removeEmployee(
 
   if(
     !confirm(
-      "Deze werknemer volledig uit dit bedrijf verwijderen?\n\n"
-      + "Het Supabase-account zelf wordt NIET verwijderd."
+      "Deze werknemer volledig uit DE GOUDMARSJAN verwijderen?\n\n"+
+      "Dit verwijdert de bedrijfs-toegang. Het Supabase-account zelf wordt niet verwijderd."
     )
   )
     return;
@@ -4339,10 +4627,8 @@ async function removeEmployee(
   if(error){
 
     alert(
-      "Verwijderen mislukt.\n\n"
-      + error.message
-      + "\n\n"
-      + "Als je RLS dit blokkeert, gebruik dan DEACTIVEREN."
+      "Werknemer verwijderen mislukt:\n"+
+      error.message
     );
 
     return;
@@ -4356,14 +4642,12 @@ async function removeEmployee(
 
 
 /* =========================================================
-   CLOUD DATA LADEN
+   CLOUD DATA
 ========================================================= */
 
 async function loadCloudData(){
 
-  if(
-    !currentBusinessId
-  )
+  if(!currentBusinessId)
     return;
 
 
@@ -4371,23 +4655,13 @@ async function loadCloudData(){
 
     let [
 
-      {
-        data:ps,
-        error:pe
-      },
+      purchasesResult,
 
-      {
-        data:cs,
-        error:ce
-      },
+      customersResult,
 
-      {
-        data:is,
-        error:ie
-      }
+      itemsResult
 
     ] =
-
       await Promise.all([
 
         sb
@@ -4427,174 +4701,186 @@ async function loadCloudData(){
 
 
     if(
-      pe ||
-      ce ||
-      ie
+      purchasesResult.error ||
+      customersResult.error ||
+      itemsResult.error
     ){
 
       throw(
-        pe ||
-        ce ||
-        ie
+        purchasesResult.error ||
+        customersResult.error ||
+        itemsResult.error
       );
 
     }
 
 
-    let cm =
+    let customerMap =
       new Map(
-        (cs || [])
-          .map(
-            c =>
-              [
-                c.id,
-                c
-              ]
-          )
+        (
+          customersResult.data ||
+          []
+        )
+        .map(
+          c => [
+            c.id,
+            c
+          ]
+        )
       );
 
 
-    let im =
+    let itemMap =
       new Map();
 
 
-    (is || [])
-      .forEach(
-        x => {
+    (
+      itemsResult.data ||
+      []
+    )
+    .forEach(
+      x => {
 
-          if(
-            !im.has(
-              x.purchase_id
-            )
-          ){
+        if(
+          !itemMap.has(
+            x.purchase_id
+          )
+        ){
 
-            im.set(
-              x.purchase_id,
-              []
-            );
-
-          }
-
-
-          im
-            .get(
-              x.purchase_id
-            )
-            .push({
-
-              metal:
-                x.metal ||
-                "goud",
-
-              type:
-                x.item_type ||
-                "Juweel",
-
-              description:
-                x.description ||
-                "",
-
-              fineness:
-                Number(
-                  x.fineness
-                ) || 18,
-
-              karat:
-                Number(
-                  x.fineness
-                ) || 18,
-
-              weight:
-                Number(
-                  x.weight
-                ) || 0,
-
-              nonGold:
-                Number(
-                  x.non_gold
-                ) || 0,
-
-              manualOffer:
-                Number(
-                  x.purchase_price
-                ) || 0
-
-            });
+          itemMap.set(
+            x.purchase_id,
+            []
+          );
 
         }
-      );
+
+
+        itemMap
+          .get(
+            x.purchase_id
+          )
+          .push({
+
+            metal:
+              x.metal ||
+              "goud",
+
+            type:
+              x.item_type ||
+              "Juweel",
+
+            description:
+              x.description ||
+              "",
+
+            fineness:
+              Number(
+                x.fineness
+              ) ||
+              18,
+
+            karat:
+              Number(
+                x.fineness
+              ) ||
+              18,
+
+            weight:
+              Number(
+                x.weight
+              ) ||
+              0,
+
+            nonGold:
+              Number(
+                x.non_gold
+              ) ||
+              0,
+
+            manualOffer:
+              Number(
+                x.purchase_price
+              ) ||
+              0
+
+          });
+
+      }
+    );
 
 
     purchases =
-      (ps || [])
-        .map(
-          x => ({
+      (
+        purchasesResult.data ||
+        []
+      )
+      .map(
+        x => ({
 
-            id:
-              x.reference ||
-              x.id,
+          id:
+            x.reference ||
+            x.id,
 
-            date:
-              x.created_at ||
-              new Date()
-                .toISOString(),
+          date:
+            x.created_at ||
+            new Date()
+              .toISOString(),
 
-            customer:
-              mapCustomer(
-                cm.get(
-                  x.customer_id
-                ) || {}
-              ),
+          customer:
+            mapCustomer(
+              customerMap.get(
+                x.customer_id
+              ) || {}
+            ),
 
-            paymentMethod:
-              x.payment_method ||
-              "overschrijving",
+          paymentMethod:
+            x.payment_method ||
+            "overschrijving",
 
-            items:
-              im.get(
-                x.id
-              ) || [],
-
-            goldPrice:
-              Number(
-                x.gold_price
-              ) || 0,
-
-            silverPrice:
-              Number(
-                x.silver_price
-              ) || 0,
-
-            marketValue:
-              Number(
-                x.market_value
-              ) || 0,
-
-            total:
-              Number(
-                x.total
-              ) || 0,
-
-            resalePrice:
-              Number(
-                x.resale_price
-              ) || 0,
-
-            profit:
-              Number(
-                x.profit
-              ) || 0,
-
-            note:
-              x.note ||
-              "",
-
-            reference:
-              x.reference ||
+          items:
+            itemMap.get(
               x.id
+            ) || [],
 
-          })
-        );
+          goldPrice:
+            Number(
+              x.gold_price
+            ) || 0,
+
+          silverPrice:
+            Number(
+              x.silver_price
+            ) || 0,
+
+          marketValue:
+            Number(
+              x.market_value
+            ) || 0,
+
+          total:
+            Number(
+              x.total
+            ) || 0,
+
+          resalePrice:
+            Number(
+              x.resale_price
+            ) || 0,
+
+          profit:
+            Number(
+              x.profit
+            ) || 0,
+
+          note:
+            x.note || "",
+
+          reference:
+            x.reference ||
+            x.id
+
+        })
+      );
 
 
     localStorage.setItem(
@@ -4610,9 +4896,10 @@ async function loadCloudData(){
 
     console.error(e);
 
+
     alert(
-      "Supabase-historie kon niet geladen worden.\n\n"
-      + (e.message || e)
+      "Supabase-historie kon niet geladen worden.\n\n"+
+      (e.message || e)
     );
 
   }
@@ -4620,28 +4907,29 @@ async function loadCloudData(){
 }
 
 
-/* =========================================================
-   CUSTOMER MAPPING
-========================================================= */
-
 function mapCustomer(c){
 
   return {
 
     firstName:
-      c.first_name || "",
+      c.first_name ||
+      "",
 
     lastName:
-      c.last_name || "",
+      c.last_name ||
+      "",
 
     birthDate:
-      c.birth_date || "",
+      c.birth_date ||
+      "",
 
     phone:
-      c.phone || "",
+      c.phone ||
+      "",
 
     iban:
-      c.iban || "",
+      c.iban ||
+      "",
 
     idChecked:
       c.id_checked === true ||
@@ -4650,25 +4938,32 @@ function mapCustomer(c){
         : "nee",
 
     idType:
-      c.id_type || "",
+      c.id_type ||
+      "",
 
     idNumber:
-      c.id_number || "",
+      c.id_number ||
+      "",
 
     street:
-      c.street || "",
+      c.street ||
+      "",
 
     houseNumber:
-      c.house_number || "",
+      c.house_number ||
+      "",
 
     postalCode:
-      c.postal_code || "",
+      c.postal_code ||
+      "",
 
     city:
-      c.city || "",
+      c.city ||
+      "",
 
     note:
-      c.note || ""
+      c.note ||
+      ""
 
   };
 
@@ -4676,7 +4971,7 @@ function mapCustomer(c){
 
 
 /* =========================================================
-   SAVE PURCHASE CLOUD
+   CLOUD SAVE PURCHASE
 ========================================================= */
 
 async function savePurchaseCloud(p){
@@ -4901,7 +5196,7 @@ async function savePurchaseCloud(p){
 
 
 /* =========================================================
-   DELETE PURCHASE CLOUD
+   CLOUD DELETE PURCHASE
 ========================================================= */
 
 async function deletePurchaseCloud(
@@ -4991,8 +5286,11 @@ async function deletePurchaseCloud(
 
 async function saveCloudSettings(){
 
+  if(!currentBusinessId)
+    return;
+
+
   if(
-    !currentBusinessId ||
     currentMember?.role !== "owner"
   )
     return;
@@ -5004,7 +5302,8 @@ async function saveCloudSettings(){
   Object.keys(defaults)
     .forEach(
       k =>
-        st[k] = num(k)
+        st[k] =
+          num(k)
     );
 
 
@@ -5016,6 +5315,7 @@ async function saveCloudSettings(){
       .upsert(
 
         {
+
           business_id:
             currentBusinessId,
 
@@ -5035,9 +5335,6 @@ async function saveCloudSettings(){
             "business_id"
         }
 
-      )
-      .select(
-        "business_id"
       );
 
 
@@ -5070,11 +5367,11 @@ initAuth();
 </script>
 
 
-<script>
+<!-- =========================================================
+     SERVICE WORKER
+========================================================= -->
 
-/*
-  PWA SERVICE WORKER
-*/
+<script>
 
 if(
   "serviceWorker" in navigator
@@ -5084,13 +5381,10 @@ if(
     "load",
     () => {
 
-      navigator
-        .serviceWorker
-        .register(
-          "./sw.js"
-        )
+      navigator.serviceWorker
+        .register("./sw.js")
         .catch(
-          ()=>{}
+          () => {}
         );
 
     }
