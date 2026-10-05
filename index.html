@@ -1652,11 +1652,27 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_mj_YFZgUnC3DR9lzDgWlYA_CUUozF43";
 
-const sb =
-  window.supabase.createClient(
+let sb = null;
+
+try{
+  if(!window.supabase || typeof window.supabase.createClient !== "function"){
+    throw new Error("Supabase JavaScript library kon niet geladen worden.");
+  }
+
+  sb = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_KEY,
+    {
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:false
+      }
+    }
   );
+}catch(err){
+  console.error("Supabase initialisatie mislukt:", err);
+}
 
 
 /* =========================================================
@@ -4039,20 +4055,61 @@ async function login(){
     return;
   }
 
-  const button = document.querySelector('#authLock button[onclick="login()"]');
-  if(button) button.disabled = true;
-
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
-  if(button) button.disabled = false;
-
-  if(error){
-    errorBox.textContent = error.message;
+  if(!sb){
+    errorBox.textContent = "De verbinding met Supabase kon niet worden gestart. Vernieuw de pagina.";
     return;
   }
 
-  if(data?.user){
+  const button = document.querySelector('#authLock button[onclick="login()"]');
+
+  if(button){
+    button.disabled = true;
+    button.textContent = "INLOGGEN...";
+  }
+
+  try{
+
+    const { data, error } =
+      await sb.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if(error){
+      console.error("Supabase login error:", error);
+
+      let message = error.message || "Inloggen mislukt.";
+
+      if(error.message?.toLowerCase().includes("invalid login credentials")){
+        message = "E-mailadres of wachtwoord is niet correct.";
+      }
+
+      errorBox.textContent = message;
+      return;
+    }
+
+    if(!data?.user){
+      errorBox.textContent = "Supabase heeft geen gebruiker teruggegeven.";
+      return;
+    }
+
     await onLoggedIn(data.user, true);
+
+  }catch(err){
+
+    console.error("Login exception:", err);
+
+    errorBox.textContent =
+      err?.message ||
+      "Er ging iets mis tijdens het inloggen. Controleer je internetverbinding en Supabase-configuratie.";
+
+  }finally{
+
+    if(button){
+      button.disabled = false;
+      button.textContent = "INLOGGEN";
+    }
+
   }
 }
 
@@ -4252,23 +4309,66 @@ async function verifyCurrentAccess(showError=true){
 
 async function initAuth(){
 
-  const { data:{ session } } = await sb.auth.getSession();
-
-  if(session){
-    await onLoggedIn(session.user);
-  } else {
+  if(!sb){
     onLoggedOut();
+    $("authError").textContent =
+      "Supabase kon niet worden geladen. Vernieuw de pagina.";
+    return;
+  }
+
+  try{
+
+    const {
+      data,
+      error
+    } = await sb.auth.getSession();
+
+    if(error){
+      console.error("Supabase session error:", error);
+      onLoggedOut();
+      $("authError").textContent =
+        "De bestaande login-sessie kon niet worden gecontroleerd.";
+    }else if(data?.session?.user){
+      await onLoggedIn(data.session.user);
+    }else{
+      onLoggedOut();
+    }
+
+  }catch(err){
+
+    console.error("Auth initialisatie mislukt:", err);
+    onLoggedOut();
+
+    if($("authError")){
+      $("authError").textContent =
+        err?.message ||
+        "De login kon niet worden geïnitialiseerd.";
+    }
+
   }
 
   sb.auth.onAuthStateChange((event, session) => {
+
     if(event === "SIGNED_OUT" || !session){
       onLoggedOut();
       return;
     }
 
-    // Laat de event-loop eerst afronden en controleer daarna de membership.
-    setTimeout(() => onLoggedIn(session.user), 0);
+    if(
+      event === "SIGNED_IN" ||
+      event === "INITIAL_SESSION" ||
+      event === "TOKEN_REFRESHED" ||
+      event === "USER_UPDATED"
+    ){
+
+      setTimeout(() => {
+        onLoggedIn(session.user);
+      }, 0);
+
+    }
+
   });
+
 }
 
 async function onLoggedIn(user, fromLogin=false){
@@ -4310,11 +4410,20 @@ async function verifyUserAccess(user, fromLogin=false){
   const { member, error } = await getActiveMembership(user);
 
   if(error || !member || member.active !== true){
+
+    console.error("DE GOUDMARSJAN toegang geweigerd:", error || "Geen actieve membership.");
+
     await sb.auth.signOut();
     onLoggedOut();
+
     $("authError").textContent = error
-      ? "Inloggen lukt, maar je toegangsrechten kunnen niet worden gecontroleerd. Controleer de RLS-policy op business_members."
+      ? (
+          "Inloggen lukt, maar de toegang tot je DE GOUDMARSJAN-account kan niet worden gecontroleerd. " +
+          "Controleer de Supabase RLS-policy op business_members. " +
+          (error.message ? "Fout: " + error.message : "")
+        )
       : "Dit account heeft momenteel geen actieve toegang tot DE GOUDMARSJAN.";
+
     return false;
   }
 
@@ -5484,7 +5593,12 @@ calculate();
 
 moveOriginalCards();
 showPage('dashboard');
-initAuth();
+initAuth().catch(err=>{
+  console.error("initAuth() mislukt:", err);
+  onLoggedOut();
+  if($("authError")) $("authError").textContent =
+    err?.message || "Login kon niet worden gestart.";
+});
 
 setInterval(async()=>{
   if(!currentUser) return;
