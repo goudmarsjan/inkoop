@@ -2,1657 +2,1408 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#111111">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Goudmarsjan">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>De Goudmarsjan - Inkoop</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-
-<title>DE GOUDMARSJAN — Edelmetalen</title>
-
 <style>
-*{box-sizing:border-box}
-
-:root{
-  --gold:#c7a84b;
-  --gold2:#e0bd55;
-  --black:#111;
-  --bg:#f5f1e8;
-  --white:#fff;
-  --text:#171717;
-  --muted:#777;
-  --border:#e1ddd3;
-  --red:#a9001b;
-  --green:#187a43;
-  --shadow:0 4px 20px rgba(0,0,0,.07)
-}
-
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:var(--bg);
-  color:var(--text)
-}
-
-button,input,select,textarea{
-  font:inherit
-}
-
-button{
-  cursor:pointer
-}
-
-.hidden{
-  display:none!important
-}
-
-/* LOGIN */
-
-#authLock{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  background:#111;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px
-}
-
-#authLock.hidden{
-  display:none
-}
-
-.auth-box{
-  width:100%;
-  max-width:420px;
-  background:#fff;
-  border-radius:18px;
-  padding:35px;
-  text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,.4)
-}
-
-.auth-logo{
-  width:105px;
-  height:105px;
-  margin:0 auto 20px;
-  border-radius:50%;
-  overflow:hidden;
-  border:4px solid var(--gold)
-}
-
-.auth-logo img{
-  width:100%;
-  height:100%;
-  object-fit:cover
-}
-
-.auth-box h2{
-  margin:0;
-  letter-spacing:2px
-}
-
-.auth-box p{
-  color:var(--muted);
-  font-size:13px
-}
-
-.auth-box input{
-  width:100%;
-  padding:13px;
-  margin:7px 0;
-  border:1px solid #ccc;
-  border-radius:9px
-}
-
-.auth-error{
-  color:var(--red);
-  font-size:13px;
-  min-height:20px;
-  margin:10px 0
-}
-
-/* LAYOUT */
-
-.sidebar{
-  position:fixed;
-  left:0;
-  top:0;
-  bottom:0;
-  width:245px;
-  background:#111;
-  color:#fff;
-  display:flex;
-  flex-direction:column;
-  padding:18px 14px;
-  z-index:100
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:4px 8px 22px;
-  border-bottom:1px solid #2b2b2b
-}
-
-.brand img{
-  width:52px;
-  height:52px;
-  object-fit:cover;
-  border-radius:50%;
-  border:2px solid var(--gold)
-}
-
-.brand strong{
-  display:block;
-  font-size:13px;
-  letter-spacing:1px
-}
-
-.brand span{
-  display:block;
-  font-size:9px;
-  color:var(--gold2);
-  letter-spacing:1.5px;
-  margin-top:3px
-}
-
-.nav-title{
-  color:#777;
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:1.5px;
-  padding:18px 10px 7px
-}
-
-.nav-btn{
-  width:100%;
-  text-align:left;
-  border:0;
-  background:transparent;
-  color:#ddd;
-  padding:12px;
-  border-radius:9px;
-  margin:2px 0;
-  font-weight:700
-}
-
-.nav-btn:hover{
-  background:#222;
-  color:#fff
+* {
+    box-sizing: border-box;
 }
 
-.nav-btn.active{
-  background:var(--gold);
-  color:#111
+:root {
+    --gold: #c9a227;
+    --gold-dark: #a78312;
+    --black: #101010;
+    --dark: #181818;
+    --dark2: #222;
+    --cream: #f5f1e8;
+    --white: #fff;
+    --text: #222;
+    --muted: #777;
+    --green: #16834b;
+    --red: #c93636;
+    --border: #e1ddd3;
 }
 
-.nav-spacer{
-  flex:1
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--cream);
+    color: var(--text);
 }
 
-.side-user{
-  border-top:1px solid #2c2c2c;
-  padding:14px 8px 4px;
-  color:#aaa;
-  font-size:12px
-}
+/* =========================
+   LOGIN
+========================= */
 
-.side-user b{
-  color:#fff;
-  font-size:13px
+#loginScreen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background:
+        radial-gradient(circle at top, #3a321c 0%, #111 45%, #080808 100%);
 }
 
-.side-logout{
-  margin-top:10px;
-  width:100%;
-  background:#242424;
-  border:1px solid #333;
-  color:#fff;
-  padding:11px;
-  border-radius:9px
+.login-box {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: 18px;
+    padding: 35px;
+    box-shadow: 0 25px 70px rgba(0,0,0,.45);
+    text-align: center;
 }
 
-.app-main{
-  margin-left:245px;
-  width:calc(100% - 245px);
-  min-height:100vh
+.login-logo {
+    width: 190px;
+    max-width: 80%;
+    margin-bottom: 20px;
 }
 
-.topbar{
-  background:#111;
-  color:#fff;
-  padding:12px 28px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  position:sticky;
-  top:0;
-  z-index:50;
-  border-bottom:1px solid #292929
+.login-box h1 {
+    margin: 0 0 5px;
+    font-size: 24px;
 }
 
-.topbar-logo{
-  display:flex;
-  align-items:center;
-  gap:12px
+.login-box p {
+    color: #777;
+    margin-bottom: 25px;
 }
 
-.topbar-logo img{
-  width:44px;
-  height:44px;
-  object-fit:cover;
-  border-radius:50%;
-  border:2px solid var(--gold)
+.input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #d8d8d8;
+    border-radius: 9px;
+    font-size: 15px;
+    margin-bottom: 12px;
+    outline: none;
 }
 
-.topbar h1{
-  font-size:18px;
-  margin:0;
-  letter-spacing:1.5px
+.input:focus {
+    border-color: var(--gold);
 }
 
-.topbar p{
-  margin:3px 0 0;
-  color:var(--gold2);
-  font-size:10px;
-  font-weight:700;
-  letter-spacing:1px
+.btn {
+    border: 0;
+    border-radius: 9px;
+    padding: 12px 18px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
 }
 
-.topbar-user{
-  text-align:right;
-  font-size:13px
+.btn-gold {
+    background: var(--gold);
+    color: white;
 }
 
-.topbar-user small{
-  color:#999
+.btn-gold:hover {
+    background: var(--gold-dark);
 }
 
-.page-wrap{
-  max-width:1350px;
-  margin:auto;
-  padding:25px
+.btn-dark {
+    background: #151515;
+    color: white;
 }
 
-.app-page{
-  display:none
+.btn-red {
+    background: #fce3e3;
+    color: var(--red);
 }
 
-.app-page.active{
-  display:block
+.btn-green {
+    background: #e2f4ea;
+    color: var(--green);
 }
 
-.page-title{
-  margin-bottom:20px
+.error {
+    color: var(--red);
+    background: #fff0f0;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 12px;
+    display: none;
 }
 
-.page-title h2{
-  font-size:28px;
-  margin:0 0 5px
-}
+/* =========================
+   APP
+========================= */
 
-.page-title p{
-  color:#777;
-  margin:0
+#app {
+    display: none;
+    min-height: 100vh;
 }
-
-/* DASHBOARD */
 
-.dashboard-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
-  margin-bottom:18px
+.topbar {
+    height: 70px;
+    background: #111;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 25px;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid var(--gold);
 }
 
-.dash-card{
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:20px;
-  box-shadow:var(--shadow)
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
-.dash-card.gold{
-  background:#111;
-  color:#fff;
-  border-color:#111
+.brand img {
+    height: 45px;
+    width: auto;
 }
 
-.dash-card small{
-  display:block;
-  color:#777;
-  margin-bottom:9px
+.brand span {
+    font-weight: bold;
+    font-size: 18px;
 }
 
-.dash-card.gold small{
-  color:#aaa
+.user-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-.dash-card strong{
-  font-size:25px
+.user-name {
+    font-size: 14px;
 }
 
-.quick-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
-  margin-bottom:18px
+.role-badge {
+    background: rgba(201,162,39,.18);
+    color: #e4c85b;
+    border: 1px solid rgba(201,162,39,.4);
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    text-transform: uppercase;
 }
 
-.quick-btn{
-  min-height:120px;
-  text-align:left;
-  background:#fff;
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:20px;
-  box-shadow:var(--shadow);
-  transition:.15s
+.logout {
+    background: #292929;
+    color: white;
+    border: 0;
+    padding: 8px 12px;
+    border-radius: 7px;
+    cursor: pointer;
 }
 
-.quick-btn:hover{
-  transform:translateY(-2px);
-  border-color:var(--gold)
-}
+/* =========================
+   LAYOUT
+========================= */
 
-.quick-btn span{
-  display:block;
-  font-size:30px;
-  margin-bottom:10px
+.layout {
+    display: flex;
+    min-height: calc(100vh - 70px);
 }
 
-.quick-btn b{
-  font-size:17px
+.sidebar {
+    width: 235px;
+    background: #171717;
+    color: white;
+    padding: 20px 12px;
+    flex-shrink: 0;
 }
 
-.quick-btn small{
-  color:#777
+.nav-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #777;
+    padding: 10px 13px;
+    letter-spacing: 1px;
 }
 
-.dashboard-section{
-  background:#fff;
-  border-radius:14px;
-  padding:20px;
-  box-shadow:var(--shadow);
-  margin-bottom:18px
+.nav-btn {
+    width: 100%;
+    background: transparent;
+    color: #ccc;
+    border: 0;
+    text-align: left;
+    padding: 13px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-/* CARDS */
-
-.card{
-  background:#fff;
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:16px;
-  box-shadow:var(--shadow);
-  border:1px solid var(--border)
+.nav-btn:hover,
+.nav-btn.active {
+    background: #2a2a2a;
+    color: white;
 }
 
-.card h2{
-  margin-top:0
+.nav-btn.active {
+    border-left: 3px solid var(--gold);
 }
 
-.card h3{
-  margin-top:0
+.content {
+    flex: 1;
+    padding: 28px;
+    max-width: 1500px;
+    margin: 0 auto;
+    width: 100%;
 }
 
-label{
-  display:block;
-  font-weight:700;
-  font-size:12px;
-  margin-bottom:5px
+.page {
+    display: none;
 }
 
-input,select,textarea{
-  width:100%;
-  border:1px solid #ccc;
-  background:#fff;
-  border-radius:8px;
-  padding:10px 11px;
-  outline:none
+.page.active {
+    display: block;
 }
 
-input:focus,select:focus,textarea:focus{
-  border-color:var(--gold);
-  box-shadow:0 0 0 2px rgba(199,168,75,.12)
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
 }
 
-textarea{
-  min-height:90px;
-  resize:vertical
+.page-header h1 {
+    margin: 0;
+    font-size: 27px;
 }
 
-.g2{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px
+.page-header p {
+    color: #777;
+    margin: 5px 0 0;
 }
 
-.g3{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px
-}
+/* =========================
+   CARDS
+========================= */
 
-.g4{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
-.row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 3px 10px rgba(0,0,0,.04);
 }
 
-.value{
-  padding:10px;
-  background:#f6f6f6;
-  border-radius:8px;
-  min-height:40px
+.card-label {
+    color: #777;
+    font-size: 12px;
+    margin-bottom: 8px;
 }
 
-button{
-  border:0;
-  border-radius:8px;
-  padding:10px 14px;
-  font-weight:700
+.card-value {
+    font-size: 25px;
+    font-weight: bold;
 }
 
-.dark{
-  background:#111;
-  color:#fff
+.card-value.gold {
+    color: var(--gold-dark);
 }
 
-.gold{
-  background:var(--gold);
-  color:#111
+.card-value.green {
+    color: var(--green);
 }
 
-.green{
-  background:#dff4e8;
-  color:#17663a
+.card-value.red {
+    color: var(--red);
 }
 
-.danger{
-  background:#f8dce0;
-  color:#900018
-}
+/* =========================
+   TABLES
+========================= */
 
-.light{
-  background:#eee;
-  color:#222
+.panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
-.full{
-  width:100%
+.panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
 }
 
-.note{
-  background:#f7f5ef;
-  border-radius:8px;
-  padding:11px;
-  color:#777;
-  font-size:12px
+.panel-title h2 {
+    font-size: 17px;
+    margin: 0;
 }
 
-.warning{
-  background:#fff0d5;
-  color:#744900;
-  padding:12px;
-  border-radius:8px
+.table-wrap {
+    overflow-x: auto;
 }
 
-.badge{
-  display:inline-block;
-  padding:4px 8px;
-  border-radius:20px;
-  background:#eee;
-  font-size:10px;
-  font-weight:700
+table {
+    width: 100%;
+    border-collapse: collapse;
 }
-
-/* PURCHASE */
 
-.item{
-  border:1px solid #ddd;
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:12px;
-  background:#fff
+th {
+    text-align: left;
+    font-size: 11px;
+    color: #777;
+    text-transform: uppercase;
+    padding: 11px;
+    border-bottom: 1px solid #ddd;
 }
 
-.item-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:12px
+td {
+    padding: 12px 11px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
 }
 
-.item-result{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  margin-top:12px
+tr:last-child td {
+    border-bottom: 0;
 }
 
-.result-box{
-  background:#f7f5ef;
-  padding:10px;
-  border-radius:8px
-}
+/* =========================
+   FORMS
+========================= */
 
-.result-box small{
-  display:block;
-  color:#777;
-  font-size:10px
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
 }
 
-.result-box b{
-  font-size:14px
+.form-group {
+    display: flex;
+    flex-direction: column;
 }
 
-.total-box{
-  background:#111;
-  color:#fff;
-  padding:18px;
-  border-radius:12px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:15px
+.form-group.full {
+    grid-column: 1 / -1;
 }
 
-.total-box strong{
-  color:var(--gold2);
-  font-size:26px
+.form-group label {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
 }
 
-.section-title{
-  font-size:17px;
-  margin:0 0 15px
+select,
+input,
+textarea {
+    font-family: inherit;
 }
-
-/* CUSTOMERS */
 
-.search{
-  margin-bottom:15px
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    background: white;
 }
 
-.customer-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px
+textarea {
+    min-height: 90px;
+    resize: vertical;
+    padding: 12px;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
 }
 
-.customer-card{
-  background:#fff;
-  border:1px solid #e5e5e5;
-  border-radius:12px;
-  padding:15px;
-  cursor:pointer
-}
+/* =========================
+   PURCHASE ITEMS
+========================= */
 
-.customer-card:hover{
-  border-color:var(--gold)
+.purchase-item {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+    background: #fafafa;
 }
 
-.customer-card small{
-  display:block;
-  color:#777;
-  margin-top:5px
+.item-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
 }
-
-/* HISTORY */
 
-.history{
-  background:#fff;
-  border:1px solid #e5e5e5;
-  border-radius:11px;
-  padding:14px;
-  margin-bottom:9px
+.item-total {
+    background: #f2eee3;
+    padding: 11px;
+    border-radius: 7px;
+    font-weight: bold;
 }
 
-.history:hover{
-  border-color:var(--gold)
-}
+/* =========================
+   PROFIT
+========================= */
 
-.history-grid{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:10px;
-  align-items:center
+.profit-positive {
+    color: var(--green);
+    font-weight: bold;
 }
-
-/* PROFITS */
 
-.profit-summary{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
-  margin-bottom:18px
+.profit-negative {
+    color: var(--red);
+    font-weight: bold;
 }
 
-.profit-chart{
-  display:flex;
-  align-items:flex-end;
-  gap:10px;
-  height:270px;
-  padding:20px;
-  border:1px solid #eee;
-  border-radius:12px;
-  background:#fafafa;
-  overflow-x:auto
+.big-profit {
+    text-align: center;
+    padding: 35px;
+    background: #111;
+    color: white;
+    border-radius: 14px;
+    margin-bottom: 20px;
 }
 
-.profit-bar-wrap{
-  min-width:44px;
-  height:230px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-end
+.big-profit small {
+    color: #aaa;
 }
 
-.profit-bar{
-  width:28px;
-  border-radius:5px 5px 0 0;
-  background:var(--gold)
+.big-profit .amount {
+    font-size: 42px;
+    color: #e1bd3d;
+    font-weight: bold;
+    margin-top: 8px;
 }
 
-.profit-bar-label{
-  font-size:10px;
-  color:#777;
-  margin-top:5px
-}
+/* =========================
+   EMPTY
+========================= */
 
-.profit-bar-value{
-  font-size:9px;
-  margin-bottom:3px;
-  white-space:nowrap
+.empty {
+    text-align: center;
+    color: #999;
+    padding: 35px;
 }
-
-/* MEMBERS */
 
-.member-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  border:1px solid #ddd;
-  border-radius:10px;
-  padding:12px;
-  margin-bottom:8px
-}
+/* =========================
+   MOBILE
+========================= */
 
-.member-info b{
-  display:block
+.mobile-menu {
+    display: none;
 }
 
-.member-info small{
-  color:#777
-}
+@media (max-width: 1000px) {
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
-/* MOBILE */
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
-.mobile-menu{
-  display:none;
-  background:#222;
-  color:#fff
+    .sidebar {
+        width: 205px;
+    }
 }
 
-@media(max-width:1100px){
-  .dashboard-grid,
-  .profit-summary{
-    grid-template-columns:repeat(2,1fr)
-  }
+@media (max-width: 700px) {
 
-  .quick-grid{
-    grid-template-columns:repeat(2,1fr)
-  }
+    .topbar {
+        padding: 0 13px;
+    }
 
-  .customer-grid{
-    grid-template-columns:repeat(2,1fr)
-  }
+    .brand span {
+        display: none;
+    }
 
-  .g4{
-    grid-template-columns:repeat(2,1fr)
-  }
-}
-
-@media(max-width:800px){
-  .sidebar{
-    display:none
-  }
+    .user-name {
+        display: none;
+    }
 
-  .sidebar.mobile-open{
-    display:flex;
-    width:245px
-  }
+    .layout {
+        display: block;
+    }
 
-  .app-main{
-    margin-left:0;
-    width:100%
-  }
+    .sidebar {
+        width: 100%;
+        display: flex;
+        overflow-x: auto;
+        padding: 7px;
+        gap: 4px;
+    }
 
-  .mobile-menu{
-    display:block
-  }
+    .nav-title {
+        display: none;
+    }
 
-  .topbar{
-    padding:10px 14px
-  }
+    .nav-btn {
+        white-space: nowrap;
+        width: auto;
+        margin: 0;
+    }
 
-  .topbar-user{
-    display:none
-  }
+    .content {
+        padding: 15px;
+    }
 
-  .page-wrap{
-    padding:12px
-  }
-
-  .dashboard-grid,
-  .profit-summary,
-  .quick-grid,
-  .customer-grid,
-  .g2,
-  .g3,
-  .g4{
-    grid-template-columns:1fr
-  }
-
-  .item-result{
-    grid-template-columns:1fr 1fr
-  }
-}
+    .cards {
+        grid-template-columns: 1fr 1fr;
+    }
 
-@media print{
-  .sidebar,
-  .topbar,
-  .noprint{
-    display:none!important
-  }
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
 
-  .app-main{
-    margin:0;
-    width:100%
-  }
+    .item-grid {
+        grid-template-columns: 1fr 1fr;
+    }
 
-  body{
-    background:#fff
-  }
+    .page-header {
+        display: block;
+    }
 
-  .page-wrap{
-    padding:0
-  }
+    .page-header .btn {
+        margin-top: 12px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="authLock">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <img src="logo.png" alt="De Goudmarsjan">
-    </div>
+<!-- =========================
+     LOGIN
+========================= -->
 
-    <h2>DE GOUDMARSJAN</h2>
-    <p>Log in met je eigen account.</p>
+<div id="loginScreen">
 
-    <input id="loginEmail"
-           type="email"
-           autocomplete="username"
-           placeholder="E-mailadres">
+    <div class="login-box">
 
-    <input id="loginPassword"
-           type="password"
-           autocomplete="current-password"
-           placeholder="Wachtwoord"
-           onkeydown="if(event.key==='Enter')login()">
+        <img src="logo.png" class="login-logo" alt="De Goudmarsjan">
 
-    <button class="dark full" onclick="login()">
-      INLOGGEN
-    </button>
+        <h1>Inkoopprogramma</h1>
+        <p>Log in met je persoonlijke account.</p>
 
-    <div id="authError" class="auth-error"></div>
+        <input
+            id="loginEmail"
+            class="input"
+            type="email"
+            placeholder="E-mailadres"
+        >
 
-    <p>Elke werknemer gebruikt een eigen account.</p>
-  </div>
-</div>
+        <input
+            id="loginPassword"
+            class="input"
+            type="password"
+            placeholder="Wachtwoord"
+        >
 
+        <button class="btn btn-gold" style="width:100%" onclick="login()">
+            INLOGGEN
+        </button>
 
-<!-- APP -->
-<aside class="sidebar" id="sidebar">
-
-  <div class="brand">
-    <img src="logo.png" alt="De Goudmarsjan">
-    <div>
-      <strong>DE GOUDMARSJAN</strong>
-      <span>EDELMETALEN</span>
-    </div>
-  </div>
-
-  <div class="nav-title">Menu</div>
-
-  <button class="nav-btn active"
-          data-page="dashboard"
-          onclick="showPage('dashboard')">
-    🏠 Dashboard
-  </button>
-
-  <button class="nav-btn"
-          data-page="purchase"
-          onclick="showPage('purchase')">
-    🟡 Nieuwe inkoop
-  </button>
-
-  <button class="nav-btn"
-          data-page="customers"
-          onclick="showPage('customers')">
-    👥 Klanten
-  </button>
-
-  <button class="nav-btn"
-          data-page="purchases"
-          onclick="showPage('purchases')">
-    📋 Inkopen
-  </button>
-
-  <button class="nav-btn"
-          data-page="profits"
-          onclick="showPage('profits')">
-    📈 Winsten
-  </button>
-
-  <button class="nav-btn"
-          id="adminNav"
-          data-page="admin"
-          onclick="showPage('admin')"
-          style="display:none">
-    ⚙️ Beheer
-  </button>
-
-  <div class="nav-spacer"></div>
-
-  <div class="side-user">
-    <b id="sideUserName">Niet ingelogd</b>
-    <br>
-    <span id="sideUserRole">—</span>
-  </div>
-
-  <button class="side-logout"
-          onclick="logout()">
-    Uitloggen
-  </button>
-
-</aside>
-
-
-<div class="app-main">
-
-  <header class="topbar">
-
-    <div class="topbar-logo">
-
-      <button class="mobile-menu"
-              onclick="toggleMobileNav()">
-        ☰
-      </button>
-
-      <img src="logo.png" alt="De Goudmarsjan">
-
-      <div>
-        <h1>DE GOUDMARSJAN</h1>
-        <p>EDELMETALEN — INKOOP</p>
-      </div>
+        <div id="loginError" class="error"></div>
 
     </div>
-
-    <div class="topbar-user">
-      <b id="topUserName">Niet ingelogd</b>
-      <br>
-      <small id="topUserRole">—</small>
-    </div>
-
-  </header>
-
-
-  <main class="page-wrap">
-
-    <!-- DASHBOARD -->
-    <section id="pageDashboard"
-             class="app-page active">
-
-      <div class="page-title">
-        <h2>Dashboard</h2>
-        <p>Overzicht van DE GOUDMARSJAN</p>
-      </div>
-
-      <div class="dashboard-grid">
-
-        <div class="dash-card">
-          <small>Inkopen vandaag</small>
-          <strong id="dashCount">0</strong>
-        </div>
-
-        <div class="dash-card">
-          <small>Totaal ingekocht vandaag</small>
-          <strong id="dashPurchase">€ 0,00</strong>
-        </div>
-
-        <div class="dash-card">
-          <small>Verwachte verkoop vandaag</small>
-          <strong id="dashResale">€ 0,00</strong>
-        </div>
-
-        <div class="dash-card gold">
-          <small>Verwachte winst vandaag</small>
-          <strong id="dashProfit">€ 0,00</strong>
-        </div>
-
-      </div>
-
-
-      <div class="quick-grid">
-
-        <button class="quick-btn"
-                onclick="newPurchase()">
-          <span>🟡</span>
-          <b>Nieuwe inkoop</b>
-          <br>
-          <small>Start een nieuwe aankoop</small>
-        </button>
-
-        <button class="quick-btn"
-                onclick="showPage('customers')">
-          <span>👥</span>
-          <b>Klanten</b>
-          <br>
-          <small>Bekijk klantendossiers</small>
-        </button>
-
-        <button class="quick-btn"
-                onclick="showPage('purchases')">
-          <span>📋</span>
-          <b>Inkopen</b>
-          <br>
-          <small>Bekijk alle aankopen</small>
-        </button>
-
-        <button class="quick-btn"
-                onclick="showPage('profits')">
-          <span>📈</span>
-          <b>Winsten</b>
-          <br>
-          <small>Bekijk het winstoverzicht</small>
-        </button>
-
-      </div>
-
-
-      <div class="dashboard-section">
-
-        <h3>Recente inkopen vandaag</h3>
-
-        <div id="dashRecent"></div>
-
-      </div>
-
-    </section>
-
-
-    <!-- NIEUWE INKOOP -->
-    <section id="pagePurchase"
-             class="app-page">
-
-      <div class="page-title">
-        <h2>Nieuwe inkoop</h2>
-        <p>Maak een nieuwe aankoop aan.</p>
-      </div>
-
-
-      <!-- MARKTPRIJZEN -->
-      <div class="card">
-
-        <div class="row">
-          <div>
-            <h3>🟡 Marktprijzen & instellingen</h3>
-            <small>Deze waarden worden gebruikt voor de berekening.</small>
-          </div>
-        </div>
-
-        <div class="g4">
-
-          <div>
-            <label>Goudprijs per gram</label>
-            <input id="goldPrice"
-                   type="number"
-                   step="0.01"
-                   value="105"
-                   oninput="calculate()">
-          </div>
-
-          <div>
-            <label>Zilverprijs per gram</label>
-            <input id="silverPrice"
-                   type="number"
-                   step="0.01"
-                   value="1.50"
-                   oninput="calculate()">
-          </div>
-
-          <div>
-            <label>Referentie</label>
-            <input id="reference"
-                   placeholder="Optioneel">
-          </div>
-
-          <div>
-            <label>Betaling</label>
-            <select id="paymentMethod">
-              <option value="overschrijving">Bankoverschrijving</option>
-              <option value="cash">Cash</option>
-            </select>
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- KLANT -->
-      <div class="card">
-
-        <div class="row">
-          <div>
-            <h3>👤 Klantgegevens</h3>
-            <small>Controleer de identiteit van de klant.</small>
-          </div>
-
-          <button class="light"
-                  onclick="clearCustomer()">
-            Nieuwe klant
-          </button>
-        </div>
-
-        <div class="g3">
-
-          <div>
-            <label>Voornaam *</label>
-            <input id="firstName">
-          </div>
-
-          <div>
-            <label>Achternaam *</label>
-            <input id="lastName">
-          </div>
-
-          <div>
-            <label>Geboortedatum *</label>
-            <input id="birthDate"
-                   type="date">
-          </div>
-
-          <div>
-            <label>Telefoon</label>
-            <input id="phone">
-          </div>
-
-          <div>
-            <label>IBAN</label>
-            <input id="iban">
-          </div>
-
-          <div>
-            <label>ID gecontroleerd *</label>
-            <select id="idChecked">
-              <option value="nee">Nee</option>
-              <option value="ja">Ja</option>
-            </select>
-          </div>
-
-          <div>
-            <label>Type ID</label>
-            <select id="idType">
-              <option value="">Kies...</option>
-              <option value="Identiteitskaart">Identiteitskaart</option>
-              <option value="Paspoort">Paspoort</option>
-              <option value="Rijbewijs">Rijbewijs</option>
-            </select>
-          </div>
-
-          <div>
-            <label>ID-nummer</label>
-            <input id="idNumber">
-          </div>
-
-          <div>
-            <label>Straat</label>
-            <input id="street">
-          </div>
-
-          <div>
-            <label>Huisnummer</label>
-            <input id="houseNumber">
-          </div>
-
-          <div>
-            <label>Postcode</label>
-            <input id="postalCode">
-          </div>
-
-          <div>
-            <label>Gemeente</label>
-            <input id="city">
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- INKOOPSTUKKEN -->
-      <div class="card">
-
-        <div class="row">
-          <div>
-            <h3>💰 Inkoopstukken</h3>
-            <small>Voeg alle stukken van deze aankoop toe.</small>
-          </div>
-
-          <button class="gold"
-                  onclick="addItem()">
-            + STUK TOEVOEGEN
-          </button>
-        </div>
-
-        <div id="items"></div>
-
-        <div class="total-box">
-          <div>
-            <small>TOTAAL INKOOP</small>
-            <br>
-            <strong id="purchaseTotal">€ 0,00</strong>
-          </div>
-
-          <div style="text-align:right">
-            <small>MARKTWAARDE</small>
-            <br>
-            <b id="marketTotal">€ 0,00</b>
-          </div>
-        </div>
-
-      </div>
-
-
-      <!-- VERKOOP -->
-      <div class="card">
-
-        <h3>📈 Verwachte verkoop</h3>
-
-        <div class="g3">
-
-          <div>
-            <label>Verwachte verkoopprijs</label>
-            <input id="resalePrice"
-                   type="number"
-                   step="0.01"
-                   value="0"
-                   oninput="calculate()">
-          </div>
-
-          <div>
-            <label>Verwachte winst</label>
-            <div class="value"
-                 id="profitDisplay">
-              € 0,00
-            </div>
-          </div>
-
-          <div>
-            <label>Marge</label>
-            <div class="value"
-                 id="marginDisplay">
-              0,00%
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- NOTITIES -->
-      <div class="card">
-
-        <h3>📝 Extra</h3>
-
-        <div class="g2">
-
-          <div>
-            <label>Opmerking aankoop</label>
-            <textarea id="purchaseNote"
-                      placeholder="Bijvoorbeeld: verkleurd, beschadiging, bijzondere afspraken..."></textarea>
-          </div>
-
-          <div>
-            <label>Interne opmerking</label>
-            <textarea id="internalNote"></textarea>
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- ACTIES -->
-      <div class="card">
-
-        <div class="g3">
-
-          <button class="gold"
-                  onclick="savePurchase()">
-            💾 AANKOOP OPSLAAN
-          </button>
-
-          <button class="dark"
-                  onclick="savePurchase(true)">
-            💾 OPSLAAN + BON
-          </button>
-
-          <button class="light"
-                  onclick="newPurchase()">
-            ↺ NIEUWE INKOOP
-          </button>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- KLANTEN -->
-    <section id="pageCustomers"
-             class="app-page">
-
-      <div class="page-title">
-        <h2>Klanten</h2>
-        <p>Alle klantendossiers van DE GOUDMARSJAN.</p>
-      </div>
-
-      <input id="customerSearch"
-             class="search"
-             placeholder="🔍 Zoek op naam, telefoon, ID-nummer, gemeente..."
-             oninput="renderCustomers()">
-
-      <div id="customerList"
-           class="customer-grid"></div>
-
-      <div id="customerDetail"></div>
-
-    </section>
-
-
-    <!-- INKOPEN -->
-    <section id="pagePurchases"
-             class="app-page">
-
-      <div class="page-title">
-        <h2>Inkopen</h2>
-        <p>Overzicht van alle aankopen.</p>
-      </div>
-
-      <input id="purchaseSearch"
-             class="search"
-             placeholder="🔍 Zoek aankoop, klant of referentie..."
-             oninput="renderPurchases()">
-
-      <div id="purchaseList"></div>
-
-    </section>
-
-
-    <!-- WINSTEN -->
-    <section id="pageProfits"
-             class="app-page">
-
-      <div class="page-title">
-        <h2>Winsten</h2>
-        <p>Overzicht van de verwachte bruto winst.</p>
-      </div>
-
-      <div class="profit-summary">
-
-        <div class="dash-card">
-          <small>Aantal inkopen</small>
-          <strong id="profitCount">0</strong>
-        </div>
-
-        <div class="dash-card">
-          <small>Totaal ingekocht</small>
-          <strong id="profitPurchase">€ 0,00</strong>
-        </div>
-
-        <div class="dash-card">
-          <small>Verwachte verkoop</small>
-          <strong id="profitResale">€ 0,00</strong>
-        </div>
-
-        <div class="dash-card gold">
-          <small>Verwachte bruto winst</small>
-          <strong id="profitTotal">€ 0,00</strong>
-        </div>
-
-      </div>
-
-      <div class="dashboard-section">
-
-        <h3>Winst per dag — laatste 14 dagen</h3>
-
-        <div id="profitChart"
-             class="profit-chart"></div>
-
-      </div>
-
-      <div class="dashboard-section">
-
-        <h3>Winst per werknemer</h3>
-
-        <div id="profitEmployees"></div>
-
-      </div>
-
-    </section>
-
-
-    <!-- BEHEER -->
-    <section id="pageAdmin"
-             class="app-page">
-
-      <div class="page-title">
-        <h2>Beheer</h2>
-        <p>Alleen beschikbaar voor de eigenaar.</p>
-      </div>
-
-
-      <div class="card">
-
-        <h3>👥 Werknemers</h3>
-
-        <p class="note">
-          Iedere werknemer moet een eigen Supabase-account hebben.
-          De toegang wordt geregeld via business_members.
-        </p>
-
-        <div class="g2">
-
-          <div>
-            <label>Naam werknemer</label>
-            <input id="employeeName"
-                   placeholder="Bijvoorbeeld Nikita">
-          </div>
-
-          <div>
-            <label>E-mailadres Supabase-account</label>
-            <input id="employeeEmail"
-                   type="email"
-                   placeholder="werknemer@email.be">
-          </div>
-
-        </div>
-
-        <br>
-
-        <button class="gold"
-                onclick="addEmployee()">
-          + WERKNEMER TOEVOEGEN
-        </button>
-
-        <hr style="border:0;border-top:1px solid #eee;margin:20px 0">
-
-        <div id="membersList"></div>
-
-      </div>
-
-
-      <div class="card">
-
-        <h3>⚙️ Inkooppercentages</h3>
-
-        <p class="note">
-          Alleen de eigenaar kan deze waarden aanpassen.
-        </p>
-
-        <div class="g4">
-
-          <div>
-            <label>Goud 9K %</label>
-            <input id="rate9"
-                   type="number"
-                   value="65">
-          </div>
-
-          <div>
-            <label>Goud 14K %</label>
-            <input id="rate14"
-                   type="number"
-                   value="70">
-          </div>
-
-          <div>
-            <label>Goud 18K %</label>
-            <input id="rate18"
-                   type="number"
-                   value="75">
-          </div>
-
-          <div>
-            <label>Goud 22K %</label>
-            <input id="rate22"
-                   type="number"
-                   value="80">
-          </div>
-
-          <div>
-            <label>Goud 24K %</label>
-            <input id="rate24"
-                   type="number"
-                   value="90">
-          </div>
-
-          <div>
-            <label>Zilver 800 %</label>
-            <input id="srate800"
-                   type="number"
-                   value="65">
-          </div>
-
-          <div>
-            <label>Zilver 835 %</label>
-            <input id="srate835"
-                   type="number"
-                   value="65">
-          </div>
-
-          <div>
-            <label>Zilver 925 %</label>
-            <input id="srate925"
-                   type="number"
-                   value="70">
-          </div>
-
-          <div>
-            <label>Zilver 999 %</label>
-            <input id="srate999"
-                   type="number"
-                   value="75">
-          </div>
-
-        </div>
-
-        <br>
-
-        <button class="gold"
-                onclick="saveSettings()">
-          INSTELLINGEN OPSLAAN
-        </button>
-
-      </div>
-
-    </section>
-
-  </main>
 
 </div>
 
 
-<!-- RECEIPT -->
-<div id="receipt"
-     style="display:none"></div>
+<!-- =========================
+     APP
+========================= -->
+
+<div id="app">
+
+    <header class="topbar">
+
+        <div class="brand">
+            <img src="logo.png" alt="De Goudmarsjan">
+            <span>INKOOP</span>
+        </div>
+
+        <div class="user-area">
+
+            <div class="user-name" id="currentUserName">
+                -
+            </div>
+
+            <div class="role-badge" id="currentRole">
+                -
+            </div>
+
+            <button class="logout" onclick="logout()">
+                Uitloggen
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <div class="layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="nav-title">Menu</div>
+
+            <button class="nav-btn active" onclick="showPage('dashboard', this)">
+                🏠 Dashboard
+            </button>
+
+            <button class="nav-btn" onclick="showPage('customers', this)">
+                👥 Klanten
+            </button>
+
+            <button class="nav-btn" onclick="showPage('purchase', this)">
+                💰 Nieuwe aankoop
+            </button>
+
+            <button class="nav-btn" onclick="showPage('purchases', this)">
+                🧾 Aankopen
+            </button>
+
+            <button class="nav-btn" onclick="showPage('profits', this)">
+                📊 Winsten
+            </button>
+
+            <div id="adminMenu">
+
+                <div class="nav-title">Beheer</div>
+
+                <button class="nav-btn" onclick="showPage('employees', this)">
+                    👤 Werknemers
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- CONTENT -->
+
+        <main class="content">
+
+
+            <!-- =========================
+                 DASHBOARD
+            ========================= -->
+
+            <section id="dashboard" class="page active">
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p>Overzicht van de inkoop.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="cards">
+
+                    <div class="card">
+                        <div class="card-label">
+                            Aankopen vandaag
+                        </div>
+                        <div class="card-value" id="dashPurchases">
+                            0
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-label">
+                            Totaal ingekocht vandaag
+                        </div>
+                        <div class="card-value gold" id="dashBought">
+                            € 0,00
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-label">
+                            Marktwaarde vandaag
+                        </div>
+                        <div class="card-value" id="dashMarket">
+                            € 0,00
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-label">
+                            Winst vandaag
+                        </div>
+                        <div class="card-value green" id="dashProfit">
+                            € 0,00
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-title">
+
+                        <h2>Recente aankopen</h2>
+
+                        <button
+                            class="btn btn-gold"
+                            onclick="showPage('purchase')"
+                        >
+                            + Nieuwe aankoop
+                        </button>
+
+                    </div>
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Klant</th>
+                                    <th>Medewerker</th>
+                                    <th>Inkoop</th>
+                                    <th>Marktwaarde</th>
+                                    <th>Winst</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="recentPurchases">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 CUSTOMERS
+            ========================= -->
+
+            <section id="customers" class="page">
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Klanten</h1>
+                        <p>Klantenbestand van De Goudmarsjan.</p>
+                    </div>
+
+                    <button
+                        class="btn btn-gold"
+                        onclick="openCustomerForm()"
+                    >
+                        + Nieuwe klant
+                    </button>
+
+                </div>
+
+
+                <div class="panel" id="customerForm" style="display:none">
+
+                    <div class="panel-title">
+                        <h2>Nieuwe klant</h2>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>Voornaam *</label>
+                            <input id="customerFirstName" class="input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Achternaam *</label>
+                            <input id="customerLastName" class="input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Geboortedatum</label>
+                            <input id="customerBirthDate" class="input" type="date">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Telefoon</label>
+                            <input id="customerPhone" class="input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>IBAN</label>
+                            <input id="customerIban" class="input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Identificatietype</label>
+
+                            <select id="customerIdType">
+                                <option value="">Selecteer</option>
+                                <option value="ID">Identiteitskaart</option>
+                                <option value="PASSPORT">Paspoort</option>
+                                <option value="DRIVING_LICENSE">Rijbewijs</option>
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label>Identificatienummer</label>
+                            <input id="customerIdNumber" class="input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Straat + nummer</label>
+                            <input id="customerAddress" class="input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Postcode</label>
+                            <input id="customerPostal" class="input">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Gemeente</label>
+                            <input id="customerCity" class="input">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Notities</label>
+                            <textarea id="customerNotes"></textarea>
+                        </div>
+
+                    </div>
+
+                    <br>
+
+                    <button class="btn btn-gold" onclick="saveCustomer()">
+                        KLANT OPSLAAN
+                    </button>
+
+                    <button class="btn btn-dark" onclick="closeCustomerForm()">
+                        Annuleren
+                    </button>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-title">
+
+                        <h2>Klantenbestand</h2>
+
+                        <input
+                            id="customerSearch"
+                            class="input"
+                            style="max-width:300px;margin:0"
+                            placeholder="Zoeken..."
+                            oninput="filterCustomers()"
+                        >
+
+                    </div>
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Naam</th>
+                                    <th>Geboortedatum</th>
+                                    <th>Telefoon</th>
+                                    <th>Gemeente</th>
+                                    <th>ID gecontroleerd</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="customersTable">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 NEW PURCHASE
+            ========================= -->
+
+            <section id="purchase" class="page">
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Nieuwe aankoop</h1>
+                        <p>Registreer een nieuwe inkoop.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-title">
+                        <h2>Klant</h2>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="form-group full">
+
+                            <label>Klant *</label>
+
+                            <select id="purchaseCustomer">
+                                <option value="">
+                                    Selecteer klant
+                                </option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-title">
+
+                        <h2>Inkoopstukken</h2>
+
+                        <button
+                            class="btn btn-gold"
+                            onclick="addPurchaseItem()"
+                        >
+                            + Stuk toevoegen
+                        </button>
+
+                    </div>
+
+                    <div id="purchaseItems"></div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>Goudprijs 24K / gram</label>
+                            <input
+                                id="goldPrice"
+                                class="input"
+                                type="number"
+                                step="0.01"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label>Zilverprijs 999 / gram</label>
+                            <input
+                                id="silverPrice"
+                                class="input"
+                                type="number"
+                                step="0.01"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label>Betaalmethode</label>
+
+                            <select id="paymentMethod">
+                                <option value="cash">
+                                    Cash
+                                </option>
+                                <option value="bank_transfer">
+                                    Bankoverschrijving
+                                </option>
+                                <option value="other">
+                                    Andere
+                                </option>
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-title">
+                        <h2>Extra informatie</h2>
+                    </div>
+
+                    <textarea
+                        id="purchaseNotes"
+                        placeholder="Opmerkingen..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="big-profit">
+
+                    <small>
+                        TOTAAL INKOOP
+                    </small>
+
+                    <div class="amount" id="purchaseTotal">
+                        € 0,00
+                    </div>
+
+                    <div style="margin-top:10px;color:#aaa">
+                        Marktwaarde:
+                        <strong id="purchaseMarket">
+                            € 0,00
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="btn btn-gold"
+                    style="width:100%;padding:16px"
+                    onclick="savePurchase()"
+                >
+                    AANKOOP OPSLAAN
+                </button>
+
+            </section>
+
+
+            <!-- =========================
+                 PURCHASE HISTORY
+            ========================= -->
+
+            <section id="purchases" class="page">
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Aankopen</h1>
+                        <p>Volledig overzicht van de geregistreerde inkopen.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Klant</th>
+                                    <th>Medewerker</th>
+                                    <th>Betaald</th>
+                                    <th>Marktwaarde</th>
+                                    <th>Winst</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="purchasesTable">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 PROFITS
+            ========================= -->
+
+            <section id="profits" class="page">
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Winsten</h1>
+                        <p>Overzicht van de gerealiseerde inkoopmarge.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="cards">
+
+                    <div class="card">
+
+                        <div class="card-label">
+                            Winst vandaag
+                        </div>
+
+                        <div
+                            class="card-value green"
+                            id="profitToday"
+                        >
+                            € 0,00
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-label">
+                            Winst deze maand
+                        </div>
+
+                        <div
+                            class="card-value green"
+                            id="profitMonth"
+                        >
+                            € 0,00
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-label">
+                            Totaal ingekocht
+                        </div>
+
+                        <div
+                            class="card-value gold"
+                            id="profitBought"
+                        >
+                            € 0,00
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-label">
+                            Totale marktwaarde
+                        </div>
+
+                        <div
+                            class="card-value"
+                            id="profitMarket"
+                        >
+                            € 0,00
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="big-profit">
+
+                    <small>
+                        WINST VANDAAG
+                    </small>
+
+                    <div
+                        class="amount"
+                        id="bigProfitToday"
+                    >
+                        € 0,00
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="panel-title">
+                        <h2>Winst per aankoop</h2>
+                    </div>
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Klant</th>
+                                    <th>Inkoop</th>
+                                    <th>Marktwaarde</th>
+                                    <th>Winst</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="profitsTable">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 EMPLOYEES
+            ========================= -->
+
+            <section id="employees" class="page">
+
+                <div class="page-header">
+
+                    <div>
+                        <h1>Werknemers</h1>
+                        <p>Beheer wie toegang heeft tot het programma.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <div class="table-wrap">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Naam</th>
+                                    <th>Rol</th>
+                                    <th>Toegang</th>
+                                    <th>Actie</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="employeesTable">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </main>
+
+    </div>
+
+</div>
 
 
 <script>
+
 /* =========================================================
    SUPABASE
 ========================================================= */
 
-const SUPABASE_URL =
-  "https://mjfyarwabbtdezctrxfp.supabase.co";
+/*
+   LAAT JE EIGEN SUPABASE URL EN ANON KEY HIER STAAN
+   als die al in je huidige index stonden.
 
-const SUPABASE_KEY =
-  "sb_publishable_mj_YFZgUnC3DR9lzDgWlYA_CUUozF43";
+   Vervang onderstaande twee waarden met die van jouw project.
+*/
 
-const sb =
-  window.supabase.createClient(
+const SUPABASE_URL = "JOUW_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "JOUW_SUPABASE_ANON_KEY";
+
+const supabaseClient = supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
-  );
+    SUPABASE_ANON_KEY
+);
 
 
 /* =========================================================
-   BASIS
+   GLOBALS
 ========================================================= */
-
-const $ = id => document.getElementById(id);
-
-const euro = value =>
-  new Intl.NumberFormat("nl-BE",{
-    style:"currency",
-    currency:"EUR"
-  }).format(Number(value)||0);
-
-const esc = value =>
-  String(value ?? "")
-    .replace(/[&<>"']/g,m=>({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
-    }[m]));
-
-const num = id =>
-  Number($(id)?.value)||0;
-
-
-const purity = {
-  goud:{
-    9:.375,
-    14:.585,
-    18:.75,
-    22:.916,
-    24:1
-  },
-  zilver:{
-    800:.8,
-    835:.835,
-    925:.925,
-    999:1
-  }
-};
-
-let settings = {
-  goldPrice:105,
-  silverPrice:1.5,
-  rate9:65,
-  rate14:70,
-  rate18:75,
-  rate22:80,
-  rate24:90,
-  srate800:65,
-  srate835:65,
-  srate925:70,
-  srate999:75
-};
-
-let items = [];
-let customers = [];
-let purchases = [];
 
 let currentUser = null;
+let currentBusiness = null;
 let currentMember = null;
-let currentBusinessId = null;
+
+let allCustomers = [];
+let allPurchases = [];
+
+let purchaseItemCounter = 0;
 
 
 /* =========================================================
-   NAVIGATIE
+   HELPERS
 ========================================================= */
 
-function showPage(page){
+function money(value) {
 
-  if(page==="admin" &&
-     currentMember?.role!=="owner"){
-    return;
-  }
+    const number = Number(value || 0);
 
-  document.querySelectorAll(".app-page")
-    .forEach(x=>x.classList.remove("active"));
-
-  const target = $("page"+page.charAt(0).toUpperCase()+page.slice(1));
-
-  if(target){
-    target.classList.add("active");
-  }
-
-  document.querySelectorAll(".nav-btn")
-    .forEach(x=>{
-      x.classList.toggle(
-        "active",
-        x.dataset.page===page
-      );
-    });
-
-  if(page==="dashboard") renderDashboard();
-  if(page==="customers") renderCustomers();
-  if(page==="purchases") renderPurchases();
-  if(page==="profits") renderProfits();
-  if(page==="admin") loadMembers();
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
-
-  $("sidebar").classList.remove("mobile-open");
+    return new Intl.NumberFormat("nl-BE", {
+        style: "currency",
+        currency: "EUR"
+    }).format(number);
 }
 
 
-function toggleMobileNav(){
-  $("sidebar").classList.toggle("mobile-open");
+function dateFormat(value) {
+
+    if (!value) return "-";
+
+    return new Date(value).toLocaleDateString(
+        "nl-BE",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        }
+    );
+}
+
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 
@@ -1660,1039 +1411,1182 @@ function toggleMobileNav(){
    LOGIN
 ========================================================= */
 
-async function login(){
+async function login() {
 
-  const email =
-    $("loginEmail").value.trim();
+    const email =
+        document.getElementById("loginEmail").value.trim();
 
-  const password =
-    $("loginPassword").value;
+    const password =
+        document.getElementById("loginPassword").value;
 
-  $("authError").textContent="";
+    const error =
+        document.getElementById("loginError");
 
-  if(!email || !password){
-    $("authError").textContent=
-      "Vul e-mailadres en wachtwoord in.";
-    return;
-  }
+    error.style.display = "none";
 
-  const {error} =
-    await sb.auth.signInWithPassword({
-      email,
-      password
-    });
+    if (!email || !password) {
 
-  if(error){
-    $("authError").textContent=
-      error.message;
-  }
-}
+        error.innerText =
+            "Vul je e-mailadres en wachtwoord in.";
 
+        error.style.display = "block";
 
-async function logout(){
-  await sb.auth.signOut();
-}
-
-
-/* =========================================================
-   AUTH
-========================================================= */
-
-async function checkMember(user){
-
-  const {data,error} =
-    await sb
-      .from("business_members")
-      .select(
-        "business_id,user_id,role,active,display_name"
-      )
-      .eq("user_id",user.id)
-      .eq("active",true)
-      .maybeSingle();
-
-  if(error || !data){
-    await sb.auth.signOut();
-
-    $("authError").textContent =
-      "Dit account heeft geen actieve toegang tot DE GOUDMARSJAN.";
-
-    return false;
-  }
-
-  currentMember=data;
-  currentBusinessId=data.business_id;
-
-  currentUser=user;
-
-  $("authLock").classList.add("hidden");
-
-  const name =
-    data.display_name ||
-    user.email;
-
-  const role =
-    data.role==="owner"
-      ? "Hoofd / eigenaar"
-      : "Werknemer";
-
-  $("sideUserName").textContent=name;
-  $("sideUserRole").textContent=role;
-
-  $("topUserName").textContent=name;
-  $("topUserRole").textContent=role;
-
-  $("adminNav").style.display =
-    data.role==="owner"
-      ? "block"
-      : "none";
-
-  await loadSettingsCloud();
-  await loadCloudData();
-
-  applyPermissions();
-
-  if(data.role==="owner"){
-    await loadMembers();
-  }
-
-  newPurchase();
-
-  showPage("dashboard");
-
-  return true;
-}
-
-
-function loggedOut(){
-
-  currentUser=null;
-  currentMember=null;
-  currentBusinessId=null;
-
-  customers=[];
-  purchases=[];
-
-  $("authLock").classList.remove("hidden");
-
-  $("sideUserName").textContent="Niet ingelogd";
-  $("sideUserRole").textContent="—";
-
-  $("topUserName").textContent="Niet ingelogd";
-  $("topUserRole").textContent="—";
-
-  $("adminNav").style.display="none";
-}
-
-
-async function initAuth(){
-
-  const {data} =
-    await sb.auth.getSession();
-
-  if(data.session){
-    await checkMember(data.session.user);
-  }
-
-  sb.auth.onAuthStateChange(
-    async(_event,session)=>{
-
-      if(session){
-        await checkMember(session.user);
-      }else{
-        loggedOut();
-      }
-
-    }
-  );
-}
-
-
-/* =========================================================
-   ACTIEVE TOEGANG CONTROLEREN
-========================================================= */
-
-setInterval(async()=>{
-
-  if(!currentUser || !currentBusinessId)
-    return;
-
-  const {data} =
-    await sb
-      .from("business_members")
-      .select("active")
-      .eq("business_id",currentBusinessId)
-      .eq("user_id",currentUser.id)
-      .maybeSingle();
-
-  if(!data || data.active!==true){
-
-    alert(
-      "Je toegang tot DE GOUDMARSJAN is ingetrokken."
-    );
-
-    await sb.auth.signOut();
-  }
-
-},60000);
-
-
-/* =========================================================
-   PERMISSIONS
-========================================================= */
-
-function applyPermissions(){
-
-  const owner =
-    currentMember?.role==="owner";
-
-  [
-    "goldPrice",
-    "silverPrice",
-    "rate9",
-    "rate14",
-    "rate18",
-    "rate22",
-    "rate24",
-    "srate800",
-    "srate835",
-    "srate925",
-    "srate999"
-  ].forEach(id=>{
-    if($(id)){
-      $(id).disabled=!owner;
-    }
-  });
-
-}
-
-
-/* =========================================================
-   SETTINGS
-========================================================= */
-
-async function loadSettingsCloud(){
-
-  const {data,error} =
-    await sb
-      .from("settings")
-      .select("*")
-      .eq("business_id",currentBusinessId)
-      .maybeSingle();
-
-  if(!error && data){
-
-    settings={
-      ...settings,
-      goldPrice:Number(data.gold_price_per_gram ?? data.gold_price ?? settings.goldPrice),
-      silverPrice:Number(data.silver_price_per_gram ?? data.silver_price ?? settings.silverPrice),
-      rate9:Number(data.rate_9 ?? settings.rate9),
-      rate14:Number(data.rate_14 ?? settings.rate14),
-      rate18:Number(data.rate_18 ?? settings.rate18),
-      rate22:Number(data.rate_22 ?? settings.rate22),
-      rate24:Number(data.rate_24 ?? settings.rate24),
-      srate800:Number(data.silver_rate_800 ?? settings.srate800),
-      srate835:Number(data.silver_rate_835 ?? settings.srate835),
-      srate925:Number(data.silver_rate_925 ?? settings.srate925),
-      srate999:Number(data.silver_rate_999 ?? settings.srate999)
-    };
-  }
-
-  $("goldPrice").value=settings.goldPrice;
-  $("silverPrice").value=settings.silverPrice;
-
-  $("rate9").value=settings.rate9;
-  $("rate14").value=settings.rate14;
-  $("rate18").value=settings.rate18;
-  $("rate22").value=settings.rate22;
-  $("rate24").value=settings.rate24;
-
-  $("srate800").value=settings.srate800;
-  $("srate835").value=settings.srate835;
-  $("srate925").value=settings.srate925;
-  $("srate999").value=settings.srate999;
-}
-
-
-async function saveSettings(){
-
-  if(currentMember?.role!=="owner"){
-    alert("Alleen de eigenaar kan instellingen wijzigen.");
-    return;
-  }
-
-  settings={
-    goldPrice:num("goldPrice"),
-    silverPrice:num("silverPrice"),
-    rate9:num("rate9"),
-    rate14:num("rate14"),
-    rate18:num("rate18"),
-    rate22:num("rate22"),
-    rate24:num("rate24"),
-    srate800:num("srate800"),
-    srate835:num("srate835"),
-    srate925:num("srate925"),
-    srate999:num("srate999")
-  };
-
-  const payload={
-    business_id:currentBusinessId,
-    gold_purchase_percent:settings.rate18,
-    silver_purchase_percent:settings.srate925,
-    updated_at:new Date().toISOString()
-  };
-
-  const {error} =
-    await sb
-      .from("settings")
-      .upsert(
-        payload,
-        {onConflict:"business_id"}
-      );
-
-  if(error){
-    alert(
-      "Opslaan mislukt:\n"+error.message
-    );
-    return;
-  }
-
-  alert("Instellingen opgeslagen.");
-}
-
-
-/* =========================================================
-   INKOOPSTUKKEN
-========================================================= */
-
-function addItem(){
-
-  items.push({
-    type:"Juweel",
-    metal:"goud",
-    fineness:18,
-    weight:0,
-    nonGold:0,
-    description:"",
-    manualOffer:0
-  });
-
-  renderItems();
-  calculate();
-}
-
-
-function removeItem(index){
-
-  items.splice(index,1);
-
-  renderItems();
-  calculate();
-}
-
-
-function renderItems(){
-
-  $("items").innerHTML =
-    items.map((it,i)=>{
-
-      const c=calc(it);
-
-      return `
-      <div class="item">
-
-        <div class="item-head">
-
-          <b>Stuk ${i+1}</b>
-
-          <button class="danger"
-                  onclick="removeItem(${i})">
-            VERWIJDEREN
-          </button>
-
-        </div>
-
-        <div class="g4">
-
-          <div>
-            <label>Type</label>
-            <select onchange="items[${i}].type=this.value">
-              <option ${it.type==="Juweel"?"selected":""}>Juweel</option>
-              <option ${it.type==="Munt"?"selected":""}>Munt</option>
-              <option ${it.type==="Bar"?"selected":""}>Bar</option>
-              <option ${it.type==="Horloge"?"selected":""}>Horloge</option>
-              <option ${it.type==="Schroot"?"selected":""}>Schroot</option>
-              <option ${it.type==="Anders"?"selected":""}>Anders</option>
-            </select>
-          </div>
-
-          <div>
-            <label>Metaal</label>
-            <select onchange="items[${i}].metal=this.value;renderItems();calculate()">
-              <option value="goud" ${it.metal==="goud"?"selected":""}>Goud</option>
-              <option value="zilver" ${it.metal==="zilver"?"selected":""}>Zilver</option>
-              <option value="verzilverd" ${it.metal==="verzilverd"?"selected":""}>Verzilverd</option>
-            </select>
-          </div>
-
-          <div>
-            <label>Gehalte</label>
-            <select onchange="items[${i}].fineness=Number(this.value);calculate()">
-              ${
-                it.metal==="goud"
-                ? `
-                  <option value="9" ${it.fineness==9?"selected":""}>9K</option>
-                  <option value="14" ${it.fineness==14?"selected":""}>14K</option>
-                  <option value="18" ${it.fineness==18?"selected":""}>18K</option>
-                  <option value="22" ${it.fineness==22?"selected":""}>22K</option>
-                  <option value="24" ${it.fineness==24?"selected":""}>24K</option>
-                `
-                : `
-                  <option value="800" ${it.fineness==800?"selected":""}>800</option>
-                  <option value="835" ${it.fineness==835?"selected":""}>835</option>
-                  <option value="925" ${it.fineness==925?"selected":""}>925</option>
-                  <option value="999" ${it.fineness==999?"selected":""}>999</option>
-                `
-              }
-            </select>
-          </div>
-
-          <div>
-            <label>Gewicht gram</label>
-            <input type="number"
-                   step="0.01"
-                   value="${it.weight||""}"
-                   oninput="items[${i}].weight=Number(this.value);calculate()">
-          </div>
-
-          <div>
-            <label>Niet-metaal gram</label>
-            <input type="number"
-                   step="0.01"
-                   value="${it.nonGold||""}"
-                   oninput="items[${i}].nonGold=Number(this.value);calculate()">
-          </div>
-
-          <div style="grid-column:span 2">
-            <label>Beschrijving</label>
-            <input value="${esc(it.description)}"
-                   oninput="items[${i}].description=this.value">
-          </div>
-
-        </div>
-
-        <div class="item-result">
-
-          <div class="result-box">
-            <small>Netto gewicht</small>
-            <b>${c.net.toFixed(2)} g</b>
-          </div>
-
-          <div class="result-box">
-            <small>Marktwaarde</small>
-            <b>${euro(c.market)}</b>
-          </div>
-
-          <div class="result-box">
-            <small>Inkoopprijs</small>
-            <b>${euro(c.offer)}</b>
-          </div>
-
-          <div class="result-box">
-            <small>Verschil</small>
-            <b>${euro(c.market-c.offer)}</b>
-          </div>
-
-        </div>
-
-      </div>
-      `;
-
-    }).join("");
-
-}
-
-
-function calc(it){
-
-  const weight =
-    Number(it.weight)||0;
-
-  const nonGold =
-    Number(it.nonGold)||0;
-
-  const net =
-    Math.max(
-      0,
-      weight-nonGold
-    );
-
-  let market=0;
-  let rate=0;
-
-  if(it.metal==="goud"){
-
-    market =
-      net *
-      settings.goldPrice *
-      (purity.goud[it.fineness]||0);
-
-    rate =
-      settings[
-        "rate"+it.fineness
-      ] || 0;
-
-  }else if(it.metal==="zilver"){
-
-    market =
-      net *
-      settings.silverPrice *
-      (purity.zilver[it.fineness]||0);
-
-    rate =
-      settings[
-        "srate"+it.fineness
-      ] || 0;
-
-  }else{
-
-    market=0;
-    rate=0;
-  }
-
-  const offer =
-    it.manualOffer>0
-      ? Number(it.manualOffer)
-      : market*(rate/100);
-
-  return{
-    net,
-    market,
-    offer
-  };
-}
-
-
-function calculate(){
-
-  items.forEach((it,i)=>{
-
-    const c=calc(it);
-
-    const box =
-      document.querySelectorAll(".item")[i];
-
-    if(!box)return;
-
-    const values =
-      box.querySelectorAll(".result-box b");
-
-    if(values[0])
-      values[0].textContent=
-        c.net.toFixed(2)+" g";
-
-    if(values[1])
-      values[1].textContent=
-        euro(c.market);
-
-    if(values[2])
-      values[2].textContent=
-        euro(c.offer);
-
-    if(values[3])
-      values[3].textContent=
-        euro(c.market-c.offer);
-
-  });
-
-  const market =
-    items.reduce(
-      (a,it)=>a+calc(it).market,
-      0
-    );
-
-  const total =
-    items.reduce(
-      (a,it)=>a+calc(it).offer,
-      0
-    );
-
-  $("marketTotal").textContent=
-    euro(market);
-
-  $("purchaseTotal").textContent=
-    euro(total);
-
-  const resale =
-    num("resalePrice");
-
-  const profit =
-    resale-total;
-
-  $("profitDisplay").textContent=
-    euro(profit);
-
-  const margin =
-    resale>0
-      ? profit/resale*100
-      : 0;
-
-  $("marginDisplay").textContent=
-    margin.toFixed(2)+"%";
-}
-
-
-/* =========================================================
-   KLANT
-========================================================= */
-
-function customerData(){
-
-  return{
-    firstName:$("firstName").value.trim(),
-    lastName:$("lastName").value.trim(),
-    birthDate:$("birthDate").value,
-    phone:$("phone").value.trim(),
-    iban:$("iban").value.trim(),
-    idChecked:$("idChecked").value,
-    idType:$("idType").value,
-    idNumber:$("idNumber").value.trim(),
-    street:$("street").value.trim(),
-    houseNumber:$("houseNumber").value.trim(),
-    postalCode:$("postalCode").value.trim(),
-    city:$("city").value.trim(),
-    note:$("purchaseNote").value.trim()
-  };
-}
-
-
-function clearCustomer(){
-
-  [
-    "firstName",
-    "lastName",
-    "birthDate",
-    "phone",
-    "iban",
-    "idNumber",
-    "street",
-    "houseNumber",
-    "postalCode",
-    "city"
-  ].forEach(id=>{
-    $(id).value="";
-  });
-
-  $("idChecked").value="nee";
-  $("idType").value="";
-}
-
-
-/* =========================================================
-   NIEUWE INKOOP
-========================================================= */
-
-function newPurchase(){
-
-  showPage("purchase");
-
-  items=[];
-
-  $("resalePrice").value=0;
-  $("purchaseNote").value="";
-  $("internalNote").value="";
-  $("reference").value="";
-
-  clearCustomer();
-
-  addItem();
-}
-
-
-/* =========================================================
-   OPSLAAN
-========================================================= */
-
-async function savePurchase(printAfter=false){
-
-  if(!currentUser || !currentBusinessId){
-    alert("Je bent niet ingelogd.");
-    return;
-  }
-
-  const c=customerData();
-
-  if(!c.firstName ||
-     !c.lastName ||
-     !c.birthDate){
-
-    alert(
-      "Vul voornaam, achternaam en geboortedatum in."
-    );
-
-    return;
-  }
-
-  if(c.idChecked!=="ja"){
-
-    alert(
-      "Het ID-document moet gecontroleerd zijn."
-    );
-
-    return;
-  }
-
-  if(!items.length){
-
-    alert(
-      "Voeg minstens één inkoopstuk toe."
-    );
-
-    return;
-  }
-
-  const total =
-    items.reduce(
-      (a,it)=>a+calc(it).offer,
-      0
-    );
-
-  if(
-    $("paymentMethod").value==="cash" &&
-    total>500
-  ){
-
-    alert(
-      "Cash boven €500 kan hier niet worden opgeslagen."
-    );
-
-    return;
-  }
-
-  const market =
-    items.reduce(
-      (a,it)=>a+calc(it).market,
-      0
-    );
-
-  const resale =
-    num("resalePrice");
-
-  const purchase={
-    reference:
-      $("reference").value.trim() ||
-      "GM-"+Date.now(),
-
-    date:new Date().toISOString(),
-
-    customer:c,
-
-    paymentMethod:
-      $("paymentMethod").value,
-
-    items:JSON.parse(
-      JSON.stringify(items)
-    ),
-
-    goldPrice:settings.goldPrice,
-    silverPrice:settings.silverPrice,
-
-    marketValue:market,
-    total:total,
-
-    resalePrice:resale,
-    profit:resale-total,
-
-    note:
-      $("purchaseNote").value.trim()
-  };
-
-  try{
-
-    await savePurchaseCloud(purchase);
-
-    purchases.unshift(purchase);
-
-    localStorage.setItem(
-      "goudmarsjan_purchases",
-      JSON.stringify(purchases)
-    );
-
-    alert(
-      "Aankoop succesvol opgeslagen."
-    );
-
-    if(printAfter){
-      printReceipt(purchase);
+        return;
     }
 
-    newPurchase();
+    const { data, error: loginError } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
 
-    showPage("dashboard");
+    if (loginError) {
 
-  }catch(e){
+        error.innerText =
+            "Inloggen mislukt: " + loginError.message;
 
-    console.error(e);
+        error.style.display = "block";
 
-    alert(
-      "Aankoop kon niet worden opgeslagen.\n\n"+
-      e.message
-    );
+        return;
+    }
 
-  }
+    await initialiseUser();
 }
 
 
 /* =========================================================
-   CLOUD SAVE
+   AUTH CHECK
 ========================================================= */
 
-async function savePurchaseCloud(p){
+async function initialiseUser() {
 
-  const {data:customer,error:customerError} =
-    await sb
-      .from("customers")
-      .insert({
-        business_id:currentBusinessId,
-        first_name:p.customer.firstName,
-        last_name:p.customer.lastName,
-        birth_date:p.customer.birthDate,
-        phone:p.customer.phone,
-        iban:p.customer.iban,
-        id_checked:p.customer.idChecked==="ja",
-        id_type:p.customer.idType,
-        id_number:p.customer.idNumber,
-        street:p.customer.street,
-        house_number:p.customer.houseNumber,
-        postal_code:p.customer.postalCode,
-        city:p.customer.city,
-        note:p.customer.note
-      })
-      .select("id")
-      .single();
+    const {
+        data: {
+            user
+        }
+    } = await supabaseClient.auth.getUser();
 
-  if(customerError)
-    throw customerError;
+    if (!user) {
+
+        showLogin();
+
+        return;
+    }
+
+    currentUser = user;
 
 
-  const {data:purchase,error:purchaseError} =
-    await sb
-      .from("purchases")
-      .insert({
-        business_id:currentBusinessId,
-        customer_id:customer.id,
-        created_by:currentUser.id,
-        reference:p.reference,
-        payment_method:p.paymentMethod,
-        gold_price:p.goldPrice,
-        silver_price_999:p.silverPrice,
-        market_value:p.marketValue,
-        total:p.total,
-        resale_price:p.resalePrice,
-        profit:p.profit,
-        note:p.note
-      })
-      .select("id")
-      .single();
+    /*
+       Eerst zoeken we naar een bedrijf waarvan deze gebruiker
+       eigenaar is.
+    */
 
-  if(purchaseError)
-    throw purchaseError;
+    let { data: businesses } =
+        await supabaseClient
+            .from("businesses")
+            .select("*")
+            .eq("owner_id", user.id)
+            .limit(1);
 
 
-  const rows =
-    p.items.map(it=>{
+    /*
+       Indien geen eigenaar, zoeken we naar een actieve
+       werknemer.
+    */
 
-      const c=calc(it);
+    if (!businesses || businesses.length === 0) {
 
-      return{
-        purchase_id:purchase.id,
-        business_id:currentBusinessId,
-        item_type:it.type,
-        metal:it.metal,
-        fineness:
-          it.metal==="verzilverd"
-            ? 0
-            : Number(it.fineness)||0,
-        gross_grams:Number(it.weight)||0,
-        weight:Number(it.weight)||0,
-        non_gold:Number(it.nonGold)||0,
-        net_grams:c.net,
-        market_value:c.market,
-        purchase_price:c.offer,
-        offer:c.offer,
-        description:it.description||""
-      };
-
-    });
+        const {
+            data: membership,
+            error
+        } = await supabaseClient
+            .from("business_members")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("active", true)
+            .limit(1)
+            .maybeSingle();
 
 
-  const {error:itemError} =
-    await sb
-      .from("purchase_items")
-      .insert(rows);
+        /*
+           BELANGRIJK:
 
-  if(itemError){
+           Geen actieve membership =
+           GEEN toegang.
+        */
 
-    await sb
-      .from("purchases")
-      .delete()
-      .eq("id",purchase.id);
+        if (error || !membership) {
 
-    await sb
-      .from("customers")
-      .delete()
-      .eq("id",customer.id);
+            await supabaseClient.auth.signOut();
 
-    throw itemError;
-  }
+            showLogin();
 
-}
+            const loginError =
+                document.getElementById("loginError");
 
+            loginError.innerText =
+                "Je account heeft momenteel geen toegang tot De Goudmarsjan.";
 
-/* =========================================================
-   CLOUD DATA LADEN
-========================================================= */
+            loginError.style.display = "block";
 
-async function loadCloudData(){
-
-  if(!currentBusinessId)
-    return;
-
-  const [
-    purchasesResult,
-    customersResult,
-    itemsResult
-  ]=await Promise.all([
-
-    sb
-      .from("purchases")
-      .select("*")
-      .eq("business_id",currentBusinessId)
-      .order("created_at",{ascending:false})
-      .limit(1000),
-
-    sb
-      .from("customers")
-      .select("*")
-      .eq("business_id",currentBusinessId)
-      .order("created_at",{ascending:false}),
-
-    sb
-      .from("purchase_items")
-      .select("*")
-      .eq("business_id",currentBusinessId)
-
-  ]);
-
-  if(purchasesResult.error)
-    throw purchasesResult.error;
-
-  if(customersResult.error)
-    throw customersResult.error;
-
-  if(itemsResult.error)
-    throw itemsResult.error;
+            return;
+        }
 
 
-  customers=
-    customersResult.data||[];
+        currentMember = membership;
 
 
-  const customerMap=
-    new Map(
-      customers.map(c=>[c.id,c])
-    );
+        const {
+            data: business
+        } = await supabaseClient
+            .from("businesses")
+            .select("*")
+            .eq("id", membership.business_id)
+            .single();
 
 
-  const itemMap=new Map();
+        if (!business) {
 
-  (itemsResult.data||[]).forEach(x=>{
+            await supabaseClient.auth.signOut();
 
-    if(!itemMap.has(x.purchase_id))
-      itemMap.set(x.purchase_id,[]);
+            showLogin();
 
-    itemMap.get(x.purchase_id).push({
-
-      type:x.item_type||"Juweel",
-      metal:x.metal||"goud",
-
-      fineness:
-        Number(x.fineness)||18,
-
-      weight:
-        Number(x.gross_grams ?? x.weight)||0,
-
-      nonGold:
-        Number(x.non_gold)||0,
-
-      description:
-        x.description||"",
-
-      manualOffer:
-        Number(x.offer ?? x.purchase_price)||0
-    });
-
-  });
+            return;
+        }
 
 
-  purchases=
-    (purchasesResult.data||[])
-      .map(x=>{
+        currentBusiness = business;
 
-        const c=
-          customerMap.get(x.customer_id)||{};
+    } else {
 
-        return{
+        currentBusiness = businesses[0];
 
-          id:x.reference||x.id,
-
-          cloudId:x.id,
-
-          date:x.created_at,
-
-          customer:{
-            firstName:c.first_name||"",
-            lastName:c.last_name||"",
-            birthDate:c.birth_date||"",
-            phone:c.phone||"",
-            iban:c.iban||"",
-            idChecked:c.id_checked?"ja":"nee",
-            idType:c.id_type||"",
-            idNumber:c.id_number||"",
-            street:c.street||"",
-            houseNumber:c.house_number||"",
-            postalCode:c.postal_code||"",
-            city:c.city||"",
-            note:c.note||""
-          },
-
-          paymentMethod:
-            x.payment_method||"overschrijving",
-
-          items:itemMap.get(x.id)||[],
-
-          goldPrice:
-            Number(x.gold_price)||0,
-
-          silverPrice:
-            Number(x.silver_price_999)||0,
-
-          marketValue:
-            Number(x.market_value)||0,
-
-          total:
-            Number(x.total)||0,
-
-          resalePrice:
-            Number(x.resale_price)||0,
-
-          profit:
-            Number(x.profit)||0,
-
-          note:x.note||""
+        currentMember = {
+            role: "owner",
+            active: true,
+            display_name:
+                currentUser.email
         };
+    }
 
-      });
 
+    /*
+       EXTRA VEILIGHEID:
+       actieve membership controleren.
+    */
+
+    if (
+        currentMember.role !== "owner" &&
+        currentMember.active !== true
+    ) {
+
+        await supabaseClient.auth.signOut();
+
+        showLogin();
+
+        return;
+    }
+
+
+    enterApplication();
+}
+
+
+/* =========================================================
+   UI LOGIN / APP
+========================================================= */
+
+function showLogin() {
+
+    document.getElementById("loginScreen")
+        .style.display = "flex";
+
+    document.getElementById("app")
+        .style.display = "none";
+}
+
+
+function enterApplication() {
+
+    document.getElementById("loginScreen")
+        .style.display = "none";
+
+    document.getElementById("app")
+        .style.display = "block";
+
+
+    document.getElementById("currentUserName")
+        .innerText =
+            currentMember.display_name ||
+            currentUser.email;
+
+
+    document.getElementById("currentRole")
+        .innerText =
+            currentMember.role === "owner"
+                ? "Admin"
+                : "Werknemer";
+
+
+    /*
+       Werknemers mogen niet naar het werknemersbeheer.
+    */
+
+    if (currentMember.role !== "owner") {
+
+        document.getElementById("adminMenu")
+            .style.display = "none";
+    }
+
+
+    loadApplication();
+}
+
+
+async function logout() {
+
+    await supabaseClient.auth.signOut();
+
+    currentUser = null;
+    currentBusiness = null;
+    currentMember = null;
+
+    showLogin();
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function showPage(pageId, button) {
+
+    document.querySelectorAll(".page")
+        .forEach(page => {
+            page.classList.remove("active");
+        });
+
+    document.getElementById(pageId)
+        .classList.add("active");
+
+
+    document.querySelectorAll(".nav-btn")
+        .forEach(btn => {
+            btn.classList.remove("active");
+        });
+
+
+    if (button) {
+        button.classList.add("active");
+    }
+
+
+    if (pageId === "customers") {
+        loadCustomers();
+    }
+
+    if (pageId === "purchase") {
+        loadCustomersForPurchase();
+    }
+
+    if (pageId === "purchases") {
+        renderPurchases();
+    }
+
+    if (pageId === "profits") {
+        renderProfits();
+    }
+
+    if (pageId === "employees") {
+        loadEmployees();
+    }
+}
+
+
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+
+async function loadApplication() {
+
+    await loadCustomers();
+
+    await loadPurchases();
+
+    updateDashboard();
+
+    addPurchaseItem();
+}
+
+
+/* =========================================================
+   CUSTOMERS
+========================================================= */
+
+async function loadCustomers() {
+
+    if (!currentBusiness) return;
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("customers")
+        .select("*")
+        .eq("business_id", currentBusiness.id)
+        .order("created_at", {
+            ascending: false
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+    }
+
+
+    allCustomers = data || [];
+
+    renderCustomers();
+    loadCustomersForPurchase();
+}
+
+
+function renderCustomers() {
+
+    const table =
+        document.getElementById("customersTable");
+
+    if (!allCustomers.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty">
+                    Nog geen klanten.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    table.innerHTML =
+        allCustomers.map(customer => {
+
+            const name =
+                `${customer.first_name || ""} ${customer.last_name || ""}`
+                    .trim();
+
+
+            return `
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${escapeHtml(name)}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${dateFormat(customer.birth_date)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(customer.phone || "-")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(customer.city || "-")}
+                    </td>
+
+                    <td>
+                        ${
+                            customer.id_checked
+                                ? "✅ Ja"
+                                : "❌ Nee"
+                        }
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+}
+
+
+function filterCustomers() {
+
+    const search =
+        document.getElementById("customerSearch")
+            .value
+            .toLowerCase();
+
+
+    const rows =
+        document.querySelectorAll(
+            "#customersTable tr"
+        );
+
+
+    rows.forEach(row => {
+
+        row.style.display =
+            row.innerText
+                .toLowerCase()
+                .includes(search)
+                ? ""
+                : "none";
+
+    });
+}
+
+
+function openCustomerForm() {
+
+    document.getElementById("customerForm")
+        .style.display = "block";
+}
+
+
+function closeCustomerForm() {
+
+    document.getElementById("customerForm")
+        .style.display = "none";
+}
+
+
+async function saveCustomer() {
+
+    const firstName =
+        document.getElementById("customerFirstName").value.trim();
+
+    const lastName =
+        document.getElementById("customerLastName").value.trim();
+
+
+    if (!firstName || !lastName) {
+
+        alert(
+            "Voornaam en achternaam zijn verplicht."
+        );
+
+        return;
+    }
+
+
+    const customer = {
+
+        business_id: currentBusiness.id,
+
+        first_name: firstName,
+
+        last_name: lastName,
+
+        birth_date:
+            document.getElementById("customerBirthDate").value
+            || null,
+
+        phone:
+            document.getElementById("customerPhone").value
+            || null,
+
+        iban:
+            document.getElementById("customerIban").value
+            || null,
+
+        id_type:
+            document.getElementById("customerIdType").value
+            || null,
+
+        id_number:
+            document.getElementById("customerIdNumber").value
+            || null,
+
+        address_line:
+            document.getElementById("customerAddress").value
+            || null,
+
+        postal_code:
+            document.getElementById("customerPostal").value
+            || null,
+
+        city:
+            document.getElementById("customerCity").value
+            || null,
+
+        notes:
+            document.getElementById("customerNotes").value
+            || null,
+
+        id_checked: false
+    };
+
+
+    const {
+        error
+    } = await supabaseClient
+        .from("customers")
+        .insert(customer);
+
+
+    if (error) {
+
+        alert(
+            "Klant kon niet worden opgeslagen:\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
+
+    alert("Klant opgeslagen.");
+
+
+    document
+        .querySelectorAll("#customerForm input, #customerForm textarea")
+        .forEach(input => {
+            input.value = "";
+        });
+
+
+    closeCustomerForm();
+
+    await loadCustomers();
+}
+
+
+/* =========================================================
+   PURCHASE CUSTOMER SELECT
+========================================================= */
+
+function loadCustomersForPurchase() {
+
+    const select =
+        document.getElementById("purchaseCustomer");
+
+    if (!select) return;
+
+
+    const current =
+        select.value;
+
+
+    select.innerHTML = `
+        <option value="">
+            Selecteer klant
+        </option>
+    `;
+
+
+    allCustomers.forEach(customer => {
+
+        const name =
+            `${customer.first_name || ""} ${customer.last_name || ""}`
+                .trim();
+
+
+        const option =
+            document.createElement("option");
+
+        option.value = customer.id;
+
+        option.textContent = name;
+
+        select.appendChild(option);
+
+    });
+
+
+    if (current) {
+        select.value = current;
+    }
+}
+
+
+/* =========================================================
+   PURCHASE ITEMS
+========================================================= */
+
+function addPurchaseItem() {
+
+    purchaseItemCounter++;
+
+    const id =
+        purchaseItemCounter;
+
+
+    const container =
+        document.getElementById("purchaseItems");
+
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "purchase-item";
+
+
+    div.dataset.itemId = id;
+
+
+    div.innerHTML = `
+
+        <div class="item-grid">
+
+            <div class="form-group">
+
+                <label>Type metaal</label>
+
+                <select class="item-metal">
+
+                    <option value="Goud">
+                        Goud
+                    </option>
+
+                    <option value="Zilver">
+                        Zilver
+                    </option>
+
+                    <option value="Platina">
+                        Platina
+                    </option>
+
+                    <option value="Palladium">
+                        Palladium
+                    </option>
+
+                    <option value="Andere">
+                        Andere
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Fijnheid</label>
+
+                <select class="item-fineness">
+
+                    <option value="999">
+                        999
+                    </option>
+
+                    <option value="916">
+                        916
+                    </option>
+
+                    <option value="900">
+                        900
+                    </option>
+
+                    <option value="750">
+                        750
+                    </option>
+
+                    <option value="585">
+                        585
+                    </option>
+
+                    <option value="375">
+                        375
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Bruto gram</label>
+
+                <input
+                    class="input item-gross"
+                    type="number"
+                    step="0.01"
+                    value="0"
+                    oninput="calculatePurchase()"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Netto gram</label>
+
+                <input
+                    class="input item-net"
+                    type="number"
+                    step="0.01"
+                    value="0"
+                    oninput="calculatePurchase()"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Ons bod</label>
+
+                <input
+                    class="input item-offer"
+                    type="number"
+                    step="0.01"
+                    value="0"
+                    oninput="calculatePurchase()"
+                >
+
+            </div>
+
+
+            <div>
+
+                <button
+                    class="btn btn-red"
+                    onclick="removePurchaseItem(${id})"
+                >
+                    Verwijder
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div style="margin-top:12px">
+
+            Marktwaarde:
+            <strong class="item-market">
+                € 0,00
+            </strong>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(div);
+
+
+    calculatePurchase();
+}
+
+
+function removePurchaseItem(id) {
+
+    const item =
+        document.querySelector(
+            `.purchase-item[data-item-id="${id}"]`
+        );
+
+
+    if (item) {
+        item.remove();
+    }
+
+
+    calculatePurchase();
+}
+
+
+/* =========================================================
+   CALCULATE PURCHASE
+========================================================= */
+
+function calculatePurchase() {
+
+    let total = 0;
+    let market = 0;
+
+
+    document
+        .querySelectorAll(".purchase-item")
+        .forEach(item => {
+
+            const gross =
+                Number(
+                    item.querySelector(".item-gross").value
+                ) || 0;
+
+
+            const net =
+                Number(
+                    item.querySelector(".item-net").value
+                ) || 0;
+
+
+            const offer =
+                Number(
+                    item.querySelector(".item-offer").value
+                ) || 0;
+
+
+            /*
+               Momenteel wordt marktwaarde berekend op basis
+               van de ingevoerde actuele goudprijs.
+
+               De precieze prijslogica kan later rechtstreeks
+               aan settings gekoppeld worden.
+            */
+
+            const metal =
+                item.querySelector(".item-metal").value;
+
+
+            const fineness =
+                Number(
+                    item.querySelector(".item-fineness").value
+                ) || 0;
+
+
+            let price = 0;
+
+
+            if (metal === "Goud") {
+
+                price =
+                    Number(
+                        document.getElementById("goldPrice").value
+                    ) || 0;
+
+            } else if (metal === "Zilver") {
+
+                price =
+                    Number(
+                        document.getElementById("silverPrice").value
+                    ) || 0;
+            }
+
+
+            const marketValue =
+                net *
+                price *
+                (fineness / 999);
+
+
+            total += offer;
+
+            market += marketValue;
+
+
+            const marketElement =
+                item.querySelector(".item-market");
+
+
+            marketElement.innerText =
+                money(marketValue);
+
+        });
+
+
+    document.getElementById("purchaseTotal")
+        .innerText = money(total);
+
+
+    document.getElementById("purchaseMarket")
+        .innerText = money(market);
+}
+
+
+/* =========================================================
+   SAVE PURCHASE
+========================================================= */
+
+async function savePurchase() {
+
+    const customerId =
+        document.getElementById("purchaseCustomer").value;
+
+
+    if (!customerId) {
+
+        alert("Selecteer eerst een klant.");
+
+        return;
+    }
+
+
+    const items =
+        Array.from(
+            document.querySelectorAll(".purchase-item")
+        );
+
+
+    if (!items.length) {
+
+        alert("Voeg minstens één stuk toe.");
+
+        return;
+    }
+
+
+    let total = 0;
+    let marketValueTotal = 0;
+
+
+    const purchaseItems = [];
+
+
+    items.forEach(item => {
+
+        const metal =
+            item.querySelector(".item-metal").value;
+
+        const fineness =
+            item.querySelector(".item-fineness").value;
+
+        const gross =
+            Number(
+                item.querySelector(".item-gross").value
+            ) || 0;
+
+        const net =
+            Number(
+                item.querySelector(".item-net").value
+            ) || 0;
+
+        const offer =
+            Number(
+                item.querySelector(".item-offer").value
+            ) || 0;
+
+
+        let price = 0;
+
+
+        if (metal === "Goud") {
+
+            price =
+                Number(
+                    document.getElementById("goldPrice").value
+                ) || 0;
+
+        } else if (metal === "Zilver") {
+
+            price =
+                Number(
+                    document.getElementById("silverPrice").value
+                ) || 0;
+
+        }
+
+
+        const market =
+            net *
+            price *
+            (Number(fineness) / 999);
+
+
+        total += offer;
+
+        marketValueTotal += market;
+
+
+        purchaseItems.push({
+
+            item_type: metal,
+
+            metal: metal,
+
+            fineness: String(fineness),
+
+            gross_grams: gross,
+
+            net_grams: net,
+
+            market_value: market,
+
+            offer: offer
+
+        });
+
+    });
+
+
+    /*
+       Eerst de aankoop zelf maken.
+    */
+
+    const {
+        data: purchase,
+        error: purchaseError
+    } = await supabaseClient
+        .from("purchases")
+        .insert({
+
+            business_id:
+                currentBusiness.id,
+
+            customer_id:
+                customerId,
+
+            created_by:
+                currentUser.id,
+
+            reference:
+                "INKOOP-" +
+                Date.now(),
+
+            purchase_date:
+                new Date().toISOString(),
+
+            payment_method:
+                document.getElementById("paymentMethod").value,
+
+            gold_price_24k:
+                Number(
+                    document.getElementById("goldPrice").value
+                ) || null,
+
+            silver_price_999:
+                Number(
+                    document.getElementById("silverPrice").value
+                ) || null,
+
+            market_value:
+                marketValueTotal,
+
+            total:
+                total
+
+        })
+
+        .select()
+        .single();
+
+
+    if (purchaseError) {
+
+        alert(
+            "Aankoop kon niet worden opgeslagen:\n\n" +
+            purchaseError.message
+        );
+
+        return;
+    }
+
+
+    /*
+       Daarna de aankoopstukken.
+    */
+
+    const itemsToInsert =
+        purchaseItems.map(item => ({
+
+            purchase_id:
+                purchase.id,
+
+            business_id:
+                currentBusiness.id,
+
+            ...item
+
+        }));
+
+
+    const {
+        error: itemsError
+    } = await supabaseClient
+        .from("purchase_items")
+        .insert(itemsToInsert);
+
+
+    if (itemsError) {
+
+        alert(
+            "Aankoop werd aangemaakt maar de stukken konden niet worden opgeslagen:\n\n" +
+            itemsError.message
+        );
+
+        return;
+    }
+
+
+    alert(
+        "Aankoop succesvol opgeslagen.\n\n" +
+        "Inkoop: " + money(total) +
+        "\nMarktwaarde: " + money(marketValueTotal) +
+        "\nVerwachte winst: " +
+        money(marketValueTotal - total)
+    );
+
+
+    /*
+       Formulier leegmaken.
+    */
+
+    document.getElementById("purchaseItems")
+        .innerHTML = "";
+
+    purchaseItemCounter = 0;
+
+    document.getElementById("purchaseCustomer")
+        .value = "";
+
+    document.getElementById("purchaseNotes")
+        .value = "";
+
+    addPurchaseItem();
+
+
+    await loadPurchases();
+
+    updateDashboard();
+}
+
+
+/* =========================================================
+   LOAD PURCHASES
+========================================================= */
+
+async function loadPurchases() {
+
+    if (!currentBusiness) return;
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("purchases")
+        .select(`
+            *,
+            customers (
+                first_name,
+                last_name
+            )
+        `)
+        .eq("business_id", currentBusiness.id)
+        .order("purchase_date", {
+            ascending: false
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+    }
+
+
+    allPurchases = data || [];
+
+    updateDashboard();
+
+    renderPurchases();
+
+    renderProfits();
 }
 
 
@@ -2700,1245 +2594,669 @@ async function loadCloudData(){
    DASHBOARD
 ========================================================= */
 
-function todayPurchases(){
+function updateDashboard() {
 
-  const now=new Date();
+    const today =
+        new Date();
 
-  return purchases.filter(p=>{
-
-    const d=new Date(p.date);
-
-    return(
-      d.getFullYear()===now.getFullYear() &&
-      d.getMonth()===now.getMonth() &&
-      d.getDate()===now.getDate()
-    );
-
-  });
-}
+    const todayString =
+        today.toISOString()
+            .slice(0, 10);
 
 
-function renderDashboard(){
+    const todayPurchases =
+        allPurchases.filter(p => {
 
-  const arr=todayPurchases();
+            return String(
+                p.purchase_date
+            ).slice(0, 10)
+                === todayString;
 
-  const sum=key=>
-    arr.reduce(
-      (a,p)=>a+(Number(p[key])||0),
-      0
-    );
+        });
 
-  $("dashCount").textContent=arr.length;
-  $("dashPurchase").textContent=euro(sum("total"));
-  $("dashResale").textContent=euro(sum("resalePrice"));
-  $("dashProfit").textContent=euro(sum("profit"));
 
-  $("dashRecent").innerHTML=
-    arr.slice(0,10).map(p=>`
+    let bought = 0;
+    let market = 0;
 
-      <div class="history">
 
-        <div class="history-grid">
+    todayPurchases.forEach(p => {
 
-          <div>
-            <b>
-              ${esc(
-                p.customer.firstName+
-                " "+
-                p.customer.lastName
-              )}
-            </b>
+        bought +=
+            Number(p.total || 0);
 
-            <br>
+        market +=
+            Number(p.market_value || 0);
 
-            <small>
-              ${esc(p.id)}
-              ·
-              ${new Date(p.date).toLocaleTimeString(
-                "nl-BE",
-                {
-                  hour:"2-digit",
-                  minute:"2-digit"
-                }
-              )}
-            </small>
-          </div>
+    });
 
-          <div style="text-align:right">
-            <b>${euro(p.total)}</b>
-            <br>
-            <small>
-              winst ${euro(p.profit)}
-            </small>
-          </div>
 
-        </div>
+    const profit =
+        market - bought;
 
-      </div>
 
-    `).join("")
-    ||
-    `<div class="note">
-      Vandaag zijn er nog geen inkopen.
-    </div>`;
+    document.getElementById("dashPurchases")
+        .innerText =
+        todayPurchases.length;
 
+
+    document.getElementById("dashBought")
+        .innerText =
+        money(bought);
+
+
+    document.getElementById("dashMarket")
+        .innerText =
+        money(market);
+
+
+    document.getElementById("dashProfit")
+        .innerText =
+        money(profit);
+
+
+    renderRecentPurchases();
 }
 
 
 /* =========================================================
-   KLANTEN
+   RECENT PURCHASES
 ========================================================= */
 
-function renderCustomers(){
+function renderRecentPurchases() {
 
-  const q=
-    ($("customerSearch").value||"")
-      .toLowerCase()
-      .trim();
+    const table =
+        document.getElementById("recentPurchases");
 
-  const arr=
-    customers.filter(c=>
-      [
-        c.first_name,
-        c.last_name,
-        c.phone,
-        c.id_number,
-        c.city,
-        c.postal_code
-      ]
-      .join(" ")
-      .toLowerCase()
-      .includes(q)
-    );
 
+    const purchases =
+        allPurchases.slice(0, 10);
 
-  $("customerList").innerHTML=
-    arr.map(c=>`
 
-      <div class="customer-card"
-           onclick="showCustomer('${c.id}')">
+    if (!purchases.length) {
 
-        <b>
-          ${esc(c.first_name)}
-          ${esc(c.last_name)}
-        </b>
-
-        <small>
-          ${esc(c.phone||"Geen telefoon")}
-        </small>
-
-        <small>
-          ${esc(
-            [c.postal_code,c.city]
-              .filter(Boolean)
-              .join(" ")
-          )}
-        </small>
-
-        <small>
-          ${esc(
-            c.id_number||
-            "Geen ID-nummer"
-          )}
-        </small>
-
-      </div>
-
-    `).join("")
-    ||
-    `<div class="note">
-      Geen klanten gevonden.
-    </div>`;
-}
-
-
-function showCustomer(id){
-
-  const c=
-    customers.find(x=>x.id===id);
-
-  if(!c)return;
-
-  const related=
-    purchases.filter(p=>
-      p.customer.firstName===c.first_name &&
-      p.customer.lastName===c.last_name
-    );
-
-
-  $("customerDetail").innerHTML=`
-
-    <div class="card">
-
-      <div class="row">
-
-        <div>
-          <h2>
-            ${esc(c.first_name)}
-            ${esc(c.last_name)}
-          </h2>
-
-          <span class="badge">
-            ${c.id_checked
-              ? "ID gecontroleerd"
-              : "ID niet gecontroleerd"}
-          </span>
-        </div>
-
-        <button class="light"
-                onclick="$('customerDetail').innerHTML=''">
-          Sluiten
-        </button>
-
-      </div>
-
-
-      <br>
-
-
-      <div class="g3">
-
-        <div>
-          <label>Geboortedatum</label>
-          <div class="value">
-            ${esc(c.birth_date||"—")}
-          </div>
-        </div>
-
-        <div>
-          <label>Telefoon</label>
-          <div class="value">
-            ${esc(c.phone||"—")}
-          </div>
-        </div>
-
-        <div>
-          <label>IBAN</label>
-          <div class="value">
-            ${esc(c.iban||"—")}
-          </div>
-        </div>
-
-        <div>
-          <label>Adres</label>
-          <div class="value">
-            ${esc(
-              [
-                c.street,
-                c.house_number
-              ]
-              .filter(Boolean)
-              .join(" ")||"—"
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label>Postcode / gemeente</label>
-          <div class="value">
-            ${esc(
-              [
-                c.postal_code,
-                c.city
-              ]
-              .filter(Boolean)
-              .join(" ")||"—"
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label>ID-document</label>
-          <div class="value">
-            ${esc(
-              [
-                c.id_type,
-                c.id_number
-              ]
-              .filter(Boolean)
-              .join(" — ")||"—"
-            )}
-          </div>
-        </div>
-
-      </div>
-
-
-      <br>
-
-
-      <h3>Aankoopgeschiedenis</h3>
-
-      ${
-        related.map(p=>`
-
-          <div class="history">
-
-            <div class="history-grid">
-
-              <div>
-                <b>${esc(p.id)}</b>
-                <br>
-                <small>
-                  ${new Date(p.date)
-                    .toLocaleDateString("nl-BE")}
-                </small>
-              </div>
-
-              <div style="text-align:right">
-                <b>${euro(p.total)}</b>
-                <br>
-                <small>
-                  winst ${euro(p.profit)}
-                </small>
-              </div>
-
-            </div>
-
-          </div>
-
-        `).join("")
-        ||
-        `<div class="note">
-          Geen aankoophistorie gevonden.
-        </div>`
-      }
-
-    </div>
-  `;
-
-  $("customerDetail")
-    .scrollIntoView({
-      behavior:"smooth"
-    });
-}
-
-
-/* =========================================================
-   INKOPEN
-========================================================= */
-
-function renderPurchases(){
-
-  const q=
-    ($("purchaseSearch").value||"")
-      .toLowerCase()
-      .trim();
-
-  const arr=
-    purchases.filter(p=>{
-
-      const text=[
-        p.id,
-        p.customer.firstName,
-        p.customer.lastName,
-        p.customer.phone
-      ]
-      .join(" ")
-      .toLowerCase();
-
-      return text.includes(q);
-    });
-
-
-  $("purchaseList").innerHTML=
-    arr.map(p=>`
-
-      <div class="history">
-
-        <div class="history-grid">
-
-          <div>
-
-            <b>
-              ${esc(
-                p.customer.firstName+
-                " "+
-                p.customer.lastName
-              )}
-            </b>
-
-            <br>
-
-            <small>
-              ${esc(p.id)}
-              ·
-              ${new Date(p.date)
-                .toLocaleString("nl-BE")}
-            </small>
-
-          </div>
-
-          <div style="text-align:right">
-
-            <b>${euro(p.total)}</b>
-
-            <br>
-
-            <small>
-              winst ${euro(p.profit)}
-            </small>
-
-          </div>
-
-        </div>
-
-        <br>
-
-        <button class="light"
-                onclick="viewPurchase('${esc(p.id)}')">
-          BEKIJK
-        </button>
-
-        <button class="dark"
-                onclick="printReceiptById('${esc(p.id)}')">
-          BON
-        </button>
-
-        ${
-          currentMember?.role==="owner"
-          ? `
-            <button class="danger"
-                    onclick="deletePurchase('${esc(p.id)}')">
-              VERWIJDEREN
-            </button>
-          `
-          :""
-        }
-
-      </div>
-
-    `).join("")
-    ||
-    `<div class="note">
-      Geen inkopen gevonden.
-    </div>`;
-}
-
-
-function viewPurchase(id){
-
-  const p=
-    purchases.find(x=>x.id===id);
-
-  if(!p)return;
-
-  const detail=
-    document.createElement("div");
-
-  detail.className="card";
-
-  detail.innerHTML=`
-
-    <div class="row">
-
-      <div>
-        <h2>Aankoop ${esc(p.id)}</h2>
-        <small>
-          ${new Date(p.date)
-            .toLocaleString("nl-BE")}
-        </small>
-      </div>
-
-      <button class="light"
-              onclick="this.closest('.card').remove()">
-        Sluiten
-      </button>
-
-    </div>
-
-    <hr style="border:0;border-top:1px solid #eee;margin:18px 0">
-
-    <div class="g3">
-
-      <div>
-        <label>Klant</label>
-        <div class="value">
-          ${esc(
-            p.customer.firstName+
-            " "+
-            p.customer.lastName
-          )}
-        </div>
-      </div>
-
-      <div>
-        <label>Totaal inkoop</label>
-        <div class="value">
-          ${euro(p.total)}
-        </div>
-      </div>
-
-      <div>
-        <label>Verwachte winst</label>
-        <div class="value">
-          ${euro(p.profit)}
-        </div>
-      </div>
-
-    </div>
-
-    <br>
-
-    <h3>Inkoopstukken</h3>
-
-    ${
-      p.items.map(it=>{
-
-        const c=calc(it);
-
-        return `
-          <div class="history">
-
-            <b>
-              ${esc(it.type)}
-              ·
-              ${esc(it.metal)}
-              ${esc(it.fineness)}
-            </b>
-
-            <br>
-
-            ${Number(it.weight||0).toFixed(2)} g
-
-            <br>
-
-            Inkoop:
-            <b>${euro(c.offer)}</b>
-
-          </div>
+        table.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty">
+                    Nog geen aankopen.
+                </td>
+            </tr>
         `;
 
-      }).join("")
+        return;
     }
 
-  `;
 
-  $("purchaseList")
-    .prepend(detail);
+    table.innerHTML =
+        purchases.map(p => {
 
-  detail.scrollIntoView({
-    behavior:"smooth"
-  });
+            const bought =
+                Number(p.total || 0);
+
+            const market =
+                Number(p.market_value || 0);
+
+            const profit =
+                market - bought;
+
+
+            const customer =
+                p.customers
+                    ? `${p.customers.first_name || ""} ${p.customers.last_name || ""}`
+                    : "-";
+
+
+            return `
+                <tr>
+
+                    <td>
+                        ${dateFormat(p.purchase_date)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(customer)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            p.created_by || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${money(bought)}
+                    </td>
+
+                    <td>
+                        ${money(market)}
+                    </td>
+
+                    <td class="${
+                        profit >= 0
+                            ? "profit-positive"
+                            : "profit-negative"
+                    }">
+                        ${money(profit)}
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
 }
 
 
 /* =========================================================
-   WINSTEN
+   PURCHASE HISTORY
 ========================================================= */
 
-function renderProfits(){
+function renderPurchases() {
 
-  const sum=key=>
-    purchases.reduce(
-      (a,p)=>a+(Number(p[key])||0),
-      0
-    );
-
-  $("profitCount").textContent=
-    purchases.length;
-
-  $("profitPurchase").textContent=
-    euro(sum("total"));
-
-  $("profitResale").textContent=
-    euro(sum("resalePrice"));
-
-  $("profitTotal").textContent=
-    euro(sum("profit"));
+    const table =
+        document.getElementById("purchasesTable");
 
 
-  const days=[];
-  const now=new Date();
+    if (!allPurchases.length) {
 
-  for(let i=13;i>=0;i--){
+        table.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty">
+                    Nog geen aankopen.
+                </td>
+            </tr>
+        `;
 
-    const d=new Date(now);
+        return;
+    }
 
-    d.setHours(0,0,0,0);
-    d.setDate(d.getDate()-i);
 
-    const profit=
-      purchases
-        .filter(p=>{
+    table.innerHTML =
+        allPurchases.map(p => {
 
-          const x=new Date(p.date);
+            const bought =
+                Number(p.total || 0);
 
-          return(
-            x.getFullYear()===d.getFullYear() &&
-            x.getMonth()===d.getMonth() &&
-            x.getDate()===d.getDate()
-          );
+            const market =
+                Number(p.market_value || 0);
 
+            const profit =
+                market - bought;
+
+
+            const customer =
+                p.customers
+                    ? `${p.customers.first_name || ""} ${p.customers.last_name || ""}`
+                    : "-";
+
+
+            return `
+                <tr>
+
+                    <td>
+                        ${dateFormat(p.purchase_date)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(customer)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(p.created_by || "-")}
+                    </td>
+
+                    <td>
+                        ${money(bought)}
+                    </td>
+
+                    <td>
+                        ${money(market)}
+                    </td>
+
+                    <td class="${
+                        profit >= 0
+                            ? "profit-positive"
+                            : "profit-negative"
+                    }">
+                        ${money(profit)}
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+}
+
+
+/* =========================================================
+   PROFITS
+========================================================= */
+
+function renderProfits() {
+
+    const table =
+        document.getElementById("profitsTable");
+
+
+    const now =
+        new Date();
+
+
+    const today =
+        now.toISOString()
+            .slice(0, 10);
+
+
+    const month =
+        now.getFullYear() +
+        "-" +
+        String(
+            now.getMonth() + 1
+        ).padStart(2, "0");
+
+
+    let todayProfit = 0;
+    let monthProfit = 0;
+    let totalBought = 0;
+    let totalMarket = 0;
+
+
+    allPurchases.forEach(p => {
+
+        const bought =
+            Number(p.total || 0);
+
+        const market =
+            Number(p.market_value || 0);
+
+        const profit =
+            market - bought;
+
+
+        totalBought += bought;
+
+        totalMarket += market;
+
+
+        const date =
+            String(
+                p.purchase_date
+            ).slice(0, 10);
+
+
+        if (date === today) {
+            todayProfit += profit;
+        }
+
+
+        if (date.startsWith(month)) {
+            monthProfit += profit;
+        }
+
+    });
+
+
+    document.getElementById("profitToday")
+        .innerText =
+        money(todayProfit);
+
+
+    document.getElementById("profitMonth")
+        .innerText =
+        money(monthProfit);
+
+
+    document.getElementById("profitBought")
+        .innerText =
+        money(totalBought);
+
+
+    document.getElementById("profitMarket")
+        .innerText =
+        money(totalMarket);
+
+
+    document.getElementById("bigProfitToday")
+        .innerText =
+        money(todayProfit);
+
+
+    if (!allPurchases.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty">
+                    Nog geen gegevens.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    table.innerHTML =
+        allPurchases.map(p => {
+
+            const bought =
+                Number(p.total || 0);
+
+            const market =
+                Number(p.market_value || 0);
+
+            const profit =
+                market - bought;
+
+
+            const customer =
+                p.customers
+                    ? `${p.customers.first_name || ""} ${p.customers.last_name || ""}`
+                    : "-";
+
+
+            return `
+                <tr>
+
+                    <td>
+                        ${dateFormat(p.purchase_date)}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(customer)}
+                    </td>
+
+                    <td>
+                        ${money(bought)}
+                    </td>
+
+                    <td>
+                        ${money(market)}
+                    </td>
+
+                    <td class="${
+                        profit >= 0
+                            ? "profit-positive"
+                            : "profit-negative"
+                    }">
+                        ${money(profit)}
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+}
+
+
+/* =========================================================
+   EMPLOYEES
+========================================================= */
+
+async function loadEmployees() {
+
+    if (
+        !currentMember ||
+        currentMember.role !== "owner"
+    ) {
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("business_members")
+        .select("*")
+        .eq("business_id", currentBusiness.id)
+        .order("created_at", {
+            ascending: true
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        return;
+    }
+
+
+    const table =
+        document.getElementById("employeesTable");
+
+
+    if (!data || !data.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="4" class="empty">
+                    Geen werknemers.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    table.innerHTML =
+        data.map(employee => {
+
+            const isOwner =
+                employee.role === "owner";
+
+
+            return `
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${escapeHtml(
+                                employee.display_name ||
+                                employee.user_id
+                            )}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${
+                            isOwner
+                                ? "👑 Admin"
+                                : "👷 Werknemer"
+                        }
+                    </td>
+
+                    <td>
+                        ${
+                            employee.active
+                                ? '<span class="profit-positive">● Actief</span>'
+                                : '<span class="profit-negative">● Geen toegang</span>'
+                        }
+                    </td>
+
+                    <td>
+
+                        ${
+                            !isOwner
+                            ? `
+                                <button
+                                    class="btn ${
+                                        employee.active
+                                            ? "btn-red"
+                                            : "btn-green"
+                                    }"
+                                    onclick="toggleEmployee(
+                                        '${employee.user_id}',
+                                        ${!employee.active}
+                                    )"
+                                >
+                                    ${
+                                        employee.active
+                                            ? "Toegang intrekken"
+                                            : "Toegang geven"
+                                    }
+                                </button>
+                            `
+                            : "Eigenaar"
+                        }
+
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+}
+
+
+/* =========================================================
+   EMPLOYEE ACCESS
+========================================================= */
+
+async function toggleEmployee(
+    userId,
+    newStatus
+) {
+
+    if (
+        !currentMember ||
+        currentMember.role !== "owner"
+    ) {
+
+        alert("Geen toestemming.");
+
+        return;
+    }
+
+
+    const text =
+        newStatus
+            ? "toegang geven"
+            : "toegang intrekken";
+
+
+    if (
+        !confirm(
+            `Wil je deze werknemer echt ${text}?`
+        )
+    ) {
+        return;
+    }
+
+
+    const {
+        error
+    } = await supabaseClient
+        .from("business_members")
+        .update({
+            active: newStatus
         })
-        .reduce(
-          (a,p)=>a+(Number(p.profit)||0),
-          0
+        .eq(
+            "business_id",
+            currentBusiness.id
+        )
+        .eq(
+            "user_id",
+            userId
         );
 
-    days.push({
-      d,
-      profit
-    });
-  }
+
+    if (error) {
+
+        alert(
+            "Wijzigen mislukt:\n\n" +
+            error.message
+        );
+
+        return;
+    }
 
 
-  const max=
-    Math.max(
-      1,
-      ...days.map(x=>x.profit)
-    );
-
-
-  $("profitChart").innerHTML=
-    days.map(x=>`
-
-      <div class="profit-bar-wrap">
-
-        <div class="profit-bar-value">
-          ${euro(x.profit)}
-        </div>
-
-        <div class="profit-bar"
-             style="height:${Math.max(
-               3,
-               x.profit/max*190
-             )}px">
-        </div>
-
-        <div class="profit-bar-label">
-          ${x.d.toLocaleDateString(
-            "nl-BE",
-            {
-              day:"2-digit",
-              month:"2-digit"
-            }
-          )}
-        </div>
-
-      </div>
-
-    `).join("");
-
-
-  const employeeMap={};
-
-  purchases.forEach(p=>{
-
-    const name=
-      p.createdByName||
-      "Onbekend";
-
-    employeeMap[name]=
-      (employeeMap[name]||0)+
-      Number(p.profit||0);
-
-  });
-
-
-  $("profitEmployees").innerHTML=
-    Object.entries(employeeMap)
-      .map(([name,profit])=>`
-
-        <div class="history">
-
-          <b>${esc(name)}</b>
-
-          <span style="float:right">
-            ${euro(profit)}
-          </span>
-
-        </div>
-
-      `)
-      .join("")
-      ||
-      `<div class="note">
-        Nog geen gegevens per werknemer.
-      </div>`;
+    await loadEmployees();
 }
 
 
 /* =========================================================
-   WERKNEMERS
+   AUTH STATE
 ========================================================= */
 
-async function loadMembers(){
+supabaseClient.auth.onAuthStateChange(
+    async (event, session) => {
 
-  if(currentMember?.role!=="owner")
-    return;
+        if (
+            event === "SIGNED_OUT" ||
+            !session
+        ) {
 
-  const {data,error} =
-    await sb
-      .from("business_members")
-      .select(
-        "user_id,role,active,display_name,created_at"
-      )
-      .eq("business_id",currentBusinessId)
-      .order("created_at",{ascending:true});
+            showLogin();
 
-  if(error){
-
-    $("membersList").innerHTML=
-      `<div class="warning">
-        Werknemers konden niet geladen worden.<br>
-        ${esc(error.message)}
-      </div>`;
-
-    return;
-  }
-
-
-  $("membersList").innerHTML=
-    (data||[]).map(m=>{
-
-      if(m.role==="owner"){
-
-        return `
-          <div class="member-row">
-
-            <div class="member-info">
-              <b>
-                ${esc(
-                  m.display_name||
-                  m.user_id
-                )}
-              </b>
-
-              <small>
-                Hoofd / eigenaar · Actief
-              </small>
-            </div>
-
-            <span class="badge">
-              HOOFD
-            </span>
-
-          </div>
-        `;
-
-      }
-
-      return `
-        <div class="member-row">
-
-          <div class="member-info">
-
-            <b>
-              ${esc(
-                m.display_name||
-                m.user_id
-              )}
-            </b>
-
-            <small>
-              Werknemer ·
-              ${m.active
-                ?"Actief"
-                :"Gedeactiveerd"}
-            </small>
-
-          </div>
-
-          <div>
-
-            <button class="${
-              m.active
-                ?"danger"
-                :"green"
-            }"
-              onclick="toggleEmployee(
-                '${m.user_id}',
-                ${m.active}
-              )">
-              ${
-                m.active
-                  ?"DEACTIVEREN"
-                  :"ACTIVEREN"
-              }
-            </button>
-
-            <button class="danger"
-              onclick="deleteEmployee(
-                '${m.user_id}'
-              )">
-              VERWIJDEREN
-            </button>
-
-          </div>
-
-        </div>
-      `;
-
-    }).join("")
-    ||
-    `<div class="note">
-      Nog geen werknemers.
-    </div>`;
-}
-
-
-async function addEmployee(){
-
-  if(currentMember?.role!=="owner")
-    return;
-
-  const email=
-    $("employeeEmail")
-      .value.trim();
-
-  const name=
-    $("employeeName")
-      .value.trim();
-
-  if(!email){
-
-    alert(
-      "Vul het e-mailadres van de werknemer in."
-    );
-
-    return;
-  }
-
-  let result=
-    await sb.rpc(
-      "add_employee_by_email",
-      {
-        p_email:email,
-        p_display_name:name||email
-      }
-    );
-
-  if(result.error){
-
-    result=
-      await sb.rpc(
-        "add_employee_by_email",
-        {
-          email:email,
-          display_name:name||email
+            return;
         }
-      );
-  }
 
-  if(result.error){
+        if (
+            event === "SIGNED_IN" ||
+            event === "INITIAL_SESSION"
+        ) {
 
-    alert(
-      "Werknemer toevoegen mislukt.\n\n"+
-      result.error.message+
-      "\n\nControleer of de werknemer al een Supabase-account heeft."
-    );
+            /*
+               Kleine vertraging zodat Supabase zijn
+               auth-state volledig heeft verwerkt.
+            */
 
-    return;
-  }
-
-  $("employeeEmail").value="";
-  $("employeeName").value="";
-
-  await loadMembers();
-
-  alert("Werknemer toegevoegd.");
-}
-
-
-async function toggleEmployee(userId,active){
-
-  if(currentMember?.role!=="owner")
-    return;
-
-  if(!confirm(
-    active
-      ?"Deze werknemer deactiveren?"
-      :"Deze werknemer opnieuw activeren?"
-  )){
-    return;
-  }
-
-  const {error} =
-    await sb
-      .from("business_members")
-      .update({
-        active:!active
-      })
-      .eq("business_id",currentBusinessId)
-      .eq("user_id",userId);
-
-  if(error){
-
-    alert(
-      "Wijzigen mislukt:\n"+
-      error.message
-    );
-
-    return;
-  }
-
-  await loadMembers();
-}
-
-
-async function deleteEmployee(userId){
-
-  if(currentMember?.role!=="owner")
-    return;
-
-  if(!confirm(
-    "Deze werknemer volledig uit DE GOUDMARSJAN verwijderen?\n\n"+
-    "Het Supabase-account zelf wordt niet verwijderd."
-  )){
-    return;
-  }
-
-  const {error} =
-    await sb
-      .from("business_members")
-      .delete()
-      .eq("business_id",currentBusinessId)
-      .eq("user_id",userId)
-      .neq("role","owner");
-
-  if(error){
-
-    alert(
-      "Verwijderen mislukt:\n"+
-      error.message
-    );
-
-    return;
-  }
-
-  await loadMembers();
-}
-
-
-/* =========================================================
-   AANKOOP VERWIJDEREN
-========================================================= */
-
-async function deletePurchase(id){
-
-  if(currentMember?.role!=="owner"){
-    alert(
-      "Alleen de eigenaar kan aankopen verwijderen."
-    );
-    return;
-  }
-
-  const p=
-    purchases.find(x=>x.id===id);
-
-  if(!p)return;
-
-  if(!confirm(
-    "Deze aankoop definitief verwijderen?"
-  )){
-    return;
-  }
-
-  const {data:row,error} =
-    await sb
-      .from("purchases")
-      .select("id,customer_id")
-      .eq("business_id",currentBusinessId)
-      .eq("reference",id)
-      .maybeSingle();
-
-  if(error){
-
-    alert(error.message);
-    return;
-  }
-
-  if(row){
-
-    await sb
-      .from("purchase_items")
-      .delete()
-      .eq("purchase_id",row.id);
-
-    await sb
-      .from("purchases")
-      .delete()
-      .eq("id",row.id);
-
-    if(row.customer_id){
-
-      await sb
-        .from("customers")
-        .delete()
-        .eq("id",row.customer_id);
+            setTimeout(
+                initialiseUser,
+                100
+            );
+        }
 
     }
-  }
-
-  purchases=
-    purchases.filter(x=>x.id!==id);
-
-  renderPurchases();
-  renderDashboard();
-  renderProfits();
-}
+);
 
 
 /* =========================================================
-   BON
+   PRICE EVENTS
 ========================================================= */
 
-function printReceiptById(id){
+document.addEventListener(
+    "input",
+    function(event) {
 
-  const p=
-    purchases.find(x=>x.id===id);
+        if (
+            event.target.id === "goldPrice" ||
+            event.target.id === "silverPrice"
+        ) {
 
-  if(p){
-    printReceipt(p);
-  }
-}
-
-
-function printReceipt(p){
-
-  const itemsHtml=
-    p.items.map(it=>{
-
-      const c=calc(it);
-
-      return `
-        <tr>
-          <td>
-            ${esc(it.type)}
-          </td>
-          <td>
-            ${esc(it.metal)}
-          </td>
-          <td>
-            ${esc(it.fineness)}
-          </td>
-          <td>
-            ${Number(it.weight||0).toFixed(2)} g
-          </td>
-          <td>
-            ${euro(c.offer)}
-          </td>
-        </tr>
-      `;
-
-    }).join("");
-
-
-  const w=
-    window.open(
-      "",
-      "_blank",
-      "width=800,height=900"
-    );
-
-  if(!w){
-
-    alert(
-      "Je browser blokkeerde het bonvenster."
-    );
-
-    return;
-  }
-
-
-  w.document.write(`
-
-    <!DOCTYPE html>
-
-    <html>
-
-    <head>
-
-      <title>
-        ${esc(p.id)}
-      </title>
-
-      <style>
-
-        body{
-          font-family:Arial,sans-serif;
-          padding:35px;
-          color:#111
+            calculatePurchase();
         }
 
-        .head{
-          text-align:center;
-          border-bottom:3px solid #c7a84b;
-          padding-bottom:20px;
-          margin-bottom:20px
-        }
-
-        .head img{
-          width:100px;
-          height:100px;
-          object-fit:cover;
-          border-radius:50%
-        }
-
-        h1{
-          letter-spacing:2px;
-          margin:10px 0 0
-        }
-
-        table{
-          width:100%;
-          border-collapse:collapse;
-          margin-top:20px
-        }
-
-        th,td{
-          border-bottom:1px solid #ddd;
-          padding:9px;
-          text-align:left
-        }
-
-        .total{
-          margin-top:20px;
-          background:#111;
-          color:#fff;
-          padding:18px;
-          font-size:22px
-        }
-
-        .footer{
-          margin-top:35px;
-          font-size:11px;
-          color:#777;
-          text-align:center
-        }
-
-      </style>
-
-    </head>
-
-    <body>
-
-      <div class="head">
-
-        <img src="logo.png">
-
-        <h1>DE GOUDMARSJAN</h1>
-
-        <div>EDELMETALEN</div>
-
-      </div>
-
-      <h2>Aankoopbewijs</h2>
-
-      <p>
-        Referentie:
-        <b>${esc(p.id)}</b>
-      </p>
-
-      <p>
-        Datum:
-        ${new Date(p.date)
-          .toLocaleString("nl-BE")}
-      </p>
-
-      <h3>Klant</h3>
-
-      <p>
-        ${esc(
-          p.customer.firstName+
-          " "+
-          p.customer.lastName
-        )}
-        <br>
-        ${esc(p.customer.street)}
-        ${esc(p.customer.houseNumber)}
-        <br>
-        ${esc(p.customer.postalCode)}
-        ${esc(p.customer.city)}
-      </p>
-
-      <table>
-
-        <thead>
-
-          <tr>
-            <th>Type</th>
-            <th>Metaal</th>
-            <th>Gehalte</th>
-            <th>Gewicht</th>
-            <th>Inkoop</th>
-          </tr>
-
-        </thead>
-
-        <tbody>
-
-          ${itemsHtml}
-
-        </tbody>
-
-      </table>
-
-      <div class="total">
-        TOTAAL INKOOP:
-        <b>${euro(p.total)}</b>
-      </div>
-
-      <p>
-        Betaling:
-        ${esc(p.paymentMethod)}
-      </p>
-
-      ${
-        p.note
-          ? `<p>Opmerking: ${esc(p.note)}</p>`
-          :""
-      }
-
-      <div class="footer">
-        DE GOUDMARSJAN — EDELMETALEN
-      </div>
-
-      <script>
-        window.onload=function(){
-          window.print();
-        };
-      <\/script>
-
-    </body>
-
-    </html>
-
-  `);
-
-  w.document.close();
-}
+    }
+);
 
 
 /* =========================================================
    START
 ========================================================= */
 
-window.addEventListener(
-  "load",
-  ()=>{
-    initAuth();
-  }
-);
+(async function() {
+
+    const {
+        data: {
+            session
+        }
+    } = await supabaseClient.auth.getSession();
 
 
-/* =========================================================
-   SERVICE WORKER
-========================================================= */
+    if (session) {
 
-if("serviceWorker" in navigator){
+        await initialiseUser();
 
-  window.addEventListener(
-    "load",
-    ()=>{
-      navigator.serviceWorker
-        .register("./sw.js")
-        .catch(()=>{});
+    } else {
+
+        showLogin();
+
     }
-  );
 
-}
+})();
+
 </script>
 
 </body>
