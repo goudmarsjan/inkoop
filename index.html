@@ -2,3262 +2,5530 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>De Goudmarsjan - Inkoop</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#111111">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<title>DE GOUDMARSJAN — Inkoop</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Goudmarsjan">
+
 <style>
-* {
-    box-sizing: border-box;
+*{box-sizing:border-box}
+
+:root{
+  --g:#c7a84b;
+  --g2:#e0bd55;
+  --b:#111;
+  --bg:#f5f1e8;
+  --muted:#777;
+  --border:#d8d8d8;
+  --red:#a9001b;
 }
 
-:root {
-    --gold: #c9a227;
-    --gold-dark: #a78312;
-    --black: #101010;
-    --dark: #181818;
-    --dark2: #222;
-    --cream: #f5f1e8;
-    --white: #fff;
-    --text: #222;
-    --muted: #777;
-    --green: #16834b;
-    --red: #c93636;
-    --border: #e1ddd3;
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:#171717;
 }
 
-body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: var(--cream);
-    color: var(--text);
+header{
+  background:#111;
+  color:#fff;
+  padding:18px;
+  text-align:center;
+  position:sticky;
+  top:0;
+  z-index:5;
 }
 
-/* =========================
-   LOGIN
-========================= */
-
-#loginScreen {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background:
-        radial-gradient(circle at top, #3a321c 0%, #111 45%, #080808 100%);
+header h1{
+  margin:0;
+  font-size:27px;
+  letter-spacing:2px;
 }
 
-.login-box {
-    width: 100%;
-    max-width: 420px;
-    background: white;
-    border-radius: 18px;
-    padding: 35px;
-    box-shadow: 0 25px 70px rgba(0,0,0,.45);
-    text-align: center;
+header p{
+  margin:5px 0 0;
+  color:var(--g2);
+  font-weight:bold;
 }
 
-.login-logo {
-    width: 190px;
-    max-width: 80%;
-    margin-bottom: 20px;
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:18px;
 }
 
-.login-box h1 {
-    margin: 0 0 5px;
-    font-size: 24px;
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:16px;
+  box-shadow:0 3px 15px #00000012;
 }
 
-.login-box p {
-    color: #777;
-    margin-bottom: 25px;
+h2{
+  margin:0 0 14px;
+  font-size:20px;
 }
 
-.input {
-    width: 100%;
-    padding: 13px 14px;
-    border: 1px solid #d8d8d8;
-    border-radius: 9px;
-    font-size: 15px;
-    margin-bottom: 12px;
-    outline: none;
+h3{
+  font-size:16px;
+  margin:16px 0 9px;
 }
 
-.input:focus {
-    border-color: var(--gold);
+label{
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin-bottom:5px;
 }
 
-.btn {
-    border: 0;
-    border-radius: 9px;
-    padding: 12px 18px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.btn-gold {
-    background: var(--gold);
-    color: white;
-}
-
-.btn-gold:hover {
-    background: var(--gold-dark);
-}
-
-.btn-dark {
-    background: #151515;
-    color: white;
-}
-
-.btn-red {
-    background: #fce3e3;
-    color: var(--red);
-}
-
-.btn-green {
-    background: #e2f4ea;
-    color: var(--green);
-}
-
-.error {
-    color: var(--red);
-    background: #fff0f0;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 12px;
-    display: none;
-}
-
-/* =========================
-   APP
-========================= */
-
-#app {
-    display: none;
-    min-height: 100vh;
-}
-
-.topbar {
-    height: 70px;
-    background: #111;
-    color: white;
-    display: flex;
-    align-items: center;
-    padding: 0 25px;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-bottom: 2px solid var(--gold);
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.brand img {
-    height: 45px;
-    width: auto;
-}
-
-.brand span {
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.user-area {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.user-name {
-    font-size: 14px;
-}
-
-.role-badge {
-    background: rgba(201,162,39,.18);
-    color: #e4c85b;
-    border: 1px solid rgba(201,162,39,.4);
-    padding: 5px 9px;
-    border-radius: 20px;
-    font-size: 11px;
-    text-transform: uppercase;
-}
-
-.logout {
-    background: #292929;
-    color: white;
-    border: 0;
-    padding: 8px 12px;
-    border-radius: 7px;
-    cursor: pointer;
-}
-
-/* =========================
-   LAYOUT
-========================= */
-
-.layout {
-    display: flex;
-    min-height: calc(100vh - 70px);
-}
-
-.sidebar {
-    width: 235px;
-    background: #171717;
-    color: white;
-    padding: 20px 12px;
-    flex-shrink: 0;
-}
-
-.nav-title {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: #777;
-    padding: 10px 13px;
-    letter-spacing: 1px;
-}
-
-.nav-btn {
-    width: 100%;
-    background: transparent;
-    color: #ccc;
-    border: 0;
-    text-align: left;
-    padding: 13px;
-    border-radius: 8px;
-    margin-bottom: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.nav-btn:hover,
-.nav-btn.active {
-    background: #2a2a2a;
-    color: white;
-}
-
-.nav-btn.active {
-    border-left: 3px solid var(--gold);
-}
-
-.content {
-    flex: 1;
-    padding: 28px;
-    max-width: 1500px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.page {
-    display: none;
-}
-
-.page.active {
-    display: block;
-}
-
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 22px;
-}
-
-.page-header h1 {
-    margin: 0;
-    font-size: 27px;
-}
-
-.page-header p {
-    color: #777;
-    margin: 5px 0 0;
-}
-
-/* =========================
-   CARDS
-========================= */
-
-.cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid var(--border);
-    box-shadow: 0 3px 10px rgba(0,0,0,.04);
-}
-
-.card-label {
-    color: #777;
-    font-size: 12px;
-    margin-bottom: 8px;
-}
-
-.card-value {
-    font-size: 25px;
-    font-weight: bold;
-}
-
-.card-value.gold {
-    color: var(--gold-dark);
-}
-
-.card-value.green {
-    color: var(--green);
-}
-
-.card-value.red {
-    color: var(--red);
-}
-
-/* =========================
-   TABLES
-========================= */
-
-.panel {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.panel-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 15px;
-}
-
-.panel-title h2 {
-    font-size: 17px;
-    margin: 0;
-}
-
-.table-wrap {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    text-align: left;
-    font-size: 11px;
-    color: #777;
-    text-transform: uppercase;
-    padding: 11px;
-    border-bottom: 1px solid #ddd;
-}
-
-td {
-    padding: 12px 11px;
-    border-bottom: 1px solid #eee;
-    font-size: 13px;
-}
-
-tr:last-child td {
-    border-bottom: 0;
-}
-
-/* =========================
-   FORMS
-========================= */
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group.full {
-    grid-column: 1 / -1;
-}
-
-.form-group label {
-    font-size: 11px;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #555;
-}
-
-select,
 input,
-textarea {
-    font-family: inherit;
+select,
+textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:16px;
+  background:#fff;
 }
 
-select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #d5d5d5;
-    border-radius: 8px;
-    background: white;
+input:disabled,
+select:disabled,
+textarea:disabled{
+  background:#eeeeee;
+  color:#666;
+  cursor:not-allowed;
 }
 
-textarea {
-    min-height: 90px;
-    resize: vertical;
-    padding: 12px;
-    border: 1px solid #d5d5d5;
-    border-radius: 8px;
+textarea{
+  min-height:80px;
 }
 
-/* =========================
-   PURCHASE ITEMS
-========================= */
-
-.purchase-item {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 12px;
-    background: #fafafa;
+.g2,
+.g3,
+.g4{
+  display:grid;
+  gap:12px;
 }
 
-.item-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr auto;
-    gap: 10px;
-    align-items: end;
+.g2{
+  grid-template-columns:1fr 1fr;
 }
 
-.item-total {
-    background: #f2eee3;
-    padding: 11px;
-    border-radius: 7px;
-    font-weight: bold;
+.g3{
+  grid-template-columns:repeat(3,1fr);
 }
 
-/* =========================
-   PROFIT
-========================= */
-
-.profit-positive {
-    color: var(--green);
-    font-weight: bold;
+.g4{
+  grid-template-columns:repeat(4,1fr);
 }
 
-.profit-negative {
-    color: var(--red);
-    font-weight: bold;
+button{
+  border:0;
+  border-radius:8px;
+  padding:12px 15px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-.big-profit {
-    text-align: center;
-    padding: 35px;
-    background: #111;
-    color: white;
-    border-radius: 14px;
-    margin-bottom: 20px;
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
 }
 
-.big-profit small {
-    color: #aaa;
+.primary{
+  background:var(--g);
+  color:#111;
 }
 
-.big-profit .amount {
-    font-size: 42px;
-    color: #e1bd3d;
-    font-weight: bold;
-    margin-top: 8px;
+.dark{
+  background:#111;
+  color:#fff;
 }
 
-/* =========================
-   EMPTY
-========================= */
-
-.empty {
-    text-align: center;
-    color: #999;
-    padding: 35px;
+.light{
+  background:#eee;
 }
 
-/* =========================
-   MOBILE
-========================= */
-
-.mobile-menu {
-    display: none;
+.danger{
+  background:#f7dfe3;
+  color:var(--red);
 }
 
-@media (max-width: 1000px) {
-    .cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .form-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .sidebar {
-        width: 205px;
-    }
+.green{
+  background:#dff3e9;
+  color:#17683f;
 }
 
-@media (max-width: 700px) {
+.full{
+  width:100%;
+}
 
-    .topbar {
-        padding: 0 13px;
-    }
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
 
-    .brand span {
-        display: none;
-    }
+.row>*{
+  flex:1;
+}
 
-    .user-name {
-        display: none;
-    }
+.settings{
+  background:#f7f7f7;
+  padding:14px;
+  border-radius:10px;
+  margin-top:10px;
+}
 
-    .layout {
-        display: block;
-    }
+.rates{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
 
-    .sidebar {
-        width: 100%;
-        display: flex;
-        overflow-x: auto;
-        padding: 7px;
-        gap: 4px;
-    }
+.item{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  margin:12px 0;
+  background:#fcfcfc;
+}
 
-    .nav-title {
-        display: none;
-    }
+.itemhead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
 
-    .nav-btn {
-        white-space: nowrap;
-        width: auto;
-        margin: 0;
-    }
+.itemgrid{
+  display:grid;
+  grid-template-columns:1fr .9fr .75fr .75fr .8fr .9fr .9fr;
+  gap:8px;
+  align-items:end;
+}
 
-    .content {
-        padding: 15px;
-    }
+.value{
+  background:#f1f1f1;
+  padding:12px;
+  border-radius:8px;
+  min-height:44px;
+}
 
-    .cards {
-        grid-template-columns: 1fr 1fr;
-    }
+.mini,
+.note{
+  font-size:12px;
+  color:var(--muted);
+}
 
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
+.summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:14px;
+}
 
-    .item-grid {
-        grid-template-columns: 1fr 1fr;
-    }
+.stat{
+  background:#f7f7f7;
+  border-radius:10px;
+  padding:13px;
+}
 
-    .page-header {
-        display: block;
-    }
+.stat small{
+  display:block;
+  color:var(--muted);
+  margin-bottom:5px;
+}
 
-    .page-header .btn {
-        margin-top: 12px;
-    }
+.stat strong{
+  font-size:19px;
+}
+
+.total{
+  background:#111;
+  color:#fff;
+  padding:18px;
+  border-radius:12px;
+  margin-top:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.total strong{
+  font-size:28px;
+  color:var(--g2);
+}
+
+.warning{
+  background:#fff0f0;
+  border:1px solid #e4a6ad;
+  color:#8b0018;
+  padding:12px;
+  border-radius:9px;
+  margin-top:12px;
+  font-weight:bold;
+}
+
+.ok{
+  background:#effaf4;
+  border:1px solid #b7dfc9;
+  color:#17683f;
+  padding:12px;
+  border-radius:9px;
+  margin-top:12px;
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.history{
+  border-bottom:1px solid #ddd;
+  padding:12px 0;
+}
+
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:99px;
+  background:#eee;
+  font-size:12px;
+  font-weight:bold;
+}
+
+
+/* APP REDESIGN */
+.app-shell{display:flex;min-height:100vh;background:var(--bg)}
+.sidebar{width:245px;background:#111;color:#fff;position:fixed;left:0;top:0;bottom:0;z-index:100;padding:18px 14px;display:flex;flex-direction:column;border-right:1px solid #2c2c2c}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 8px 20px;border-bottom:1px solid #2c2c2c;margin-bottom:14px}.brand img{width:52px;height:52px;object-fit:cover;border-radius:50%;background:#fff}.brand strong{font-size:14px;letter-spacing:1.3px;display:block}.brand span{font-size:10px;color:var(--g2);font-weight:700;letter-spacing:1px}
+.nav-title{font-size:10px;color:#777;text-transform:uppercase;letter-spacing:1.5px;padding:10px}.nav-btn{width:100%;text-align:left;background:transparent;color:#ddd;padding:12px;border-radius:9px;margin:2px 0;font-weight:700;font-size:14px}.nav-btn:hover{background:#222;color:#fff}.nav-btn.active{background:var(--g);color:#111}.nav-spacer{flex:1}.side-user{border-top:1px solid #2c2c2c;padding:14px 8px 4px;font-size:12px;color:#aaa}.side-user b{color:#fff;font-size:13px}.side-logout{margin-top:10px;width:100%;background:#242424;color:#fff}
+.app-main{margin-left:245px;width:calc(100% - 245px);min-height:100vh}.topbar{background:#111;color:#fff;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;border-bottom:1px solid #292929}.topbar-logo{display:flex;align-items:center;gap:12px}.topbar-logo img{width:42px;height:42px;border-radius:50%;object-fit:cover}.topbar h1{font-size:19px;margin:0;letter-spacing:1.5px}.topbar p{margin:2px 0 0;color:var(--g2);font-size:11px;font-weight:700}.topbar-user{text-align:right;font-size:13px}.topbar-user small{color:#999}.page-wrap{max-width:1280px;margin:auto;padding:24px}.app-page{display:none}.app-page.active{display:block}.page-title{margin-bottom:18px}.page-title h2{font-size:26px;margin:0 0 5px}.page-title p{margin:0;color:#777}.dashboard-grid,.profit-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.dash-card{background:#fff;border-radius:14px;padding:20px;border:1px solid #e6e1d7;box-shadow:0 3px 15px #0000000d}.dash-card.gold{background:#111;color:#fff;border-color:#111}.dash-card small{display:block;color:#777;margin-bottom:8px}.dash-card.gold small{color:#aaa}.dash-card strong{font-size:25px}.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}.quick-btn{min-height:110px;text-align:left;background:#fff;border:1px solid #e6e1d7;border-radius:14px;padding:20px;font-size:17px;box-shadow:0 3px 15px #0000000d}.quick-btn span{display:block;font-size:30px;margin-bottom:8px}.dashboard-section{background:#fff;border-radius:14px;padding:18px;box-shadow:0 3px 15px #0000000d;margin-bottom:18px}.customer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.customer-card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:15px;cursor:pointer}.customer-card:hover{border-color:var(--g)}.customer-card small{display:block;color:#777;margin-top:4px}.customer-detail{margin-top:16px}.profit-chart{display:flex;align-items:flex-end;gap:10px;height:260px;padding:20px;border:1px solid #eee;border-radius:12px;background:#fafafa;overflow-x:auto}.profit-bar-wrap{min-width:44px;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}.profit-bar{width:28px;border-radius:5px 5px 0 0;background:var(--g)}.profit-bar-label{font-size:10px;color:#777;margin-top:5px}.profit-bar-value{font-size:9px;margin-bottom:3px;white-space:nowrap}.mobile-menu{display:none}
+@media(max-width:950px){.sidebar{width:210px}.app-main{margin-left:210px;width:calc(100% - 210px)}.dashboard-grid,.profit-summary{grid-template-columns:1fr 1fr}.customer-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.sidebar{display:none}.app-main{margin-left:0;width:100%}.mobile-menu{display:block;background:#222;color:#fff;padding:8px 11px;border-radius:8px}.topbar{padding:12px 14px}.page-wrap{padding:12px}.dashboard-grid,.profit-summary,.quick-grid,.customer-grid{grid-template-columns:1fr}.container{padding:0}.topbar-user{display:none}}
+
+/* LOGIN */
+
+#authLock{
+  position:fixed;
+  inset:0;
+  background:#111;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+#authLock.hidden{
+  display:none;
+}
+
+.auth-box{
+  width:min(430px,100%);
+  background:#fff;
+  border-radius:18px;
+  padding:28px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+
+.auth-logo{
+  width:78px;
+  height:78px;
+  margin:0 auto 14px;
+  border-radius:18px;
+  background:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#e0bd55;
+  font-weight:900;
+  font-size:25px;
+  letter-spacing:2px;
+}
+
+.auth-box h2{
+  margin:0 0 8px;
+}
+
+.auth-box p{
+  color:#666;
+  font-size:14px;
+}
+
+.auth-box input{
+  margin:7px 0;
+}
+
+.auth-error{
+  color:#b00020;
+  font-weight:700;
+  min-height:20px;
+  font-size:13px;
+  margin-top:8px;
+}
+
+.userbar{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.userbar small{
+  color:var(--muted);
+}
+
+.member-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid #ddd;
+  flex-wrap:wrap;
+}
+
+.member-row:last-child{
+  border-bottom:0;
+}
+
+.member-info{
+  min-width:220px;
+}
+
+.member-info b{
+  display:block;
+}
+
+.member-info small{
+  color:var(--muted);
+}
+
+.owner-only-note{
+  background:#fff7dc;
+  border:1px solid #e7cb70;
+  padding:10px;
+  border-radius:8px;
+  font-size:13px;
+  margin-top:10px;
+}
+
+@media(max-width:850px){
+
+  .g4,
+  .g3{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .rates{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .summary{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .actions{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .itemgrid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:600px){
+
+  .container{
+    padding:10px;
+  }
+
+  .card{
+    padding:14px;
+  }
+
+  .g2,
+  .g3,
+  .g4{
+    grid-template-columns:1fr;
+  }
+
+  .summary,
+  .actions{
+    grid-template-columns:1fr;
+  }
+
+  .itemgrid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  header h1{
+    font-size:22px;
+  }
+}
+
+@media print{
+
+  header,
+  .noprint{
+    display:none!important;
+  }
+
+  body{
+    background:#fff;
+  }
+
+  .container{
+    max-width:none;
+    padding:0;
+  }
+
+  .card{
+    box-shadow:none;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     LOGIN
-========================= -->
+<!-- =========================================================
+     SUPABASE LOGIN
+========================================================= -->
 
-<div id="loginScreen">
+<div id="authLock">
 
-    <div class="login-box">
+  <div class="auth-box">
 
-        <img src="logo.png" class="login-logo" alt="De Goudmarsjan">
-
-        <h1>Inkoopprogramma</h1>
-        <p>Log in met je persoonlijke account.</p>
-
-        <input
-            id="loginEmail"
-            class="input"
-            type="email"
-            placeholder="E-mailadres"
-        >
-
-        <input
-            id="loginPassword"
-            class="input"
-            type="password"
-            placeholder="Wachtwoord"
-        >
-
-        <button class="btn btn-gold" style="width:100%" onclick="login()">
-            INLOGGEN
-        </button>
-
-        <div id="loginError" class="error"></div>
-
+    <div class="auth-logo">
+      GM
     </div>
+
+    <h2>DE GOUDMARSJAN</h2>
+
+    <p>
+      Log in met je eigen account.
+    </p>
+
+    <input
+      id="loginEmail"
+      type="email"
+      autocomplete="username"
+      placeholder="E-mailadres"
+    >
+
+    <input
+      id="loginPassword"
+      type="password"
+      autocomplete="current-password"
+      placeholder="Wachtwoord"
+      onkeydown="if(event.key==='Enter')login()"
+    >
+
+    <button
+      class="dark full"
+      onclick="login()"
+    >
+      INLOGGEN
+    </button>
+
+    <div
+      id="authError"
+      class="auth-error"
+    ></div>
+
+    <p>
+      Elke werknemer gebruikt een eigen account.
+    </p>
+
+  </div>
 
 </div>
 
 
-<!-- =========================
-     APP
-========================= -->
-
-<div id="app">
-
-    <header class="topbar">
-
-        <div class="brand">
-            <img src="logo.png" alt="De Goudmarsjan">
-            <span>INKOOP</span>
-        </div>
-
-        <div class="user-area">
-
-            <div class="user-name" id="currentUserName">
-                -
-            </div>
-
-            <div class="role-badge" id="currentRole">
-                -
-            </div>
-
-            <button class="logout" onclick="logout()">
-                Uitloggen
-            </button>
-
-        </div>
-
-    </header>
-
-
-    <div class="layout">
-
-        <!-- SIDEBAR -->
-
-        <aside class="sidebar">
-
-            <div class="nav-title">Menu</div>
-
-            <button class="nav-btn active" onclick="showPage('dashboard', this)">
-                🏠 Dashboard
-            </button>
-
-            <button class="nav-btn" onclick="showPage('customers', this)">
-                👥 Klanten
-            </button>
-
-            <button class="nav-btn" onclick="showPage('purchase', this)">
-                💰 Nieuwe aankoop
-            </button>
-
-            <button class="nav-btn" onclick="showPage('purchases', this)">
-                🧾 Aankopen
-            </button>
-
-            <button class="nav-btn" onclick="showPage('profits', this)">
-                📊 Winsten
-            </button>
-
-            <div id="adminMenu">
-
-                <div class="nav-title">Beheer</div>
-
-                <button class="nav-btn" onclick="showPage('employees', this)">
-                    👤 Werknemers
-                </button>
-
-            </div>
-
-        </aside>
-
-
-        <!-- CONTENT -->
-
-        <main class="content">
-
-
-            <!-- =========================
-                 DASHBOARD
-            ========================= -->
-
-            <section id="dashboard" class="page active">
-
-                <div class="page-header">
-
-                    <div>
-                        <h1>Dashboard</h1>
-                        <p>Overzicht van de inkoop.</p>
-                    </div>
-
-                </div>
-
-
-                <div class="cards">
-
-                    <div class="card">
-                        <div class="card-label">
-                            Aankopen vandaag
-                        </div>
-                        <div class="card-value" id="dashPurchases">
-                            0
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-label">
-                            Totaal ingekocht vandaag
-                        </div>
-                        <div class="card-value gold" id="dashBought">
-                            € 0,00
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-label">
-                            Marktwaarde vandaag
-                        </div>
-                        <div class="card-value" id="dashMarket">
-                            € 0,00
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-label">
-                            Winst vandaag
-                        </div>
-                        <div class="card-value green" id="dashProfit">
-                            € 0,00
-                        </div>
-                    </div>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="panel-title">
-
-                        <h2>Recente aankopen</h2>
-
-                        <button
-                            class="btn btn-gold"
-                            onclick="showPage('purchase')"
-                        >
-                            + Nieuwe aankoop
-                        </button>
-
-                    </div>
-
-                    <div class="table-wrap">
-
-                        <table>
-
-                            <thead>
-                                <tr>
-                                    <th>Datum</th>
-                                    <th>Klant</th>
-                                    <th>Medewerker</th>
-                                    <th>Inkoop</th>
-                                    <th>Marktwaarde</th>
-                                    <th>Winst</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="recentPurchases">
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =========================
-                 CUSTOMERS
-            ========================= -->
-
-            <section id="customers" class="page">
-
-                <div class="page-header">
-
-                    <div>
-                        <h1>Klanten</h1>
-                        <p>Klantenbestand van De Goudmarsjan.</p>
-                    </div>
-
-                    <button
-                        class="btn btn-gold"
-                        onclick="openCustomerForm()"
-                    >
-                        + Nieuwe klant
-                    </button>
-
-                </div>
-
-
-                <div class="panel" id="customerForm" style="display:none">
-
-                    <div class="panel-title">
-                        <h2>Nieuwe klant</h2>
-                    </div>
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-                            <label>Voornaam *</label>
-                            <input id="customerFirstName" class="input">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Achternaam *</label>
-                            <input id="customerLastName" class="input">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Geboortedatum</label>
-                            <input id="customerBirthDate" class="input" type="date">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Telefoon</label>
-                            <input id="customerPhone" class="input">
-                        </div>
-
-                        <div class="form-group">
-                            <label>IBAN</label>
-                            <input id="customerIban" class="input">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Identificatietype</label>
-
-                            <select id="customerIdType">
-                                <option value="">Selecteer</option>
-                                <option value="ID">Identiteitskaart</option>
-                                <option value="PASSPORT">Paspoort</option>
-                                <option value="DRIVING_LICENSE">Rijbewijs</option>
-                            </select>
-
-                        </div>
-
-                        <div class="form-group">
-                            <label>Identificatienummer</label>
-                            <input id="customerIdNumber" class="input">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Straat + nummer</label>
-                            <input id="customerAddress" class="input">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Postcode</label>
-                            <input id="customerPostal" class="input">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Gemeente</label>
-                            <input id="customerCity" class="input">
-                        </div>
-
-                        <div class="form-group full">
-                            <label>Notities</label>
-                            <textarea id="customerNotes"></textarea>
-                        </div>
-
-                    </div>
-
-                    <br>
-
-                    <button class="btn btn-gold" onclick="saveCustomer()">
-                        KLANT OPSLAAN
-                    </button>
-
-                    <button class="btn btn-dark" onclick="closeCustomerForm()">
-                        Annuleren
-                    </button>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="panel-title">
-
-                        <h2>Klantenbestand</h2>
-
-                        <input
-                            id="customerSearch"
-                            class="input"
-                            style="max-width:300px;margin:0"
-                            placeholder="Zoeken..."
-                            oninput="filterCustomers()"
-                        >
-
-                    </div>
-
-                    <div class="table-wrap">
-
-                        <table>
-
-                            <thead>
-                                <tr>
-                                    <th>Naam</th>
-                                    <th>Geboortedatum</th>
-                                    <th>Telefoon</th>
-                                    <th>Gemeente</th>
-                                    <th>ID gecontroleerd</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="customersTable">
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =========================
-                 NEW PURCHASE
-            ========================= -->
-
-            <section id="purchase" class="page">
-
-                <div class="page-header">
-
-                    <div>
-                        <h1>Nieuwe aankoop</h1>
-                        <p>Registreer een nieuwe inkoop.</p>
-                    </div>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="panel-title">
-                        <h2>Klant</h2>
-                    </div>
-
-                    <div class="form-grid">
-
-                        <div class="form-group full">
-
-                            <label>Klant *</label>
-
-                            <select id="purchaseCustomer">
-                                <option value="">
-                                    Selecteer klant
-                                </option>
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="panel-title">
-
-                        <h2>Inkoopstukken</h2>
-
-                        <button
-                            class="btn btn-gold"
-                            onclick="addPurchaseItem()"
-                        >
-                            + Stuk toevoegen
-                        </button>
-
-                    </div>
-
-                    <div id="purchaseItems"></div>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-                            <label>Goudprijs 24K / gram</label>
-                            <input
-                                id="goldPrice"
-                                class="input"
-                                type="number"
-                                step="0.01"
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label>Zilverprijs 999 / gram</label>
-                            <input
-                                id="silverPrice"
-                                class="input"
-                                type="number"
-                                step="0.01"
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label>Betaalmethode</label>
-
-                            <select id="paymentMethod">
-                                <option value="cash">
-                                    Cash
-                                </option>
-                                <option value="bank_transfer">
-                                    Bankoverschrijving
-                                </option>
-                                <option value="other">
-                                    Andere
-                                </option>
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="panel-title">
-                        <h2>Extra informatie</h2>
-                    </div>
-
-                    <textarea
-                        id="purchaseNotes"
-                        placeholder="Opmerkingen..."
-                    ></textarea>
-
-                </div>
-
-
-                <div class="big-profit">
-
-                    <small>
-                        TOTAAL INKOOP
-                    </small>
-
-                    <div class="amount" id="purchaseTotal">
-                        € 0,00
-                    </div>
-
-                    <div style="margin-top:10px;color:#aaa">
-                        Marktwaarde:
-                        <strong id="purchaseMarket">
-                            € 0,00
-                        </strong>
-                    </div>
-
-                </div>
-
-
-                <button
-                    class="btn btn-gold"
-                    style="width:100%;padding:16px"
-                    onclick="savePurchase()"
-                >
-                    AANKOOP OPSLAAN
-                </button>
-
-            </section>
-
-
-            <!-- =========================
-                 PURCHASE HISTORY
-            ========================= -->
-
-            <section id="purchases" class="page">
-
-                <div class="page-header">
-
-                    <div>
-                        <h1>Aankopen</h1>
-                        <p>Volledig overzicht van de geregistreerde inkopen.</p>
-                    </div>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="table-wrap">
-
-                        <table>
-
-                            <thead>
-
-                                <tr>
-                                    <th>Datum</th>
-                                    <th>Klant</th>
-                                    <th>Medewerker</th>
-                                    <th>Betaald</th>
-                                    <th>Marktwaarde</th>
-                                    <th>Winst</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="purchasesTable">
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =========================
-                 PROFITS
-            ========================= -->
-
-            <section id="profits" class="page">
-
-                <div class="page-header">
-
-                    <div>
-                        <h1>Winsten</h1>
-                        <p>Overzicht van de gerealiseerde inkoopmarge.</p>
-                    </div>
-
-                </div>
-
-
-                <div class="cards">
-
-                    <div class="card">
-
-                        <div class="card-label">
-                            Winst vandaag
-                        </div>
-
-                        <div
-                            class="card-value green"
-                            id="profitToday"
-                        >
-                            € 0,00
-                        </div>
-
-                    </div>
-
-
-                    <div class="card">
-
-                        <div class="card-label">
-                            Winst deze maand
-                        </div>
-
-                        <div
-                            class="card-value green"
-                            id="profitMonth"
-                        >
-                            € 0,00
-                        </div>
-
-                    </div>
-
-
-                    <div class="card">
-
-                        <div class="card-label">
-                            Totaal ingekocht
-                        </div>
-
-                        <div
-                            class="card-value gold"
-                            id="profitBought"
-                        >
-                            € 0,00
-                        </div>
-
-                    </div>
-
-
-                    <div class="card">
-
-                        <div class="card-label">
-                            Totale marktwaarde
-                        </div>
-
-                        <div
-                            class="card-value"
-                            id="profitMarket"
-                        >
-                            € 0,00
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="big-profit">
-
-                    <small>
-                        WINST VANDAAG
-                    </small>
-
-                    <div
-                        class="amount"
-                        id="bigProfitToday"
-                    >
-                        € 0,00
-                    </div>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="panel-title">
-                        <h2>Winst per aankoop</h2>
-                    </div>
-
-                    <div class="table-wrap">
-
-                        <table>
-
-                            <thead>
-                                <tr>
-                                    <th>Datum</th>
-                                    <th>Klant</th>
-                                    <th>Inkoop</th>
-                                    <th>Marktwaarde</th>
-                                    <th>Winst</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="profitsTable">
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =========================
-                 EMPLOYEES
-            ========================= -->
-
-            <section id="employees" class="page">
-
-                <div class="page-header">
-
-                    <div>
-                        <h1>Werknemers</h1>
-                        <p>Beheer wie toegang heeft tot het programma.</p>
-                    </div>
-
-                </div>
-
-
-                <div class="panel">
-
-                    <div class="table-wrap">
-
-                        <table>
-
-                            <thead>
-
-                                <tr>
-                                    <th>Naam</th>
-                                    <th>Rol</th>
-                                    <th>Toegang</th>
-                                    <th>Actie</th>
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="employeesTable">
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-        </main>
-
-    </div>
+<div class="app-shell">
+<aside class="sidebar noprint">
+  <div class="brand"><img src="logo.png" alt="De Goudmarsjan"><div><strong>DE GOUDMARSJAN</strong><span>EDELMETALEN</span></div></div>
+  <div class="nav-title">Menu</div>
+  <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard')">🏠 Dashboard</button>
+  <button class="nav-btn" data-page="purchase" onclick="showPage('purchase')">🟡 Nieuwe inkoop</button>
+  <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
+  <button class="nav-btn" data-page="purchases" onclick="showPage('purchases')">📋 Inkopen</button>
+  <button class="nav-btn" data-page="profits" onclick="showPage('profits')">📈 Winsten</button>
+  <button id="adminNav" class="nav-btn" data-page="admin" onclick="showPage('admin')" style="display:none">⚙️ Beheer</button>
+  <div class="nav-spacer"></div>
+  <div class="side-user"><b id="sideUserName">Niet ingelogd</b><br><span id="sideUserRole">—</span></div>
+  <button class="side-logout" onclick="logout()">Uitloggen</button>
+</aside>
+<div class="app-main">
+<header class="topbar">
+  <div class="topbar-logo"><button class="mobile-menu" onclick="toggleMobileNav()">☰</button><img src="logo.png" alt="De Goudmarsjan"><div><h1>DE GOUDMARSJAN</h1><p>EDELMETALEN — INKOOP</p></div></div>
+  <div class="topbar-user"><b id="topUserName">Niet ingelogd</b><br><small id="topUserRole">—</small></div>
+</header>
+<div class="page-wrap">
+<div class="container">
+<section id="pageDashboard" class="app-page active">
+  <div class="page-title"><h2>Dashboard</h2><p>Overzicht van DE GOUDMARSJAN</p></div>
+  <div class="dashboard-grid">
+    <div class="dash-card"><small>Inkopen vandaag</small><strong id="dashCount">0</strong></div>
+    <div class="dash-card"><small>Totaal ingekocht vandaag</small><strong id="dashPurchase">€ 0,00</strong></div>
+    <div class="dash-card"><small>Verwachte verkoop vandaag</small><strong id="dashResale">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Totale winst vandaag</small><strong id="dashProfit">€ 0,00</strong></div>
+  </div>
+  <div class="quick-grid">
+    <button class="quick-btn" onclick="showPage('purchase');newPurchase()"><span>🟡</span>Nieuwe inkoop<br><small>Start een nieuwe aankoop</small></button>
+    <button class="quick-btn" onclick="showPage('customers')"><span>👥</span>Klanten<br><small>Bekijk klantendossiers</small></button>
+    <button class="quick-btn" onclick="showPage('purchases')"><span>📋</span>Inkopen<br><small>Bekijk alle aankopen</small></button>
+    <button class="quick-btn" onclick="showPage('profits')"><span>📈</span>Winsten<br><small>Bekijk je winstoverzicht</small></button>
+  </div>
+  <div class="dashboard-section"><h3>Recente inkopen vandaag</h3><div id="dashRecent"></div></div>
+</section>
+<section id="pagePurchase" class="app-page"></section>
+<section id="pageCustomers" class="app-page">
+  <div class="page-title"><h2>Klanten</h2><p>Alle klantendossiers van DE GOUDMARSJAN</p></div>
+  <input id="customerSearchPage" class="customer-search" placeholder="🔍 Zoek op naam, telefoon, ID-nummer..." oninput="renderCustomersPage()">
+  <div id="customerListPage" class="customer-grid"></div><div id="customerDetailPage" class="customer-detail"></div>
+</section>
+<section id="pagePurchases" class="app-page"></section>
+<section id="pageProfits" class="app-page">
+  <div class="page-title"><h2>Winsten</h2><p>Overzicht van de verwachte bruto winst</p></div>
+  <div class="profit-summary">
+    <div class="dash-card"><small>Aantal inkopen</small><strong id="profitCount">0</strong></div>
+    <div class="dash-card"><small>Totaal ingekocht</small><strong id="profitPurchase">€ 0,00</strong></div>
+    <div class="dash-card"><small>Verwachte verkoop</small><strong id="profitResale">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Totale bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
+  </div>
+  <div class="dashboard-section"><h3>Winst per dag — laatste 14 dagen</h3><div id="profitChart" class="profit-chart"></div></div>
+  <div class="dashboard-section"><h3>Winst per werknemer</h3><div id="profitEmployees"></div></div>
+</section>
+<section id="pageAdmin" class="app-page"></section>
+<!-- ORIGINAL CONTENT -->
+
+
+<!-- =========================================================
+     USER BAR
+========================================================= -->
+
+<div class="userbar noprint">
+
+  <div>
+
+    <b id="currentUserName">
+      Niet ingelogd
+    </b>
+
+    <br>
+
+    <small id="currentUserRole">
+      —
+    </small>
+
+  </div>
+
+  <button
+    class="light"
+    onclick="logout()"
+  >
+    Uitloggen
+  </button>
 
 </div>
 
+
+<!-- =========================================================
+     OWNER PANEL
+========================================================= -->
+
+<div
+  id="ownerPanel"
+  class="card noprint"
+  style="display:none"
+>
+
+  <h2>
+    👥 Werknemersbeheer
+  </h2>
+
+  <p class="note">
+    Alleen jij als hoofd/eigenaar ziet dit gedeelte.
+  </p>
+
+  <div class="g3">
+
+    <div>
+
+      <label>
+        E-mailadres werknemer
+      </label>
+
+      <input
+        id="employeeEmail"
+        type="email"
+        placeholder="werknemer@email.be"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Naam werknemer
+      </label>
+
+      <input
+        id="employeeName"
+        placeholder="Voornaam Achternaam"
+      >
+
+    </div>
+
+
+    <div style="display:flex;align-items:end">
+
+      <button
+        class="primary full"
+        onclick="addEmployee()"
+      >
+        ＋ WERKNEMER TOEVOEGEN
+      </button>
+
+    </div>
+
+  </div>
+
+  <div
+    id="membersList"
+    style="margin-top:14px"
+  ></div>
+
+</div>
+
+
+<!-- =========================================================
+     MARKTPRIJZEN
+========================================================= -->
+
+<div class="card">
+
+  <h2>
+    🟡 Marktprijzen & instellingen
+  </h2>
+
+  <div class="g4">
+
+    <div>
+
+      <label>
+        24K / 999 goudprijs per gram (€)
+      </label>
+
+      <input
+        id="goldPrice"
+        type="number"
+        step="0.01"
+        min="0"
+        oninput="calculate()"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        999 zilverprijs per gram (€)
+      </label>
+
+      <input
+        id="silverPrice"
+        type="number"
+        step="0.001"
+        min="0"
+        oninput="calculate()"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Verwachte verkoopprijs (€)
+      </label>
+
+      <input
+        id="resalePrice"
+        type="number"
+        step="0.01"
+        min="0"
+        oninput="calculate()"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Betalingswijze
+      </label>
+
+      <select
+        id="paymentMethod"
+        onchange="calculate()"
+      >
+
+        <option value="overschrijving">
+          Bankoverschrijving
+        </option>
+
+        <option value="cash">
+          Cash
+        </option>
+
+        <option value="anders">
+          Andere
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+
+  <!-- ALLEEN OWNER KAN PERCENTAGES OPENEN -->
+
+  <details
+    id="settingsDetails"
+    style="margin-top:15px"
+  >
+
+    <summary>
+      ⚙️ Mijn inkooppercentages
+    </summary>
+
+
+    <div class="settings">
+
+      <h3>
+        Goud
+      </h3>
+
+
+      <div class="rates">
+
+        <div>
+
+          <label>
+            9K %
+          </label>
+
+          <input
+            id="rate9"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            14K %
+          </label>
+
+          <input
+            id="rate14"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            18K %
+          </label>
+
+          <input
+            id="rate18"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            22K %
+          </label>
+
+          <input
+            id="rate22"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            24K %
+          </label>
+
+          <input
+            id="rate24"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+      </div>
+
+
+      <h3>
+        Zilver
+      </h3>
+
+
+      <div class="rates">
+
+        <div>
+
+          <label>
+            800 ‰ %
+          </label>
+
+          <input
+            id="srate800"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            835 ‰ %
+          </label>
+
+          <input
+            id="srate835"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            925 ‰ %
+          </label>
+
+          <input
+            id="srate925"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            999 ‰ %
+          </label>
+
+          <input
+            id="srate999"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+      </div>
+
+      <p class="note">
+        Het percentage bepaalt hoeveel van de berekende
+        metaalwaarde je als inkoopprijs aanbiedt.
+      </p>
+
+    </div>
+
+  </details>
+
+
+  <div
+    id="employeeSettingsNotice"
+    class="owner-only-note"
+    style="display:none"
+  >
+    🔒 De marktprijzen en inkooppercentages worden door het
+    hoofd beheerd. Je kunt deze instellingen niet wijzigen.
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     KLANT
+========================================================= -->
+
+<div class="card">
+
+  <h2>
+    👤 Klantgegevens
+  </h2>
+
+
+  <div class="g3">
+
+    <div>
+
+      <label>
+        Voornaam *
+      </label>
+
+      <input id="firstName">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Achternaam *
+      </label>
+
+      <input id="lastName">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Geboortedatum *
+      </label>
+
+      <input
+        id="birthDate"
+        type="date"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Telefoon
+      </label>
+
+      <input
+        id="phone"
+        type="tel"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        IBAN
+      </label>
+
+      <input
+        id="iban"
+        placeholder="BE00 0000 0000 0000"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        ID-document gecontroleerd?
+      </label>
+
+      <select id="idChecked">
+
+        <option value="ja">
+          Ja
+        </option>
+
+        <option value="nee">
+          Nee
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Type ID-document
+      </label>
+
+      <select id="idType">
+
+        <option value="">
+          — Kies —
+        </option>
+
+        <option>
+          Identiteitskaart
+        </option>
+
+        <option>
+          Paspoort
+        </option>
+
+        <option>
+          Verblijfskaart
+        </option>
+
+        <option>
+          Rijbewijs
+        </option>
+
+        <option>
+          Ander
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Documentnummer
+      </label>
+
+      <input id="idNumber">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Opmerking klant
+      </label>
+
+      <input id="customerNote">
+
+    </div>
+
+  </div>
+
+
+  <h3>
+    📍 Adres
+  </h3>
+
+
+  <div class="g4">
+
+    <div>
+
+      <label>
+        Straat
+      </label>
+
+      <input id="street">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Nr.
+      </label>
+
+      <input id="houseNumber">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Postcode
+      </label>
+
+      <input id="postalCode">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Gemeente
+      </label>
+
+      <input id="city">
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     INKOOPSTUKKEN
+========================================================= -->
+
+<div class="card">
+
+  <h2>
+    💰 Inkoopstukken
+  </h2>
+
+
+  <div id="items"></div>
+
+
+  <button
+    class="primary full noprint"
+    onclick="addItem()"
+  >
+    ＋ STUK TOEVOEGEN
+  </button>
+
+
+  <div class="summary">
+
+    <div class="stat">
+
+      <small>
+        Metaalwaarde
+      </small>
+
+      <strong id="marketTotal">
+        € 0,00
+      </strong>
+
+    </div>
+
+
+    <div class="stat">
+
+      <small>
+        Gem. inkooppercentage
+      </small>
+
+      <strong id="rateTotal">
+        —
+      </strong>
+
+    </div>
+
+
+    <div class="stat">
+
+      <small>
+        Inkoopprijs
+      </small>
+
+      <strong id="purchaseTotal">
+        € 0,00
+      </strong>
+
+    </div>
+
+
+    <div class="stat">
+
+      <small>
+        Ruimte t.o.v. metaalwaarde
+      </small>
+
+      <strong id="discountTotal">
+        € 0,00
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <div id="cashWarning"></div>
+
+
+  <div class="total">
+
+    <span>
+      TOTALE INKOOP
+    </span>
+
+    <strong id="total">
+      € 0,00
+    </strong>
+
+  </div>
+
+
+  <div
+    class="settings"
+    style="margin-top:12px"
+  >
+
+    <b>
+      📈 Verwachte bruto winst
+    </b>
+
+
+    <div
+      class="g3"
+      style="margin-top:10px"
+    >
+
+      <div>
+
+        <span class="mini">
+          Verkoopprijs
+        </span>
+
+        <div
+          class="value"
+          id="resaleDisplay"
+        >
+          € 0,00
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <span class="mini">
+          Bruto winst
+        </span>
+
+        <div
+          class="value"
+          id="profitDisplay"
+        >
+          € 0,00
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <span class="mini">
+          Marge op verkoopprijs
+        </span>
+
+        <div
+          class="value"
+          id="marginDisplay"
+        >
+          —
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     EXTRA
+========================================================= -->
+
+<div class="card">
+
+  <h2>
+    📝 Extra
+  </h2>
+
+
+  <div class="g2">
+
+    <div>
+
+      <label>
+        Opmerking aankoop
+      </label>
+
+      <textarea
+        id="purchaseNote"
+        placeholder="Bijv. stenen verwijderd, beschadiging, bijzondere afspraak..."
+      ></textarea>
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Intern referentienummer
+      </label>
+
+      <input id="reference">
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     OPSLAAN
+========================================================= -->
+
+<div class="card noprint">
+
+  <h2>
+    🧾 Aankoop
+  </h2>
+
+
+  <div class="actions">
+
+    <button
+      class="dark"
+      onclick="savePurchase()"
+    >
+      💾 OPSLAAN
+    </button>
+
+
+    <button
+      class="primary"
+      onclick="printReceipt()"
+    >
+      🧾 BON MAKEN
+    </button>
+
+
+    <button
+      class="green"
+      onclick="newPurchase()"
+    >
+      ＋ NIEUWE INKOOP
+    </button>
+
+
+    <button
+      class="light"
+      onclick="exportBackup()"
+    >
+      ⬇️ BACK-UP
+    </button>
+
+  </div>
+
+
+  <div
+    class="row"
+    style="margin-top:10px"
+  >
+
+    <button
+      class="light"
+      onclick="document.getElementById('backupFile').click()"
+    >
+      ⬆️ BACK-UP TERUGZETTEN
+    </button>
+
+
+    <button
+      class="light"
+      onclick="exportCSV()"
+    >
+      📊 HISTORIE ALS CSV
+    </button>
+
+
+    <button
+      class="danger"
+      onclick="clearHistory()"
+    >
+      🗑️ ALLE HISTORIE WISSEN
+    </button>
+
+
+    <input
+      id="backupFile"
+      type="file"
+      accept=".json"
+      style="display:none"
+      onchange="importBackup(event)"
+    >
+
+  </div>
+
+
+  <p class="note">
+    Aankopen en klantgegevens worden aan je beveiligde
+    Supabase-bedrijfsaccount gekoppeld.
+  </p>
+
+</div>
+
+
+<!-- =========================================================
+     HISTORIE
+========================================================= -->
+
+<div class="card noprint">
+
+  <h2>
+    📋 Vorige inkopen
+  </h2>
+
+
+  <input
+    id="historySearch"
+    placeholder="Zoek op naam, nummer of datum..."
+    oninput="renderHistory()"
+  >
+
+
+  <div
+    id="history"
+    style="margin-top:10px"
+  >
+    Nog geen inkopen opgeslagen.
+  </div>
+
+</div>
+
+</div>
+<!-- END ORIGINAL CONTENT -->
+</div>
+</div>
+</div>
+</div>
 
 <script>
+
+/* APP NAVIGATIE */
+function showPage(page){
+  document.querySelectorAll('.app-page').forEach(p=>p.classList.remove('active'));
+  const target=document.getElementById('page'+page.charAt(0).toUpperCase()+page.slice(1));
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+  if(page==='dashboard') renderDashboard();
+  if(page==='customers') renderCustomersPage();
+  if(page==='purchases') renderHistory();
+  if(page==='profits') renderProfitPage();
+  if(page==='admin' && currentMember?.role==='owner') loadMembers();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleMobileNav(){const s=document.querySelector('.sidebar');if(!s)return;s.style.display=s.style.display==='flex'?'none':'flex'}
+function moveOriginalCards(){
+  const c=document.querySelector('.container');
+  const purchase=document.getElementById('pagePurchase'), historyPage=document.getElementById('pagePurchases'), adminPage=document.getElementById('pageAdmin');
+  const owner=document.getElementById('ownerPanel');
+  const cards=[...c.querySelectorAll(':scope > .card')];
+  const market=cards.find(x=>x.querySelector('#goldPrice'));
+  const customer=cards.find(x=>x.querySelector('#firstName'));
+  const itemsCard=cards.find(x=>x.querySelector('#items'));
+  const extra=cards.find(x=>x.querySelector('#purchaseNote'));
+  const actions=cards.find(x=>x.querySelector('#backupFile'));
+  const history=cards.find(x=>x.querySelector('#history'));
+  [market,customer,itemsCard,extra,actions].forEach(x=>{if(x)purchase.appendChild(x)});
+  if(history)historyPage.appendChild(history);
+  if(owner)adminPage.appendChild(owner);
+  const userbar=c.querySelector(':scope > .userbar');if(userbar)userbar.style.display='none';
+}
+function renderDashboard(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const arr=purchases.filter(p=>{const d=new Date(p.date);d.setHours(0,0,0,0);return d.getTime()===today.getTime()});
+  const sum=k=>arr.reduce((a,p)=>a+(Number(p[k])||0),0);
+  if(!document.getElementById('dashCount'))return;
+  dashCount.textContent=arr.length;dashPurchase.textContent=euro(sum('total'));dashResale.textContent=euro(sum('resalePrice'));dashProfit.textContent=euro(sum('profit'));
+  dashRecent.innerHTML=arr.slice(0,10).map(p=>`<div class="history"><b>${esc(p.customer?.firstName||'')} ${esc(p.customer?.lastName||'')}</b> <span class="badge">${esc(p.id)}</span><br><small>${new Date(p.date).toLocaleString('nl-BE')}</small><div><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div></div>`).join('')||'<div class="note">Vandaag nog geen inkopen.</div>';
+}
+function renderCustomersPage(){
+  const q=(document.getElementById('customerSearchPage')?.value||'').toLowerCase().trim();
+  const arr=customers.filter(c=>[c.first_name,c.last_name,c.phone,c.id_number,c.city,c.postal_code].join(' ').toLowerCase().includes(q));
+  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')"><b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b><small>${esc(c.phone||'Geen telefoon')}</small><small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small><small>${esc(c.id_number||'Geen ID-nummer')}</small></div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
+}
+function showCustomerDetail(id){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  const name=((c.first_name||'')+' '+(c.last_name||'')).trim();
+  const related=purchases.filter(p=>(((p.customer?.firstName||'')+' '+(p.customer?.lastName||'')).trim()===name));
+  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
+  document.getElementById('customerDetailPage').scrollIntoView({behavior:'smooth'});
+}
+function renderProfitPage(){
+  const total=k=>purchases.reduce((a,p)=>a+(Number(p[k])||0),0);
+  if(!document.getElementById('profitCount'))return;
+  profitCount.textContent=purchases.length;profitPurchase.textContent=euro(total('total'));profitResale.textContent=euro(total('resalePrice'));profitTotal.textContent=euro(total('profit'));
+  const days=[],now=new Date();for(let i=13;i>=0;i--){const d=new Date(now);d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);const profit=purchases.filter(p=>new Date(p.date).toISOString().slice(0,10)===key).reduce((a,p)=>a+(Number(p.profit)||0),0);days.push({d,profit})}const max=Math.max(1,...days.map(x=>x.profit));
+  profitChart.innerHTML=days.map(x=>`<div class="profit-bar-wrap"><div class="profit-bar-value">${euro(x.profit)}</div><div class="profit-bar" style="height:${Math.max(3,x.profit/max*190)}px"></div><div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div></div>`).join('');
+  profitEmployees.innerHTML='<div class="note">Per werknemer wordt verder gekoppeld zodra de medewerkernaam aan de aankoop wordt opgeslagen.</div>';
+}
 
 /* =========================================================
    SUPABASE
 ========================================================= */
 
-/*
-   LAAT JE EIGEN SUPABASE URL EN ANON KEY HIER STAAN
-   als die al in je huidige index stonden.
+const SUPABASE_URL =
+  "https://mjfyarwabbtdezctrxfp.supabase.co";
 
-   Vervang onderstaande twee waarden met die van jouw project.
-*/
+const SUPABASE_KEY =
+  "sb_publishable_mj_YFZgUnC3DR9lzDgWlYA_CUUozF43";
 
-const SUPABASE_URL = "JOUW_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "JOUW_SUPABASE_ANON_KEY";
-
-const supabaseClient = supabase.createClient(
+const sb =
+  window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY
-);
+    SUPABASE_KEY
+  );
 
 
 /* =========================================================
-   GLOBALS
+   INSTELLINGEN
 ========================================================= */
 
+const purity = {
+
+  goud:{
+    9:.375,
+    14:.585,
+    18:.75,
+    22:.916,
+    24:1
+  },
+
+  zilver:{
+    800:.8,
+    835:.835,
+    925:.925,
+    999:1
+  }
+
+};
+
+
+const defaults = {
+
+  goldPrice:105,
+  silverPrice:1.5,
+
+  rate9:65,
+  rate14:70,
+  rate18:75,
+  rate22:80,
+  rate24:90,
+
+  srate800:65,
+  srate835:65,
+  srate925:70,
+  srate999:75
+
+};
+
+
+let items = [];
+
+let customers = [];
+
+let purchases =
+  JSON.parse(
+    localStorage.getItem(
+      "goudmarsjan_purchases"
+    ) || "[]"
+  );
+
+
 let currentUser = null;
-let currentBusiness = null;
 let currentMember = null;
-
-let allCustomers = [];
-let allPurchases = [];
-
-let purchaseItemCounter = 0;
+let currentBusinessId = null;
+let memberCache = [];
+let accessCheckInProgress = false;
 
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
-function money(value) {
-
-    const number = Number(value || 0);
-
-    return new Intl.NumberFormat("nl-BE", {
-        style: "currency",
-        currency: "EUR"
-    }).format(number);
-}
+const $ =
+  id => document.getElementById(id);
 
 
-function dateFormat(value) {
-
-    if (!value) return "-";
-
-    return new Date(value).toLocaleDateString(
-        "nl-BE",
-        {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
-        }
+const euro =
+  value =>
+    new Intl.NumberFormat(
+      "nl-BE",
+      {
+        style:"currency",
+        currency:"EUR"
+      }
+    ).format(
+      Number(value) || 0
     );
-}
 
 
-function escapeHtml(value) {
-
-    if (value === null || value === undefined) {
-        return "";
-    }
-
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
+const num =
+  id =>
+    parseFloat(
+      $(id)?.value
+    ) || 0;
 
 
-/* =========================================================
-   LOGIN
-========================================================= */
-
-async function login() {
-
-    const email =
-        document.getElementById("loginEmail").value.trim();
-
-    const password =
-        document.getElementById("loginPassword").value;
-
-    const error =
-        document.getElementById("loginError");
-
-    error.style.display = "none";
-
-    if (!email || !password) {
-
-        error.innerText =
-            "Vul je e-mailadres en wachtwoord in.";
-
-        error.style.display = "block";
-
-        return;
-    }
-
-    const { data, error: loginError } =
-        await supabaseClient.auth.signInWithPassword({
-            email,
-            password
-        });
-
-    if (loginError) {
-
-        error.innerText =
-            "Inloggen mislukt: " + loginError.message;
-
-        error.style.display = "block";
-
-        return;
-    }
-
-    await initialiseUser();
-}
+const esc =
+  s =>
+    String(s ?? "")
+      .replace(
+        /[&<>"']/g,
+        m => ({
+          "&":"&amp;",
+          "<":"&lt;",
+          ">":"&gt;",
+          '"':"&quot;",
+          "'":"&#039;"
+        }[m])
+      );
 
 
 /* =========================================================
-   AUTH CHECK
+   SETTINGS
 ========================================================= */
 
-async function initialiseUser() {
+function loadSettings(){
 
-    const {
-        data: {
-            user
-        }
-    } = await supabaseClient.auth.getUser();
+  let st =
+    JSON.parse(
+      localStorage.getItem(
+        "goudmarsjan_settings"
+      ) || "{}"
+    );
 
-    if (!user) {
 
-        showLogin();
+  Object.keys(defaults)
+    .forEach(key => {
 
-        return;
-    }
+      let el = $(key);
 
-    currentUser = user;
-
-
-    /*
-       Eerst zoeken we naar een bedrijf waarvan deze gebruiker
-       eigenaar is.
-    */
-
-    let { data: businesses } =
-        await supabaseClient
-            .from("businesses")
-            .select("*")
-            .eq("owner_id", user.id)
-            .limit(1);
-
-
-    /*
-       Indien geen eigenaar, zoeken we naar een actieve
-       werknemer.
-    */
-
-    if (!businesses || businesses.length === 0) {
-
-        const {
-            data: membership,
-            error
-        } = await supabaseClient
-            .from("business_members")
-            .select("*")
-            .eq("user_id", user.id)
-            .eq("active", true)
-            .limit(1)
-            .maybeSingle();
-
-
-        /*
-           BELANGRIJK:
-
-           Geen actieve membership =
-           GEEN toegang.
-        */
-
-        if (error || !membership) {
-
-            await supabaseClient.auth.signOut();
-
-            showLogin();
-
-            const loginError =
-                document.getElementById("loginError");
-
-            loginError.innerText =
-                "Je account heeft momenteel geen toegang tot De Goudmarsjan.";
-
-            loginError.style.display = "block";
-
-            return;
-        }
-
-
-        currentMember = membership;
-
-
-        const {
-            data: business
-        } = await supabaseClient
-            .from("businesses")
-            .select("*")
-            .eq("id", membership.business_id)
-            .single();
-
-
-        if (!business) {
-
-            await supabaseClient.auth.signOut();
-
-            showLogin();
-
-            return;
-        }
-
-
-        currentBusiness = business;
-
-    } else {
-
-        currentBusiness = businesses[0];
-
-        currentMember = {
-            role: "owner",
-            active: true,
-            display_name:
-                currentUser.email
-        };
-    }
-
-
-    /*
-       EXTRA VEILIGHEID:
-       actieve membership controleren.
-    */
-
-    if (
-        currentMember.role !== "owner" &&
-        currentMember.active !== true
-    ) {
-
-        await supabaseClient.auth.signOut();
-
-        showLogin();
-
-        return;
-    }
-
-
-    enterApplication();
-}
-
-
-/* =========================================================
-   UI LOGIN / APP
-========================================================= */
-
-function showLogin() {
-
-    document.getElementById("loginScreen")
-        .style.display = "flex";
-
-    document.getElementById("app")
-        .style.display = "none";
-}
-
-
-function enterApplication() {
-
-    document.getElementById("loginScreen")
-        .style.display = "none";
-
-    document.getElementById("app")
-        .style.display = "block";
-
-
-    document.getElementById("currentUserName")
-        .innerText =
-            currentMember.display_name ||
-            currentUser.email;
-
-
-    document.getElementById("currentRole")
-        .innerText =
-            currentMember.role === "owner"
-                ? "Admin"
-                : "Werknemer";
-
-
-    /*
-       Werknemers mogen niet naar het werknemersbeheer.
-    */
-
-    if (currentMember.role !== "owner") {
-
-        document.getElementById("adminMenu")
-            .style.display = "none";
-    }
-
-
-    loadApplication();
-}
-
-
-async function logout() {
-
-    await supabaseClient.auth.signOut();
-
-    currentUser = null;
-    currentBusiness = null;
-    currentMember = null;
-
-    showLogin();
-}
-
-
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-function showPage(pageId, button) {
-
-    document.querySelectorAll(".page")
-        .forEach(page => {
-            page.classList.remove("active");
-        });
-
-    document.getElementById(pageId)
-        .classList.add("active");
-
-
-    document.querySelectorAll(".nav-btn")
-        .forEach(btn => {
-            btn.classList.remove("active");
-        });
-
-
-    if (button) {
-        button.classList.add("active");
-    }
-
-
-    if (pageId === "customers") {
-        loadCustomers();
-    }
-
-    if (pageId === "purchase") {
-        loadCustomersForPurchase();
-    }
-
-    if (pageId === "purchases") {
-        renderPurchases();
-    }
-
-    if (pageId === "profits") {
-        renderProfits();
-    }
-
-    if (pageId === "employees") {
-        loadEmployees();
-    }
-}
-
-
-/* =========================================================
-   INITIAL LOAD
-========================================================= */
-
-async function loadApplication() {
-
-    await loadCustomers();
-
-    await loadPurchases();
-
-    updateDashboard();
-
-    addPurchaseItem();
-}
-
-
-/* =========================================================
-   CUSTOMERS
-========================================================= */
-
-async function loadCustomers() {
-
-    if (!currentBusiness) return;
-
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("customers")
-        .select("*")
-        .eq("business_id", currentBusiness.id)
-        .order("created_at", {
-            ascending: false
-        });
-
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-    }
-
-
-    allCustomers = data || [];
-
-    renderCustomers();
-    loadCustomersForPurchase();
-}
-
-
-function renderCustomers() {
-
-    const table =
-        document.getElementById("customersTable");
-
-    if (!allCustomers.length) {
-
-        table.innerHTML = `
-            <tr>
-                <td colspan="5" class="empty">
-                    Nog geen klanten.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    table.innerHTML =
-        allCustomers.map(customer => {
-
-            const name =
-                `${customer.first_name || ""} ${customer.last_name || ""}`
-                    .trim();
-
-
-            return `
-                <tr>
-
-                    <td>
-                        <strong>
-                            ${escapeHtml(name)}
-                        </strong>
-                    </td>
-
-                    <td>
-                        ${dateFormat(customer.birth_date)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(customer.phone || "-")}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(customer.city || "-")}
-                    </td>
-
-                    <td>
-                        ${
-                            customer.id_checked
-                                ? "✅ Ja"
-                                : "❌ Nee"
-                        }
-                    </td>
-
-                </tr>
-            `;
-
-        }).join("");
-}
-
-
-function filterCustomers() {
-
-    const search =
-        document.getElementById("customerSearch")
-            .value
-            .toLowerCase();
-
-
-    const rows =
-        document.querySelectorAll(
-            "#customersTable tr"
-        );
-
-
-    rows.forEach(row => {
-
-        row.style.display =
-            row.innerText
-                .toLowerCase()
-                .includes(search)
-                ? ""
-                : "none";
+      if(el){
+        el.value =
+          st[key] ??
+          defaults[key];
+      }
 
     });
+
 }
 
 
-function openCustomerForm() {
+function saveSettingsLocal(){
 
-    document.getElementById("customerForm")
-        .style.display = "block";
+  let st = {};
+
+  Object.keys(defaults)
+    .forEach(key => {
+
+      let el = $(key);
+
+      if(el){
+        st[key] = num(key);
+      }
+
+    });
+
+
+  localStorage.setItem(
+    "goudmarsjan_settings",
+    JSON.stringify(st)
+  );
+
 }
 
 
-function closeCustomerForm() {
+function saveSettings(){
 
-    document.getElementById("customerForm")
-        .style.display = "none";
+  /* werknemers kunnen deze functie
+     niet gebruiken omdat hun velden
+     disabled zijn */
+
+  if(
+    currentMember &&
+    currentMember.role !== "owner"
+  ){
+    return;
+  }
+
+
+  saveSettingsLocal();
+
+
+  if(currentBusinessId){
+
+    saveCloudSettings()
+      .catch(
+        e =>
+          console.warn(
+            "Cloud settings:",
+            e
+          )
+      );
+
+  }
+
 }
 
 
-async function saveCustomer() {
+function getRate(
+  metal,
+  fineness
+){
 
-    const firstName =
-        document.getElementById("customerFirstName").value.trim();
+  let id =
+    (
+      metal === "zilver"
+        ? "srate"
+        : "rate"
+    ) + fineness;
 
-    const lastName =
-        document.getElementById("customerLastName").value.trim();
+
+  return num(id);
+
+}
 
 
-    if (!firstName || !lastName) {
+function storedRate(
+  metal,
+  fineness
+){
 
-        alert(
-            "Voornaam en achternaam zijn verplicht."
-        );
+  let st =
+    JSON.parse(
+      localStorage.getItem(
+        "goudmarsjan_settings"
+      ) || "{}"
+    );
 
-        return;
+
+  let key =
+    (
+      metal === "zilver"
+        ? "srate"
+        : "rate"
+    ) + fineness;
+
+
+  return Number(
+    st[key]
+  ) || defaults[key];
+
+}
+
+
+/* =========================================================
+   ITEMS
+========================================================= */
+
+function addItem(){
+
+  items.push({
+
+    metal:"goud",
+
+    type:"Juweel",
+
+    description:"",
+
+    fineness:18,
+
+    karat:18,
+
+    weight:0,
+
+    nonGold:0,
+
+    manualOffer:0
+
+  });
+
+
+  renderItems();
+
+  calculate();
+
+}
+
+
+function removeItem(i){
+
+  items.splice(i,1);
+
+  renderItems();
+
+  calculate();
+
+}
+
+
+function updateItem(
+  i,
+  key,
+  value
+){
+
+  if(
+    key === "weight" ||
+    key === "nonGold" ||
+    key === "manualOffer"
+  ){
+
+    items[i][key] =
+      parseFloat(value) || 0;
+
+  }
+
+  else if(
+    key === "fineness"
+  ){
+
+    items[i].fineness =
+      parseInt(value) || 0;
+
+
+    if(
+      items[i].metal === "goud"
+    ){
+
+      items[i].karat =
+        items[i].fineness;
+
     }
 
+  }
 
-    const customer = {
+  else{
 
-        business_id: currentBusiness.id,
+    items[i][key] =
+      value;
 
-        first_name: firstName,
+  }
 
-        last_name: lastName,
 
-        birth_date:
-            document.getElementById("customerBirthDate").value
-            || null,
+  /*
+    BELANGRIJK:
 
-        phone:
-            document.getElementById("customerPhone").value
-            || null,
+    Hier wordt NIET opnieuw
+    renderItems() uitgevoerd.
 
-        iban:
-            document.getElementById("customerIban").value
-            || null,
+    Daardoor blijft het
+    toetsenbord open wanneer
+    je bijvoorbeeld 12.50
+    gram ingeeft.
+  */
 
-        id_type:
-            document.getElementById("customerIdType").value
-            || null,
+  calculate();
 
-        id_number:
-            document.getElementById("customerIdNumber").value
-            || null,
+}
 
-        address_line:
-            document.getElementById("customerAddress").value
-            || null,
 
-        postal_code:
-            document.getElementById("customerPostal").value
-            || null,
+function calc(it){
 
-        city:
-            document.getElementById("customerCity").value
-            || null,
+  let metal =
+    it.metal || "goud";
 
-        notes:
-            document.getElementById("customerNotes").value
-            || null,
 
-        id_checked: false
+  /* VERZILVERD */
+
+  if(
+    metal === "verzilverd"
+  ){
+
+    let net =
+      Math.max(
+        0,
+        (it.weight || 0) -
+        (it.nonGold || 0)
+      );
+
+
+    let offer =
+      parseFloat(
+        it.manualOffer
+      ) || 0;
+
+
+    return {
+
+      metal,
+
+      fineness:0,
+
+      net,
+
+      pure:0,
+
+      market:0,
+
+      offer,
+
+      rate:0,
+
+      price:0
+
     };
 
-
-    const {
-        error
-    } = await supabaseClient
-        .from("customers")
-        .insert(customer);
+  }
 
 
-    if (error) {
+  /* GOUD / ZILVER */
 
-        alert(
-            "Klant kon niet worden opgeslagen:\n\n" +
-            error.message
-        );
-
-        return;
-    }
-
-
-    alert("Klant opgeslagen.");
+  let fineness =
+    it.fineness ||
+    (
+      metal === "zilver"
+        ? 925
+        : it.karat
+    );
 
 
-    document
-        .querySelectorAll("#customerForm input, #customerForm textarea")
-        .forEach(input => {
-            input.value = "";
-        });
+  let net =
+    Math.max(
+      0,
+      (it.weight || 0) -
+      (it.nonGold || 0)
+    );
 
 
-    closeCustomerForm();
+  let pure =
+    net *
+    (
+      purity[metal]?.[fineness] ||
+      0
+    );
 
-    await loadCustomers();
+
+  let price =
+    num(
+      metal === "zilver"
+        ? "silverPrice"
+        : "goldPrice"
+    );
+
+
+  let market =
+    pure * price;
+
+
+  let rate =
+    getRate(
+      metal,
+      fineness
+    ) / 100;
+
+
+  return {
+
+    metal,
+
+    fineness,
+
+    net,
+
+    pure,
+
+    market,
+
+    offer:
+      market * rate,
+
+    rate:
+      rate * 100,
+
+    price
+
+  };
+
 }
 
 
 /* =========================================================
-   PURCHASE CUSTOMER SELECT
+   RENDER ITEMS
 ========================================================= */
 
-function loadCustomersForPurchase() {
+function renderItems(){
 
-    const select =
-        document.getElementById("purchaseCustomer");
-
-    if (!select) return;
+  let container =
+    $("items");
 
 
-    const current =
-        select.value;
+  if(!items.length){
+
+    container.innerHTML =
+      '<div style="text-align:center;color:#777;padding:15px">Nog geen stukken toegevoegd.</div>';
+
+    return;
+
+  }
 
 
-    select.innerHTML = `
-        <option value="">
-            Selecteer klant
-        </option>
-    `;
+  container.innerHTML =
+    items.map(
+      (it,i) => {
+
+        let x =
+          calc(it);
 
 
-    allCustomers.forEach(customer => {
-
-        const name =
-            `${customer.first_name || ""} ${customer.last_name || ""}`
-                .trim();
+        let metal =
+          it.metal || "goud";
 
 
-        const option =
-            document.createElement("option");
-
-        option.value = customer.id;
-
-        option.textContent = name;
-
-        select.appendChild(option);
-
-    });
+        let fineness =
+          x.fineness;
 
 
-    if (current) {
-        select.value = current;
-    }
+        let purityOptions =
+          metal === "goud"
+            ? [9,14,18,22,24]
+            : metal === "zilver"
+              ? [800,835,925,999]
+              : [];
+
+
+        let purityLabel =
+          metal === "goud"
+            ? "Karaat"
+            : metal === "zilver"
+              ? "Zuiverheid"
+              : "—";
+
+
+        return `
+
+<div class="item">
+
+<div class="itemhead">
+
+<b>
+Stuk ${i+1}
+</b>
+
+<button
+class="danger"
+onclick="removeItem(${i})"
+>
+✕ VERWIJDER
+</button>
+
+</div>
+
+
+<div class="itemgrid">
+
+
+<div>
+
+<label>
+Metaal
+</label>
+
+<select
+onchange="
+updateItem(${i},'metal',this.value);
+renderItems();
+calculate()
+"
+>
+
+<option
+value="goud"
+${metal==="goud"?"selected":""}
+>
+🟡 Goud
+</option>
+
+<option
+value="zilver"
+${metal==="zilver"?"selected":""}
+>
+⚪ Zilver
+</option>
+
+<option
+value="verzilverd"
+${metal==="verzilverd"?"selected":""}
+>
+⚪ Verzilverd
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label>
+${purityLabel}
+</label>
+
+
+${
+metal === "verzilverd"
+
+? `
+<div class="value">
+Geen zilvergehalte berekend
+</div>
+`
+
+: `
+
+<select
+onchange="
+updateItem(${i},'fineness',this.value);
+renderItems();
+calculate()
+"
+>
+
+${purityOptions.map(
+v =>
+`
+
+<option
+value="${v}"
+${fineness===v?"selected":""}
+>
+
+${
+metal==="goud"
+  ? v+"K"
+  : v+"‰"
+}
+
+</option>
+
+`
+).join("")}
+
+</select>
+
+`
+
+}
+
+</div>
+
+
+<div>
+
+<label>
+Bruto gram
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.weight || ""}"
+oninput="
+updateItem(
+${i},
+'weight',
+this.value
+)
+"
+>
+
+</div>
+
+
+<div>
+
+<label>
+${
+metal==="goud"
+  ? "Niet-goud"
+  : "Niet-metaal"
+}
+gram
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.nonGold || ""}"
+oninput="
+updateItem(
+${i},
+'nonGold',
+this.value
+)
+"
+>
+
+</div>
+
+
+<div>
+
+<label>
+Netto ${metal}
+</label>
+
+<div
+class="value"
+id="net_${i}"
+>
+${x.net.toFixed(2)} g
+</div>
+
+</div>
+
+
+<div>
+
+<label>
+Metaalwaarde
+</label>
+
+<div
+class="value"
+id="market_${i}"
+>
+${euro(x.market)}
+</div>
+
+</div>
+
+
+${
+metal === "verzilverd"
+
+? `
+
+<div>
+
+<label>
+Inkoopprijs verzilverd (€)
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.manualOffer || ""}"
+oninput="
+updateItem(
+${i},
+'manualOffer',
+this.value
+)
+"
+>
+
+</div>
+
+`
+
+: ""
+
+}
+
+
+<div>
+
+<label>
+Inkoop
+</label>
+
+<div
+class="value"
+id="offer_${i}"
+>
+<b>
+${euro(x.offer)}
+</b>
+</div>
+
+</div>
+
+
+</div>
+
+
+<div style="margin-top:8px">
+
+<label>
+Omschrijving
+</label>
+
+<input
+value="${esc(it.description)}"
+oninput="
+updateItem(
+${i},
+'description',
+this.value
+)
+"
+placeholder="Bijv. gouden ring / zilveren ketting"
+>
+
+</div>
+
+
+<div
+class="mini"
+id="mini_${i}"
+style="margin-top:8px"
+>
+
+${
+metal==="verzilverd"
+  ? "Verzilverd"
+  : metal==="goud"
+    ? x.fineness+"K"
+    : "Zilver "+x.fineness+"‰"
+}
+
+ · Metaalwaarde:
+${euro(x.market)}
+
+ ·
+${x.rate.toFixed(1)}%
+
+ · Ruimte:
+${euro(x.market-x.offer)}
+
+</div>
+
+
+</div>
+
+`;
+
+      }
+    ).join("");
+
 }
 
 
 /* =========================================================
-   PURCHASE ITEMS
+   UPDATE ITEM DISPLAY
 ========================================================= */
 
-function addPurchaseItem() {
+function updateItemDisplay(){
 
-    purchaseItemCounter++;
+  items.forEach(
+    (it,i) => {
 
-    const id =
-        purchaseItemCounter;
+      let x =
+        calc(it);
 
 
-    const container =
-        document.getElementById("purchaseItems");
+      if($("net_"+i)){
+        $("net_"+i)
+          .textContent =
+          x.net.toFixed(2)+" g";
+      }
 
 
-    const div =
-        document.createElement("div");
+      if($("market_"+i)){
+        $("market_"+i)
+          .textContent =
+          euro(x.market);
+      }
 
-    div.className =
-        "purchase-item";
 
+      if($("offer_"+i)){
+        $("offer_"+i)
+          .innerHTML =
+          "<b>"+
+          euro(x.offer)+
+          "</b>";
+      }
 
-    div.dataset.itemId = id;
 
+      if($("mini_"+i)){
 
-    div.innerHTML = `
+        $("mini_"+i)
+          .textContent =
 
-        <div class="item-grid">
+          (
+            it.metal === "verzilverd"
 
-            <div class="form-group">
+              ? "Verzilverd"
 
-                <label>Type metaal</label>
+              : it.metal === "goud"
 
-                <select class="item-metal">
+                ? x.fineness+"K"
 
-                    <option value="Goud">
-                        Goud
-                    </option>
+                : "Zilver "+x.fineness+"‰"
 
-                    <option value="Zilver">
-                        Zilver
-                    </option>
+          )
 
-                    <option value="Platina">
-                        Platina
-                    </option>
+          +" · Metaalwaarde: "
+          + euro(x.market)
 
-                    <option value="Palladium">
-                        Palladium
-                    </option>
+          +" · "
+          + x.rate.toFixed(1)
+          +"%"
 
-                    <option value="Andere">
-                        Andere
-                    </option>
+          +" · Ruimte: "
+          + euro(
+              x.market -
+              x.offer
+            );
 
-                </select>
+      }
 
-            </div>
-
-
-            <div class="form-group">
-
-                <label>Fijnheid</label>
-
-                <select class="item-fineness">
-
-                    <option value="999">
-                        999
-                    </option>
-
-                    <option value="916">
-                        916
-                    </option>
-
-                    <option value="900">
-                        900
-                    </option>
-
-                    <option value="750">
-                        750
-                    </option>
-
-                    <option value="585">
-                        585
-                    </option>
-
-                    <option value="375">
-                        375
-                    </option>
-
-                </select>
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>Bruto gram</label>
-
-                <input
-                    class="input item-gross"
-                    type="number"
-                    step="0.01"
-                    value="0"
-                    oninput="calculatePurchase()"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>Netto gram</label>
-
-                <input
-                    class="input item-net"
-                    type="number"
-                    step="0.01"
-                    value="0"
-                    oninput="calculatePurchase()"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label>Ons bod</label>
-
-                <input
-                    class="input item-offer"
-                    type="number"
-                    step="0.01"
-                    value="0"
-                    oninput="calculatePurchase()"
-                >
-
-            </div>
-
-
-            <div>
-
-                <button
-                    class="btn btn-red"
-                    onclick="removePurchaseItem(${id})"
-                >
-                    Verwijder
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <div style="margin-top:12px">
-
-            Marktwaarde:
-            <strong class="item-market">
-                € 0,00
-            </strong>
-
-        </div>
-
-    `;
-
-
-    container.appendChild(div);
-
-
-    calculatePurchase();
-}
-
-
-function removePurchaseItem(id) {
-
-    const item =
-        document.querySelector(
-            `.purchase-item[data-item-id="${id}"]`
-        );
-
-
-    if (item) {
-        item.remove();
     }
+  );
 
-
-    calculatePurchase();
 }
 
 
 /* =========================================================
-   CALCULATE PURCHASE
+   BEREKENING
 ========================================================= */
 
-function calculatePurchase() {
+function calculate(){
 
-    let total = 0;
-    let market = 0;
-
-
-    document
-        .querySelectorAll(".purchase-item")
-        .forEach(item => {
-
-            const gross =
-                Number(
-                    item.querySelector(".item-gross").value
-                ) || 0;
+  saveSettingsLocal();
 
 
-            const net =
-                Number(
-                    item.querySelector(".item-net").value
-                ) || 0;
+  let market = 0;
+
+  let offer = 0;
 
 
-            const offer =
-                Number(
-                    item.querySelector(".item-offer").value
-                ) || 0;
+  items.forEach(
+    it => {
+
+      let x =
+        calc(it);
+
+      market +=
+        x.market;
+
+      offer +=
+        x.offer;
+
+    }
+  );
 
 
-            /*
-               Momenteel wordt marktwaarde berekend op basis
-               van de ingevoerde actuele goudprijs.
-
-               De precieze prijslogica kan later rechtstreeks
-               aan settings gekoppeld worden.
-            */
-
-            const metal =
-                item.querySelector(".item-metal").value;
+  $("marketTotal")
+    .textContent =
+    euro(market);
 
 
-            const fineness =
-                Number(
-                    item.querySelector(".item-fineness").value
-                ) || 0;
+  $("purchaseTotal")
+    .textContent =
+    euro(offer);
 
 
-            let price = 0;
+  $("total")
+    .textContent =
+    euro(offer);
 
 
-            if (metal === "Goud") {
-
-                price =
-                    Number(
-                        document.getElementById("goldPrice").value
-                    ) || 0;
-
-            } else if (metal === "Zilver") {
-
-                price =
-                    Number(
-                        document.getElementById("silverPrice").value
-                    ) || 0;
-            }
+  $("discountTotal")
+    .textContent =
+    euro(
+      market - offer
+    );
 
 
-            const marketValue =
-                net *
-                price *
-                (fineness / 999);
+  $("rateTotal")
+    .textContent =
+    market
+      ? (
+          offer /
+          market *
+          100
+        ).toFixed(1)+"%"
+      : "—";
 
 
-            total += offer;
-
-            market += marketValue;
-
-
-            const marketElement =
-                item.querySelector(".item-market");
+  let resale =
+    num("resalePrice");
 
 
-            marketElement.innerText =
-                money(marketValue);
-
-        });
+  let profit =
+    resale - offer;
 
 
-    document.getElementById("purchaseTotal")
-        .innerText = money(total);
+  $("resaleDisplay")
+    .textContent =
+    euro(resale);
 
 
-    document.getElementById("purchaseMarket")
-        .innerText = money(market);
+  $("profitDisplay")
+    .textContent =
+    euro(profit);
+
+
+  $("marginDisplay")
+    .textContent =
+    resale
+      ? (
+          profit /
+          resale *
+          100
+        ).toFixed(1)+"%"
+      : "—";
+
+
+  let method =
+    $("paymentMethod").value;
+
+
+  if(
+    method === "cash" &&
+    offer > 500
+  ){
+
+    $("cashWarning").innerHTML =
+
+      `<div class="warning">
+      ⚠️ CASH ${euro(offer)}
+      — boven €500.
+      Kies een andere betalingswijze.
+      </div>`;
+
+  }
+
+  else if(
+    method === "cash"
+  ){
+
+    $("cashWarning").innerHTML =
+
+      `<div class="ok">
+      ✓ Cash ${euro(offer)}
+      — onder €500.
+      </div>`;
+
+  }
+
+  else{
+
+    $("cashWarning")
+      .innerHTML = "";
+
+  }
+
+
+  updateItemDisplay();
+
 }
 
 
 /* =========================================================
-   SAVE PURCHASE
+   KLANT
 ========================================================= */
 
-async function savePurchase() {
+function customer(){
 
-    const customerId =
-        document.getElementById("purchaseCustomer").value;
+  return {
 
+    firstName:
+      $("firstName")
+        .value
+        .trim(),
 
-    if (!customerId) {
+    lastName:
+      $("lastName")
+        .value
+        .trim(),
 
-        alert("Selecteer eerst een klant.");
+    birthDate:
+      $("birthDate").value,
 
-        return;
-    }
+    phone:
+      $("phone")
+        .value
+        .trim(),
 
+    iban:
+      $("iban")
+        .value
+        .trim(),
 
-    const items =
-        Array.from(
-            document.querySelectorAll(".purchase-item")
-        );
+    idChecked:
+      $("idChecked").value,
 
+    idType:
+      $("idType").value,
 
-    if (!items.length) {
+    idNumber:
+      $("idNumber")
+        .value
+        .trim(),
 
-        alert("Voeg minstens één stuk toe.");
+    street:
+      $("street")
+        .value
+        .trim(),
 
-        return;
-    }
+    houseNumber:
+      $("houseNumber")
+        .value
+        .trim(),
 
+    postalCode:
+      $("postalCode")
+        .value
+        .trim(),
 
-    let total = 0;
-    let marketValueTotal = 0;
+    city:
+      $("city")
+        .value
+        .trim(),
 
+    note:
+      $("customerNote")
+        .value
+        .trim()
 
-    const purchaseItems = [];
+  };
 
+}
 
-    items.forEach(item => {
 
-        const metal =
-            item.querySelector(".item-metal").value;
+/* =========================================================
+   DATA
+========================================================= */
 
-        const fineness =
-            item.querySelector(".item-fineness").value;
+function data(){
 
-        const gross =
-            Number(
-                item.querySelector(".item-gross").value
-            ) || 0;
+  let market =
+    items.reduce(
+      (sum,it) =>
+        sum + calc(it).market,
+      0
+    );
 
-        const net =
-            Number(
-                item.querySelector(".item-net").value
-            ) || 0;
 
-        const offer =
-            Number(
-                item.querySelector(".item-offer").value
-            ) || 0;
+  let total =
+    items.reduce(
+      (sum,it) =>
+        sum + calc(it).offer,
+      0
+    );
 
 
-        let price = 0;
+  let resale =
+    num("resalePrice");
 
 
-        if (metal === "Goud") {
+  return {
 
-            price =
-                Number(
-                    document.getElementById("goldPrice").value
-                ) || 0;
+    id:
+      "GM-" +
+      new Date().getFullYear() +
+      "-" +
+      String(
+        Date.now()
+      ).slice(-6),
 
-        } else if (metal === "Zilver") {
+    date:
+      new Date().toISOString(),
 
-            price =
-                Number(
-                    document.getElementById("silverPrice").value
-                ) || 0;
+    customer:
+      customer(),
 
-        }
+    paymentMethod:
+      $("paymentMethod").value,
 
+    items:
+      JSON.parse(
+        JSON.stringify(items)
+      ),
 
-        const market =
-            net *
-            price *
-            (Number(fineness) / 999);
+    goldPrice:
+      num("goldPrice"),
 
+    silverPrice:
+      num("silverPrice"),
 
-        total += offer;
+    marketValue:
+      market,
 
-        marketValueTotal += market;
+    total:
+      total,
 
+    resalePrice:
+      resale,
 
-        purchaseItems.push({
+    profit:
+      resale - total,
 
-            item_type: metal,
+    createdBy:
+      currentUser?.id || null,
 
-            metal: metal,
+    employeeName:
+      currentMember?.display_name ||
+      currentUser?.email ||
+      "",
 
-            fineness: String(fineness),
+    note:
+      $("purchaseNote")
+        .value
+        .trim(),
 
-            gross_grams: gross,
+    reference:
+      $("reference")
+        .value
+        .trim()
 
-            net_grams: net,
+  };
 
-            market_value: market,
+}
 
-            offer: offer
 
-        });
+/* =========================================================
+   VALIDATIE
+========================================================= */
 
-    });
+function valid(){
 
+  let c =
+    customer();
 
-    /*
-       Eerst de aankoop zelf maken.
-    */
 
-    const {
-        data: purchase,
-        error: purchaseError
-    } = await supabaseClient
-        .from("purchases")
-        .insert({
+  if(
+    !c.firstName ||
+    !c.lastName ||
+    !c.birthDate
+  ){
 
-            business_id:
-                currentBusiness.id,
+    alert(
+      "Vul voornaam, achternaam en geboortedatum in."
+    );
 
-            customer_id:
-                customerId,
+    return false;
 
-            created_by:
-                currentUser.id,
+  }
 
-            reference:
-                "INKOOP-" +
-                Date.now(),
 
-            purchase_date:
-                new Date().toISOString(),
+  if(
+    c.idChecked !== "ja"
+  ){
 
-            payment_method:
-                document.getElementById("paymentMethod").value,
+    alert(
+      "Controleer het ID-document."
+    );
 
-            gold_price_24k:
-                Number(
-                    document.getElementById("goldPrice").value
-                ) || null,
+    return false;
 
-            silver_price_999:
-                Number(
-                    document.getElementById("silverPrice").value
-                ) || null,
+  }
 
-            market_value:
-                marketValueTotal,
 
-            total:
-                total
+  if(
+    !items.length
+  ){
 
-        })
+    alert(
+      "Voeg minstens één stuk toe."
+    );
 
-        .select()
-        .single();
+    return false;
 
+  }
 
-    if (purchaseError) {
 
-        alert(
-            "Aankoop kon niet worden opgeslagen:\n\n" +
-            purchaseError.message
-        );
+  let total =
+    items.reduce(
+      (sum,it) =>
+        sum + calc(it).offer,
+      0
+    );
 
-        return;
-    }
 
+  if(
+    $("paymentMethod").value === "cash" &&
+    total > 500
+  ){
 
-    /*
-       Daarna de aankoopstukken.
-    */
+    alert(
+      "Cash boven €500 kan hier niet worden opgeslagen."
+    );
 
-    const itemsToInsert =
-        purchaseItems.map(item => ({
+    return false;
 
-            purchase_id:
-                purchase.id,
+  }
 
-            business_id:
-                currentBusiness.id,
 
-            ...item
+  if(
+    !currentUser ||
+    !currentBusinessId
+  ){
 
-        }));
+    alert(
+      "Log eerst in."
+    );
 
+    return false;
 
-    const {
-        error: itemsError
-    } = await supabaseClient
-        .from("purchase_items")
-        .insert(itemsToInsert);
+  }
 
 
-    if (itemsError) {
+  return true;
 
-        alert(
-            "Aankoop werd aangemaakt maar de stukken konden niet worden opgeslagen:\n\n" +
-            itemsError.message
-        );
+}
 
-        return;
-    }
+
+/* =========================================================
+   OPSLAAN
+========================================================= */
+
+async function savePurchase(){
+
+  if(!valid())
+    return;
+
+
+  let p =
+    data();
+
+
+  try{
+
+    await savePurchaseCloud(p);
+
+
+    purchases.unshift(p);
+
+
+    localStorage.setItem(
+      "goudmarsjan_purchases",
+      JSON.stringify(purchases)
+    );
+
+
+    renderHistory();
 
 
     alert(
-        "Aankoop succesvol opgeslagen.\n\n" +
-        "Inkoop: " + money(total) +
-        "\nMarktwaarde: " + money(marketValueTotal) +
-        "\nVerwachte winst: " +
-        money(marketValueTotal - total)
+      "Inkoop opgeslagen in de cloud!\n\n"+
+      p.id
+    );
+
+  }
+
+  catch(e){
+
+    console.error(e);
+
+
+    alert(
+      "De aankoop kon niet naar Supabase worden opgeslagen.\n\n"+
+      (e.message || e)
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   HISTORIE
+========================================================= */
+
+function renderHistory(){
+
+  let q =
+    (
+      $("historySearch")
+        ?.value ||
+      ""
+    ).toLowerCase();
+
+
+  let arr =
+    purchases
+      .filter(
+        p =>
+          [
+            p.id,
+            p.date,
+            p.customer?.firstName,
+            p.customer?.lastName,
+            p.reference
+          ]
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
+      )
+      .slice(0,50);
+
+
+  $("history")
+    .innerHTML =
+
+    arr.length
+
+      ? arr.map(
+          p => `
+
+<div class="history">
+
+<b>
+${esc(p.id)}
+</b>
+
+<span class="badge">
+${esc(p.paymentMethod || "")}
+</span>
+
+<br>
+
+${esc(p.customer?.firstName || "")}
+${esc(p.customer?.lastName || "")}
+
+<br>
+
+<small>
+${new Date(p.date)
+  .toLocaleString("nl-BE")}
+</small>
+
+<div>
+<b>
+${euro(p.total)}
+</b>
+</div>
+
+<div
+class="row"
+style="margin-top:8px"
+>
+
+<button
+class="light"
+onclick="printSaved('${p.id}')"
+>
+🧾 BON
+</button>
+
+<button
+class="danger"
+onclick="deletePurchase('${p.id}')"
+>
+🗑️ VERWIJDER
+</button>
+
+</div>
+
+</div>
+
+`
+        ).join("")
+
+      :
+
+      '<div style="text-align:center;color:#777;padding:15px">Geen inkopen gevonden.</div>';
+
+}
+
+
+/* =========================================================
+   DELETE PURCHASE
+========================================================= */
+
+async function deletePurchase(id){
+
+  if(
+    !confirm(
+      "Deze aankoop verwijderen?"
+    )
+  )
+    return;
+
+
+  try{
+
+    await deletePurchaseCloud(id);
+
+  }
+
+  catch(e){
+
+    alert(
+      "Kon de cloud-aankoop niet verwijderen:\n"+
+      (e.message || e)
+    );
+
+    return;
+
+  }
+
+
+  purchases =
+    purchases.filter(
+      p => p.id !== id
     );
 
 
+  localStorage.setItem(
+    "goudmarsjan_purchases",
+    JSON.stringify(purchases)
+  );
+
+
+  renderHistory();
+
+}
+
+
+/* =========================================================
+   CLEAR HISTORY
+========================================================= */
+
+async function clearHistory(){
+
+  if(
+    !confirm(
+      "ALLE opgeslagen inkopen verwijderen?"
+    )
+  )
+    return;
+
+
+  for(
+    const p of [...purchases]
+  ){
+
+    try{
+
+      await deletePurchaseCloud(
+        p.id
+      );
+
+    }
+
+    catch(e){
+
+      console.error(e);
+
+    }
+
+  }
+
+
+  purchases = [];
+
+
+  localStorage.removeItem(
+    "goudmarsjan_purchases"
+  );
+
+
+  renderHistory();
+
+}
+
+
+/* =========================================================
+   NIEUWE INKOOP
+========================================================= */
+
+function newPurchase(){
+
+  if(
+    !confirm(
+      "Nieuwe inkoop starten? Niet-opgeslagen gegevens gaan verloren."
+    )
+  )
+    return;
+
+
+  [
+    "firstName",
+    "lastName",
+    "birthDate",
+    "phone",
+    "iban",
+    "idNumber",
+    "street",
+    "houseNumber",
+    "postalCode",
+    "city",
+    "customerNote",
+    "purchaseNote",
+    "reference",
+    "resalePrice"
+  ]
+  .forEach(
+    id =>
+      $(id).value = ""
+  );
+
+
+  $("idChecked")
+    .value = "ja";
+
+
+  $("idType")
+    .value = "";
+
+
+  $("paymentMethod")
+    .value =
+    "overschrijving";
+
+
+  items = [];
+
+
+  addItem();
+
+}
+
+
+/* =========================================================
+   BON
+   GEEN METAALWAARDE OP KLANTENBON
+========================================================= */
+
+function receipt(p){
+
+  let c =
+    p.customer || {};
+
+
+  let addr =
+    [
+      c.street &&
+      c.houseNumber
+        ? c.street+" "+c.houseNumber
+        : c.street,
+
+      c.postalCode &&
+      c.city
+        ? c.postalCode+" "+c.city
+        : c.city
+
+    ]
+    .filter(Boolean)
+    .join(", ");
+
+
+  let rows =
+    (p.items || [])
+      .map(
+        it => {
+
+          let metal =
+            it.metal ||
+            "goud";
+
+
+          let f =
+            it.fineness ||
+            (
+              metal === "goud"
+                ? it.karat
+                : 925
+            );
+
+
+          let net =
+            Math.max(
+              0,
+              (it.weight || 0) -
+              (it.nonGold || 0)
+            );
+
+
+          let offer;
+
+
+          if(
+            metal === "verzilverd"
+          ){
+
+            offer =
+              Number(
+                it.manualOffer
+              ) || 0;
+
+          }
+
+          else{
+
+            let market =
+              net *
+              (
+                purity[metal]?.[f] ||
+                0
+              ) *
+              (
+                metal === "zilver"
+                  ? (
+                      p.silverPrice || 0
+                    )
+                  : (
+                      p.goldPrice || 0
+                    )
+              );
+
+
+            offer =
+              market *
+              storedRate(
+                metal,
+                f
+              ) /
+              100;
+
+          }
+
+
+          let label =
+            metal === "goud"
+              ? f+"K"
+              : metal === "zilver"
+                ? "Zilver "+f+"‰"
+                : "Verzilverd";
+
+
+          /*
+             BELANGRIJK:
+
+             Hier wordt GEEN marketValue
+             naar de klant gestuurd.
+
+             Alleen:
+             Type
+             Metaal/zuiverheid
+             Netto gram
+             Inkoop
+          */
+
+          return `
+
+<tr>
+
+<td>
+${esc(it.type)}
+</td>
+
+<td>
+${label}
+</td>
+
+<td>
+${net.toFixed(2)} g
+</td>
+
+<td>
+${euro(offer)}
+</td>
+
+</tr>
+
+`;
+
+        }
+      )
+      .join("");
+
+
+  return `
+
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+${esc(p.id)}
+</title>
+
+
+<style>
+
+body{
+  font-family:Arial;
+  max-width:850px;
+  margin:auto;
+  padding:30px;
+}
+
+h1{
+  letter-spacing:2px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:25px;
+}
+
+th,
+td{
+  padding:9px;
+  border-bottom:1px solid #ddd;
+  text-align:left;
+}
+
+.total{
+  font-size:24px;
+  font-weight:bold;
+  margin-top:25px;
+}
+
+.small{
+  font-size:12px;
+  color:#666;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>
+DE GOUDMARSJAN
+</h1>
+
+
+<h3>
+EDELMETALEN — AANKOOPBON
+</h3>
+
+
+<p>
+
+<b>
+Referentie:
+</b>
+
+${esc(p.id)}
+
+<br>
+
+<b>
+Datum:
+</b>
+
+${new Date(
+  p.date
+)
+.toLocaleString("nl-BE")}
+
+</p>
+
+
+<p>
+
+<b>
+Klant:
+</b>
+
+${esc(c.firstName || "")}
+${esc(c.lastName || "")}
+
+<br>
+
+<b>
+Geboortedatum:
+</b>
+
+${esc(c.birthDate || "")}
+
+<br>
+
+<b>
+Telefoon:
+</b>
+
+${esc(c.phone || "")}
+
+<br>
+
+<b>
+Adres:
+</b>
+
+${esc(addr)}
+
+<br>
+
+<b>
+IBAN:
+</b>
+
+${esc(c.iban || "")}
+
+</p>
+
+
+<table>
+
+<tr>
+
+<th>
+Type
+</th>
+
+<th>
+Metaal/zuiverheid
+</th>
+
+<th>
+Netto gram
+</th>
+
+<th>
+Inkoop
+</th>
+
+</tr>
+
+${rows}
+
+</table>
+
+
+<div class="total">
+
+TOTAAL:
+${euro(p.total)}
+
+</div>
+
+
+<p>
+
+Betalingswijze:
+${esc(
+  p.paymentMethod || ""
+)}
+
+</p>
+
+
+${
+p.reference
+  ? `
+<p>
+Interne referentie:
+${esc(p.reference)}
+</p>
+`
+  : ""
+}
+
+
+${
+p.note
+  ? `
+<p>
+<b>
+Opmerking:
+</b>
+
+${esc(p.note)}
+
+</p>
+`
+  : ""
+}
+
+
+<hr>
+
+
+<p class="small">
+
+DE GOUDMARSJAN — EDELMETALEN
+
+</p>
+
+
+</body>
+
+</html>
+
+`;
+
+}
+
+
+function openPrint(p){
+
+  let w =
+    window.open(
+      "",
+      "_blank"
+    );
+
+
+  if(!w){
+
+    alert(
+      "Sta pop-ups toe voor de aankoopbon."
+    );
+
+    return;
+
+  }
+
+
+  w.document.write(
+    receipt(p)
+  );
+
+
+  w.document.close();
+
+
+  setTimeout(
+    () => w.print(),
+    300
+  );
+
+}
+
+
+function printReceipt(){
+
+  if(valid())
+    openPrint(
+      data()
+    );
+
+}
+
+
+function printSaved(id){
+
+  let p =
+    purchases.find(
+      x => x.id === id
+    );
+
+
+  if(p)
+    openPrint(p);
+
+}
+
+
+/* =========================================================
+   BACKUP
+========================================================= */
+
+function download(
+  name,
+  data,
+  type
+){
+
+  let a =
+    document.createElement("a");
+
+
+  a.href =
+    URL.createObjectURL(
+      new Blob(
+        [data],
+        {type}
+      )
+    );
+
+
+  a.download =
+    name;
+
+
+  a.click();
+
+
+  setTimeout(
+    () =>
+      URL.revokeObjectURL(
+        a.href
+      ),
+    1000
+  );
+
+}
+
+
+function exportBackup(){
+
+  download(
+
+    "goudmarsjan-backup-"+
+    new Date()
+      .toISOString()
+      .slice(0,10)+
+    ".json",
+
+    JSON.stringify(
+      {
+        version:4,
+        exportedAt:
+          new Date().toISOString(),
+        settings:
+          JSON.parse(
+            localStorage.getItem(
+              "goudmarsjan_settings"
+            ) || "{}"
+          ),
+        purchases
+      },
+      null,
+      2
+    ),
+
+    "application/json"
+
+  );
+
+}
+
+
+function importBackup(e){
+
+  let f =
+    e.target.files[0];
+
+
+  if(!f)
+    return;
+
+
+  let r =
+    new FileReader();
+
+
+  r.onload =
+    () => {
+
+      try{
+
+        let d =
+          JSON.parse(
+            r.result
+          );
+
+
+        if(
+          !Array.isArray(
+            d.purchases
+          )
+        )
+          throw 0;
+
+
+        if(
+          !confirm(
+            "Bestaande lokale historie vervangen door deze back-up?"
+          )
+        )
+          return;
+
+
+        purchases =
+          d.purchases;
+
+
+        localStorage.setItem(
+          "goudmarsjan_purchases",
+          JSON.stringify(
+            purchases
+          )
+        );
+
+
+        if(d.settings){
+
+          localStorage.setItem(
+            "goudmarsjan_settings",
+            JSON.stringify(
+              d.settings
+            )
+          );
+
+        }
+
+
+        loadSettings();
+
+        renderHistory();
+
+        calculate();
+
+
+        alert(
+          "Back-up teruggezet.\n\n"+
+          "Let op: deze import zet de cloud niet automatisch terug."
+        );
+
+      }
+
+      catch(x){
+
+        alert(
+          "Ongeldig back-upbestand."
+        );
+
+      }
+
+    };
+
+
+  r.readAsText(f);
+
+
+  e.target.value = "";
+
+}
+
+
+/* =========================================================
+   CSV
+   INTERNE CSV MAG METAALWAARDE WEL BEVATTEN
+========================================================= */
+
+function exportCSV(){
+
+  let h = [
+
+    "ID",
+    "Datum",
+    "Voornaam",
+    "Achternaam",
+    "Geboortedatum",
+    "Telefoon",
+    "IBAN",
+    "Adres",
+    "Betaling",
+    "Metaalwaarde",
+    "Inkoop",
+    "Verkoopprijs",
+    "Bruto winst",
+    "Referentie",
+    "Stukken"
+
+  ];
+
+
+  let rows =
+    purchases.map(
+      p => {
+
+        let c =
+          p.customer || {};
+
+
+        let a =
+          [
+            c.street &&
+            c.houseNumber
+              ? c.street+" "+c.houseNumber
+              : c.street,
+
+            c.postalCode &&
+            c.city
+              ? c.postalCode+" "+c.city
+              : c.city
+
+          ]
+          .filter(Boolean)
+          .join(", ");
+
+
+        return [
+
+          p.id,
+
+          new Date(
+            p.date
+          ).toLocaleString(
+            "nl-BE"
+          ),
+
+          c.firstName,
+
+          c.lastName,
+
+          c.birthDate,
+
+          c.phone,
+
+          c.iban,
+
+          a,
+
+          p.paymentMethod,
+
+          p.marketValue,
+
+          p.total,
+
+          p.resalePrice,
+
+          p.profit,
+
+          p.reference,
+
+          (p.items || [])
+            .map(
+              it => {
+
+                let m =
+                  it.metal ||
+                  "goud";
+
+                let f =
+                  it.fineness ||
+                  (
+                    m === "goud"
+                      ? it.karat
+                      : ""
+                  );
+
+                return (
+                  m+
+                  " "+
+                  f+
+                  " "+
+                  (it.weight || 0)+
+                  "g"
+                );
+
+              }
+            )
+            .join(" | ")
+
+        ];
+
+      }
+    );
+
+
+  download(
+
+    "goudmarsjan-historie.csv",
+
+    "\ufeff"+
+    [h,...rows]
+      .map(
+        r =>
+          r.map(
+            v =>
+              `"${String(v ?? "")
+                .replace(
+                  /"/g,
+                  '""'
+                )}"`
+          )
+          .join(";")
+      )
+      .join("\n"),
+
+    "text/csv;charset=utf-8"
+
+  );
+
+}
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+async async function login(){
+
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+  const errorBox = $("authError");
+
+  errorBox.textContent = "";
+
+  if(!email || !password){
+    errorBox.textContent = "Vul e-mail en wachtwoord in.";
+    return;
+  }
+
+  const button = document.querySelector('#authLock button[onclick="login()"]');
+  if(button) button.disabled = true;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if(button) button.disabled = false;
+
+  if(error){
+    errorBox.textContent = error.message;
+    return;
+  }
+
+  if(data?.user){
+    await onLoggedIn(data.user, true);
+  }
+}
+
+
+async function logout(){
+
+  await sb.auth.signOut();
+
+}
+
+
+/* =========================================================
+   ROLE PERMISSIONS
+========================================================= */
+
+function applyRolePermissions(){
+
+  let owner =
+    currentMember?.role === "owner";
+
+  if($("adminNav")) $("adminNav").style.display = owner ? "block" : "none";
+
+
+  /* Eigenaar ziet beheer */
+
+  $("ownerPanel")
+    .style.display =
+      owner
+        ? "block"
+        : "none";
+
+
+  /* Werknemer ziet geen
+     inkooppercentages */
+
+  $("settingsDetails")
+    .style.display =
+      owner
+        ? "block"
+        : "none";
+
+
+  $("employeeSettingsNotice")
+    .style.display =
+      owner
+        ? "none"
+        : "block";
+
+
+  /*
+    Marktprijzen zijn voor
+    werknemers alleen-lezen.
+
+    De werknemer kan ze wel
+    gebruiken voor berekeningen.
+  */
+
+  [
+    "goldPrice",
+    "silverPrice",
+    "resalePrice"
+  ]
+  .forEach(
+    id => {
+
+      if($(id)){
+
+        $(id).disabled =
+          !owner;
+
+      }
+
+    }
+  );
+
+
+  /*
+    Inkooppercentages:
+    alleen eigenaar.
+  */
+
+  [
+    "rate9",
+    "rate14",
+    "rate18",
+    "rate22",
+    "rate24",
+    "srate800",
+    "srate835",
+    "srate925",
+    "srate999"
+  ]
+  .forEach(
+    id => {
+
+      if($(id)){
+
+        $(id).disabled =
+          !owner;
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   AUTH INIT
+========================================================= */
+
+async function getActiveMembership(user){
+
+  if(!user?.id) return { member:null, error:null };
+
+  // Werknemer: uitsluitend toegang met een actieve membership.
+  const { data: memberships, error: memberError } = await sb
+    .from("business_members")
+    .select("business_id,user_id,role,active,display_name,created_at")
+    .eq("user_id", user.id)
+    .eq("active", true)
+    .order("created_at", { ascending:true })
+    .limit(1);
+
+  if(memberError){
+    return { member:null, error:memberError };
+  }
+
+  if(memberships?.[0]){
+    return { member:memberships[0], error:null };
+  }
+
+  // Eigenaar kan ook toegang krijgen via businesses.owner_id.
+  const { data: owned, error: ownerError } = await sb
+    .from("businesses")
+    .select("id,owner_id")
+    .eq("owner_id", user.id)
+    .limit(1);
+
+  if(!ownerError && owned?.[0]){
+    return {
+      member:{
+        business_id:owned[0].id,
+        user_id:user.id,
+        role:"owner",
+        active:true,
+        display_name:user.user_metadata?.display_name || user.email
+      },
+      error:null
+    };
+  }
+
+  return { member:null, error:null };
+}
+
+async function verifyCurrentAccess(showError=true){
+
+  if(accessCheckInProgress) return false;
+  accessCheckInProgress = true;
+
+  try{
+    const { data:{ user }, error:userError } = await sb.auth.getUser();
+
+    if(userError || !user){
+      onLoggedOut();
+      return false;
+    }
+
+    const { member, error } = await getActiveMembership(user);
+
+    if(error || !member || member.active !== true){
+      currentUser = null;
+      currentMember = null;
+      currentBusinessId = null;
+      customers = [];
+      purchases = [];
+      localStorage.removeItem("goudmarsjan_purchases");
+      await sb.auth.signOut();
+      onLoggedOut();
+      if(showError){
+        $("authError").textContent = error
+          ? "Toegang kon niet gecontroleerd worden. Controleer de Supabase RLS-regels."
+          : "Dit account heeft momenteel geen actieve toegang tot DE GOUDMARSJAN.";
+      }
+      return false;
+    }
+
+    currentUser = user;
+    currentMember = member;
+    currentBusinessId = member.business_id;
+    return true;
+  } finally {
+    accessCheckInProgress = false;
+  }
+}
+
+async function initAuth(){
+
+  const { data:{ session } } = await sb.auth.getSession();
+
+  if(session){
+    await onLoggedIn(session.user);
+  } else {
+    onLoggedOut();
+  }
+
+  sb.auth.onAuthStateChange((event, session) => {
+    if(event === "SIGNED_OUT" || !session){
+      onLoggedOut();
+      return;
+    }
+
+    // Laat de event-loop eerst afronden en controleer daarna de membership.
+    setTimeout(() => onLoggedIn(session.user), 0);
+  });
+}
+
+async function onLoggedIn(user, fromLogin=false){
+
+  if(!user?.id) return;
+
+  const allowed = await verifyUserAccess(user, fromLogin);
+  if(!allowed) return;
+
+  $("authLock").classList.add("hidden");
+
+  const displayName = currentMember.display_name || user.email;
+  const roleName = currentMember.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
+
+  $("currentUserName").textContent = displayName;
+  $("currentUserRole").textContent = roleName;
+  $("sideUserName").textContent = displayName;
+  $("sideUserRole").textContent = roleName;
+  $("topUserName").textContent = displayName;
+  $("topUserRole").textContent = roleName;
+
+  applyRolePermissions();
+  loadSettings();
+  await loadCloudData();
+
+  if(currentMember.role === "owner") await loadMembers();
+
+  if(!items.length) addItem();
+
+  renderHistory();
+  renderDashboard();
+  calculate();
+}
+
+async function verifyUserAccess(user, fromLogin=false){
+
+  if(!user?.id) return false;
+
+  const { member, error } = await getActiveMembership(user);
+
+  if(error || !member || member.active !== true){
+    await sb.auth.signOut();
+    onLoggedOut();
+    $("authError").textContent = error
+      ? "Inloggen lukt, maar je toegangsrechten kunnen niet worden gecontroleerd. Controleer de RLS-policy op business_members."
+      : "Dit account heeft momenteel geen actieve toegang tot DE GOUDMARSJAN.";
+    return false;
+  }
+
+  currentUser = user;
+  currentMember = member;
+  currentBusinessId = member.business_id;
+  return true;
+}
+
+function onLoggedOut(){
+
+  customers = [];
+  purchases = [];
+  memberCache = [];
+
+  if($("adminNav")) $("adminNav").style.display = "none";
+  $("sideUserName").textContent = "Niet ingelogd";
+  $("sideUserRole").textContent = "—";
+  $("topUserName").textContent = "Niet ingelogd";
+  $("topUserRole").textContent = "—";
+  $("currentUserName").textContent = "Niet ingelogd";
+  $("currentUserRole").textContent = "—";
+
+  currentUser = null;
+  currentMember = null;
+  currentBusinessId = null;
+
+  $("authLock").classList.remove("hidden");
+  $("ownerPanel").style.display = "none";
+}
+
+// Controleer ook opnieuw wanneer de gebruiker terugkeert naar de pagina.
+window.addEventListener("focus", () => {
+  if(currentUser) verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); }); });
+});
+
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "visible" && currentUser){
+    verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); }); });
+  }
+});
+
+
+/* =========================================================
+   MEMBERS
+========================================================= */
+
+async function loadMembers(){
+
+  if(
+    !currentBusinessId ||
+    currentMember?.role !== "owner"
+  )
+    return;
+
+
+  let {
+    data,
+    error
+  } =
+    await sb
+      .from("business_members")
+      .select(
+        "user_id,role,active,display_name,created_at"
+      )
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .order(
+        "created_at",
+        {
+          ascending:true
+        }
+      );
+
+
+  if(!error){
+    memberCache = data || [];
+  }
+
+  if(error){
+
+    $("membersList")
+      .innerHTML =
+      `
+      <div class="warning">
+      Werknemers konden niet geladen worden.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  $("membersList")
+    .innerHTML =
+
+    (data || [])
+      .map(
+        m => {
+
+          if(
+            m.role === "owner"
+          ){
+
+            return `
+
+<div class="member-row">
+
+<div class="member-info">
+
+<b>
+${esc(
+  m.display_name ||
+  m.user_id
+)}
+</b>
+
+<small>
+Hoofd / eigenaar · Actief
+</small>
+
+</div>
+
+<span class="badge">
+HOOFD
+</span>
+
+</div>
+
+`;
+
+          }
+
+
+          return `
+
+<div class="member-row">
+
+<div class="member-info">
+
+<b>
+${esc(
+  m.display_name ||
+  m.user_id
+)}
+</b>
+
+<small>
+Werknemer ·
+${m.active
+  ? "Actief"
+  : "Gedeactiveerd"}
+</small>
+
+</div>
+
+
+<div class="row">
+
+<button
+class="${m.active
+  ? "danger"
+  : "green"}"
+onclick="
+toggleEmployee(
+'${m.user_id}',
+${m.active}
+)
+"
+>
+
+${
+  m.active
+    ? "DEACTIVEREN"
+    : "ACTIVEREN"
+}
+
+</button>
+
+
+<button
+class="danger"
+onclick="
+deleteEmployee(
+'${m.user_id}'
+)
+"
+>
+
+VERWIJDEREN
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+        }
+      )
+      .join("")
+
+      ||
+
+      `
+      <div class="note">
+      Nog geen werknemers.
+      </div>
+      `;
+
+}
+
+
+/* =========================================================
+   ADD EMPLOYEE
+========================================================= */
+
+async function addEmployee(){
+
+  if(
+    currentMember?.role !== "owner"
+  )
+    return;
+
+
+  let email =
+    $("employeeEmail")
+      .value
+      .trim();
+
+
+  let name =
+    $("employeeName")
+      .value
+      .trim();
+
+
+  if(!email){
+
+    alert(
+      "Vul het e-mailadres van de werknemer in."
+    );
+
+    return;
+
+  }
+
+
+  let res =
+    await sb.rpc(
+      "add_employee_by_email",
+      {
+        p_email:email,
+        p_display_name:
+          name || email
+      }
+    );
+
+
+  if(res.error){
+
     /*
-       Formulier leegmaken.
+      Sommige functies gebruiken
+      andere parameterbenamingen.
     */
 
-    document.getElementById("purchaseItems")
-        .innerHTML = "";
-
-    purchaseItemCounter = 0;
-
-    document.getElementById("purchaseCustomer")
-        .value = "";
-
-    document.getElementById("purchaseNotes")
-        .value = "";
-
-    addPurchaseItem();
-
-
-    await loadPurchases();
-
-    updateDashboard();
-}
-
-
-/* =========================================================
-   LOAD PURCHASES
-========================================================= */
-
-async function loadPurchases() {
-
-    if (!currentBusiness) return;
-
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("purchases")
-        .select(`
-            *,
-            customers (
-                first_name,
-                last_name
-            )
-        `)
-        .eq("business_id", currentBusiness.id)
-        .order("purchase_date", {
-            ascending: false
-        });
-
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-    }
-
-
-    allPurchases = data || [];
-
-    updateDashboard();
-
-    renderPurchases();
-
-    renderProfits();
-}
-
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
-function updateDashboard() {
-
-    const today =
-        new Date();
-
-    const todayString =
-        today.toISOString()
-            .slice(0, 10);
-
-
-    const todayPurchases =
-        allPurchases.filter(p => {
-
-            return String(
-                p.purchase_date
-            ).slice(0, 10)
-                === todayString;
-
-        });
-
-
-    let bought = 0;
-    let market = 0;
-
-
-    todayPurchases.forEach(p => {
-
-        bought +=
-            Number(p.total || 0);
-
-        market +=
-            Number(p.market_value || 0);
-
-    });
-
-
-    const profit =
-        market - bought;
-
-
-    document.getElementById("dashPurchases")
-        .innerText =
-        todayPurchases.length;
-
-
-    document.getElementById("dashBought")
-        .innerText =
-        money(bought);
-
-
-    document.getElementById("dashMarket")
-        .innerText =
-        money(market);
-
-
-    document.getElementById("dashProfit")
-        .innerText =
-        money(profit);
-
-
-    renderRecentPurchases();
-}
-
-
-/* =========================================================
-   RECENT PURCHASES
-========================================================= */
-
-function renderRecentPurchases() {
-
-    const table =
-        document.getElementById("recentPurchases");
-
-
-    const purchases =
-        allPurchases.slice(0, 10);
-
-
-    if (!purchases.length) {
-
-        table.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty">
-                    Nog geen aankopen.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    table.innerHTML =
-        purchases.map(p => {
-
-            const bought =
-                Number(p.total || 0);
-
-            const market =
-                Number(p.market_value || 0);
-
-            const profit =
-                market - bought;
-
-
-            const customer =
-                p.customers
-                    ? `${p.customers.first_name || ""} ${p.customers.last_name || ""}`
-                    : "-";
-
-
-            return `
-                <tr>
-
-                    <td>
-                        ${dateFormat(p.purchase_date)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(customer)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                            p.created_by || "-"
-                        )}
-                    </td>
-
-                    <td>
-                        ${money(bought)}
-                    </td>
-
-                    <td>
-                        ${money(market)}
-                    </td>
-
-                    <td class="${
-                        profit >= 0
-                            ? "profit-positive"
-                            : "profit-negative"
-                    }">
-                        ${money(profit)}
-                    </td>
-
-                </tr>
-            `;
-
-        }).join("");
-}
-
-
-/* =========================================================
-   PURCHASE HISTORY
-========================================================= */
-
-function renderPurchases() {
-
-    const table =
-        document.getElementById("purchasesTable");
-
-
-    if (!allPurchases.length) {
-
-        table.innerHTML = `
-            <tr>
-                <td colspan="6" class="empty">
-                    Nog geen aankopen.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    table.innerHTML =
-        allPurchases.map(p => {
-
-            const bought =
-                Number(p.total || 0);
-
-            const market =
-                Number(p.market_value || 0);
-
-            const profit =
-                market - bought;
-
-
-            const customer =
-                p.customers
-                    ? `${p.customers.first_name || ""} ${p.customers.last_name || ""}`
-                    : "-";
-
-
-            return `
-                <tr>
-
-                    <td>
-                        ${dateFormat(p.purchase_date)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(customer)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(p.created_by || "-")}
-                    </td>
-
-                    <td>
-                        ${money(bought)}
-                    </td>
-
-                    <td>
-                        ${money(market)}
-                    </td>
-
-                    <td class="${
-                        profit >= 0
-                            ? "profit-positive"
-                            : "profit-negative"
-                    }">
-                        ${money(profit)}
-                    </td>
-
-                </tr>
-            `;
-
-        }).join("");
-}
-
-
-/* =========================================================
-   PROFITS
-========================================================= */
-
-function renderProfits() {
-
-    const table =
-        document.getElementById("profitsTable");
-
-
-    const now =
-        new Date();
-
-
-    const today =
-        now.toISOString()
-            .slice(0, 10);
-
-
-    const month =
-        now.getFullYear() +
-        "-" +
-        String(
-            now.getMonth() + 1
-        ).padStart(2, "0");
-
-
-    let todayProfit = 0;
-    let monthProfit = 0;
-    let totalBought = 0;
-    let totalMarket = 0;
-
-
-    allPurchases.forEach(p => {
-
-        const bought =
-            Number(p.total || 0);
-
-        const market =
-            Number(p.market_value || 0);
-
-        const profit =
-            market - bought;
-
-
-        totalBought += bought;
-
-        totalMarket += market;
-
-
-        const date =
-            String(
-                p.purchase_date
-            ).slice(0, 10);
-
-
-        if (date === today) {
-            todayProfit += profit;
+    res =
+      await sb.rpc(
+        "add_employee_by_email",
+        {
+          email:email,
+          display_name:
+            name || email
         }
+      );
+
+  }
 
 
-        if (date.startsWith(month)) {
-            monthProfit += profit;
-        }
+  if(res.error){
 
-    });
+    alert(
+      "Werknemer toevoegen mislukt.\n\n"+
+      res.error.message+
+      "\n\n"+
+      "Controleer of de werknemer al een Supabase-account heeft."
+    );
 
+    return;
 
-    document.getElementById("profitToday")
-        .innerText =
-        money(todayProfit);
-
-
-    document.getElementById("profitMonth")
-        .innerText =
-        money(monthProfit);
+  }
 
 
-    document.getElementById("profitBought")
-        .innerText =
-        money(totalBought);
+  $("employeeEmail")
+    .value = "";
 
 
-    document.getElementById("profitMarket")
-        .innerText =
-        money(totalMarket);
+  $("employeeName")
+    .value = "";
 
 
-    document.getElementById("bigProfitToday")
-        .innerText =
-        money(todayProfit);
+  await loadMembers();
 
 
-    if (!allPurchases.length) {
+  alert(
+    "Werknemer toegevoegd."
+  );
 
-        table.innerHTML = `
-            <tr>
-                <td colspan="5" class="empty">
-                    Nog geen gegevens.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    table.innerHTML =
-        allPurchases.map(p => {
-
-            const bought =
-                Number(p.total || 0);
-
-            const market =
-                Number(p.market_value || 0);
-
-            const profit =
-                market - bought;
-
-
-            const customer =
-                p.customers
-                    ? `${p.customers.first_name || ""} ${p.customers.last_name || ""}`
-                    : "-";
-
-
-            return `
-                <tr>
-
-                    <td>
-                        ${dateFormat(p.purchase_date)}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(customer)}
-                    </td>
-
-                    <td>
-                        ${money(bought)}
-                    </td>
-
-                    <td>
-                        ${money(market)}
-                    </td>
-
-                    <td class="${
-                        profit >= 0
-                            ? "profit-positive"
-                            : "profit-negative"
-                    }">
-                        ${money(profit)}
-                    </td>
-
-                </tr>
-            `;
-
-        }).join("");
 }
 
 
 /* =========================================================
-   EMPLOYEES
-========================================================= */
-
-async function loadEmployees() {
-
-    if (
-        !currentMember ||
-        currentMember.role !== "owner"
-    ) {
-        return;
-    }
-
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("business_members")
-        .select("*")
-        .eq("business_id", currentBusiness.id)
-        .order("created_at", {
-            ascending: true
-        });
-
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-    }
-
-
-    const table =
-        document.getElementById("employeesTable");
-
-
-    if (!data || !data.length) {
-
-        table.innerHTML = `
-            <tr>
-                <td colspan="4" class="empty">
-                    Geen werknemers.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    table.innerHTML =
-        data.map(employee => {
-
-            const isOwner =
-                employee.role === "owner";
-
-
-            return `
-                <tr>
-
-                    <td>
-                        <strong>
-                            ${escapeHtml(
-                                employee.display_name ||
-                                employee.user_id
-                            )}
-                        </strong>
-                    </td>
-
-                    <td>
-                        ${
-                            isOwner
-                                ? "👑 Admin"
-                                : "👷 Werknemer"
-                        }
-                    </td>
-
-                    <td>
-                        ${
-                            employee.active
-                                ? '<span class="profit-positive">● Actief</span>'
-                                : '<span class="profit-negative">● Geen toegang</span>'
-                        }
-                    </td>
-
-                    <td>
-
-                        ${
-                            !isOwner
-                            ? `
-                                <button
-                                    class="btn ${
-                                        employee.active
-                                            ? "btn-red"
-                                            : "btn-green"
-                                    }"
-                                    onclick="toggleEmployee(
-                                        '${employee.user_id}',
-                                        ${!employee.active}
-                                    )"
-                                >
-                                    ${
-                                        employee.active
-                                            ? "Toegang intrekken"
-                                            : "Toegang geven"
-                                    }
-                                </button>
-                            `
-                            : "Eigenaar"
-                        }
-
-                    </td>
-
-                </tr>
-            `;
-
-        }).join("");
-}
-
-
-/* =========================================================
-   EMPLOYEE ACCESS
+   ACTIVEREN / DEACTIVEREN
 ========================================================= */
 
 async function toggleEmployee(
-    userId,
-    newStatus
-) {
+  userId,
+  active
+){
 
-    if (
-        !currentMember ||
-        currentMember.role !== "owner"
-    ) {
-
-        alert("Geen toestemming.");
-
-        return;
-    }
+  if(
+    currentMember?.role !== "owner"
+  )
+    return;
 
 
-    const text =
-        newStatus
-            ? "toegang geven"
-            : "toegang intrekken";
+  if(
+    !confirm(
+      active
+        ? "Deze werknemer deactiveren?"
+        : "Deze werknemer opnieuw activeren?"
+    )
+  )
+    return;
 
 
-    if (
-        !confirm(
-            `Wil je deze werknemer echt ${text}?`
-        )
-    ) {
-        return;
-    }
+  let {
+    error
+  } =
+    await sb
+      .from("business_members")
+      .update({
+        active:
+          !active
+      })
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .eq(
+        "user_id",
+        userId
+      );
 
 
-    const {
-        error
-    } = await supabaseClient
-        .from("business_members")
-        .update({
-            active: newStatus
-        })
-        .eq(
-            "business_id",
-            currentBusiness.id
-        )
-        .eq(
-            "user_id",
-            userId
-        );
+  if(error){
+
+    alert(
+      "Wijzigen mislukt:\n"+
+      error.message
+    );
+
+    return;
+
+  }
 
 
-    if (error) {
+  await loadMembers();
 
-        alert(
-            "Wijzigen mislukt:\n\n" +
-            error.message
-        );
-
-        return;
-    }
-
-
-    await loadEmployees();
 }
 
 
 /* =========================================================
-   AUTH STATE
+   VERWIJDEREN WERKNEMER
 ========================================================= */
 
-supabaseClient.auth.onAuthStateChange(
-    async (event, session) => {
+async function deleteEmployee(
+  userId
+){
 
-        if (
-            event === "SIGNED_OUT" ||
-            !session
-        ) {
+  if(
+    currentMember?.role !== "owner"
+  )
+    return;
 
-            showLogin();
 
-            return;
-        }
+  if(
+    !confirm(
+      "Deze werknemer volledig uit DE GOUDMARSJAN verwijderen?\n\n"+
+      "Dit verwijdert de bedrijfs-toegang. Het Supabase-account zelf wordt niet verwijderd."
+    )
+  )
+    return;
 
-        if (
-            event === "SIGNED_IN" ||
-            event === "INITIAL_SESSION"
-        ) {
 
-            /*
-               Kleine vertraging zodat Supabase zijn
-               auth-state volledig heeft verwerkt.
-            */
+  let {
+    error
+  } =
+    await sb
+      .from("business_members")
+      .delete()
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .eq(
+        "user_id",
+        userId
+      )
+      .neq(
+        "role",
+        "owner"
+      );
 
-            setTimeout(
-                initialiseUser,
-                100
-            );
-        }
 
-    }
-);
+  if(error){
+
+    alert(
+      "Werknemer verwijderen mislukt:\n"+
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  await loadMembers();
+
+}
 
 
 /* =========================================================
-   PRICE EVENTS
+   CLOUD DATA
 ========================================================= */
 
-document.addEventListener(
-    "input",
-    function(event) {
+async function loadCloudData(){
 
-        if (
-            event.target.id === "goldPrice" ||
-            event.target.id === "silverPrice"
-        ) {
+  if(!currentBusinessId)
+    return;
 
-            calculatePurchase();
-        }
+
+  try{
+
+    let [
+
+      purchasesResult,
+
+      customersResult,
+
+      itemsResult
+
+    ] =
+      await Promise.all([
+
+        sb
+          .from("purchases")
+          .select("*")
+          .eq(
+            "business_id",
+            currentBusinessId
+          )
+          .order(
+            "created_at",
+            {
+              ascending:false
+            }
+          )
+          .limit(500),
+
+
+        sb
+          .from("customers")
+          .select("*")
+          .eq(
+            "business_id",
+            currentBusinessId
+          ),
+
+
+        sb
+          .from("purchase_items")
+          .select("*")
+          .eq(
+            "business_id",
+            currentBusinessId
+          )
+
+      ]);
+
+
+    if(
+      purchasesResult.error ||
+      customersResult.error ||
+      itemsResult.error
+    ){
+
+      throw(
+        purchasesResult.error ||
+        customersResult.error ||
+        itemsResult.error
+      );
 
     }
-);
+
+
+    customers = customersResult.data || [];
+
+
+    let customerMap =
+      new Map(
+        (
+          customersResult.data ||
+          []
+        )
+        .map(
+          c => [
+            c.id,
+            c
+          ]
+        )
+      );
+
+
+    let itemMap =
+      new Map();
+
+
+    (
+      itemsResult.data ||
+      []
+    )
+    .forEach(
+      x => {
+
+        if(
+          !itemMap.has(
+            x.purchase_id
+          )
+        ){
+
+          itemMap.set(
+            x.purchase_id,
+            []
+          );
+
+        }
+
+
+        itemMap
+          .get(
+            x.purchase_id
+          )
+          .push({
+
+            metal:
+              x.metal ||
+              "goud",
+
+            type:
+              x.item_type ||
+              "Juweel",
+
+            description:
+              x.description ||
+              "",
+
+            fineness:
+              Number(
+                x.fineness
+              ) ||
+              18,
+
+            karat:
+              Number(
+                x.fineness
+              ) ||
+              18,
+
+            weight:
+              Number(
+                x.weight
+              ) ||
+              0,
+
+            nonGold:
+              Number(
+                x.non_gold
+              ) ||
+              0,
+
+            manualOffer:
+              Number(
+                x.purchase_price
+              ) ||
+              0
+
+          });
+
+      }
+    );
+
+
+    purchases =
+      (
+        purchasesResult.data ||
+        []
+      )
+      .map(
+        x => ({
+
+          id:
+            x.reference ||
+            x.id,
+
+          date:
+            x.created_at ||
+            new Date()
+              .toISOString(),
+
+          customer:
+            mapCustomer(
+              customerMap.get(
+                x.customer_id
+              ) || {}
+            ),
+
+          paymentMethod:
+            x.payment_method ||
+            "overschrijving",
+
+          items:
+            itemMap.get(
+              x.id
+            ) || [],
+
+          goldPrice:
+            Number(
+              x.gold_price
+            ) || 0,
+
+          silverPrice:
+            Number(
+              x.silver_price
+            ) || 0,
+
+          marketValue:
+            Number(
+              x.market_value
+            ) || 0,
+
+          total:
+            Number(
+              x.total
+            ) || 0,
+
+          resalePrice:
+            Number(
+              x.resale_price
+            ) || 0,
+
+          profit:
+            Number(
+              x.profit
+            ) || 0,
+
+          createdBy:
+            x.created_by || null,
+
+          employeeName:
+            memberCache.find(m => m.user_id === x.created_by)?.display_name ||
+            "",
+
+          note:
+            x.note || "",
+
+          reference:
+            x.reference ||
+            x.id
+
+        })
+      );
+
+
+    localStorage.setItem(
+      "goudmarsjan_purchases",
+      JSON.stringify(
+        purchases
+      )
+    );
+
+  }
+
+  catch(e){
+
+    console.error(e);
+
+
+    alert(
+      "Supabase-historie kon niet geladen worden.\n\n"+
+      (e.message || e)
+    );
+
+  }
+
+}
+
+
+function mapCustomer(c){
+
+  return {
+
+    firstName:
+      c.first_name ||
+      "",
+
+    lastName:
+      c.last_name ||
+      "",
+
+    birthDate:
+      c.birth_date ||
+      "",
+
+    phone:
+      c.phone ||
+      "",
+
+    iban:
+      c.iban ||
+      "",
+
+    idChecked:
+      c.id_checked === true ||
+      c.id_checked === "ja"
+        ? "ja"
+        : "nee",
+
+    idType:
+      c.id_type ||
+      "",
+
+    idNumber:
+      c.id_number ||
+      "",
+
+    street:
+      c.street ||
+      "",
+
+    houseNumber:
+      c.house_number ||
+      "",
+
+    postalCode:
+      c.postal_code ||
+      "",
+
+    city:
+      c.city ||
+      "",
+
+    note:
+      c.note ||
+      ""
+
+  };
+
+}
+
+
+/* =========================================================
+   CLOUD SAVE PURCHASE
+========================================================= */
+
+async function savePurchaseCloud(p){
+
+  let {
+    data:c,
+    error:ce
+  } =
+    await sb
+      .from("customers")
+      .insert({
+
+        business_id:
+          currentBusinessId,
+
+        first_name:
+          p.customer.firstName,
+
+        last_name:
+          p.customer.lastName,
+
+        birth_date:
+          p.customer.birthDate,
+
+        phone:
+          p.customer.phone,
+
+        iban:
+          p.customer.iban,
+
+        id_checked:
+          p.customer.idChecked === "ja",
+
+        id_type:
+          p.customer.idType,
+
+        id_number:
+          p.customer.idNumber,
+
+        street:
+          p.customer.street,
+
+        house_number:
+          p.customer.houseNumber,
+
+        postal_code:
+          p.customer.postalCode,
+
+        city:
+          p.customer.city,
+
+        note:
+          p.customer.note
+
+      })
+      .select("id")
+      .single();
+
+
+  if(ce)
+    throw ce;
+
+
+  let {
+    data:row,
+    error:pe
+  } =
+    await sb
+      .from("purchases")
+      .insert({
+
+        business_id:
+          currentBusinessId,
+
+        customer_id:
+          c.id,
+
+        created_by:
+          p.createdBy || currentUser.id,
+
+        reference:
+          p.id,
+
+        payment_method:
+          p.paymentMethod,
+
+        gold_price:
+          p.goldPrice,
+
+        silver_price:
+          p.silverPrice,
+
+        market_value:
+          p.marketValue,
+
+        total:
+          p.total,
+
+        resale_price:
+          p.resalePrice,
+
+        profit:
+          p.profit,
+
+        note:
+          p.note
+
+      })
+      .select("id")
+      .single();
+
+
+  if(pe)
+    throw pe;
+
+
+  let rows =
+    p.items.map(
+      it => {
+
+        let x =
+          calc(it);
+
+
+        return {
+
+          purchase_id:
+            row.id,
+
+          business_id:
+            currentBusinessId,
+
+          item_type:
+            it.type ||
+            "Juweel",
+
+          metal:
+            it.metal ||
+            "goud",
+
+          fineness:
+            it.metal === "verzilverd"
+              ? 0
+              : (
+                  it.fineness ||
+                  it.karat ||
+                  0
+                ),
+
+          weight:
+            Number(
+              it.weight
+            ) || 0,
+
+          non_gold:
+            Number(
+              it.nonGold
+            ) || 0,
+
+          net_weight:
+            Number(
+              x.net
+            ) || 0,
+
+          metal_value:
+            Number(
+              x.market
+            ) || 0,
+
+          purchase_price:
+            Number(
+              x.offer
+            ) || 0,
+
+          description:
+            it.description ||
+            ""
+
+        };
+
+      }
+    );
+
+
+  if(rows.length){
+
+    let {
+      error:ie
+    } =
+      await sb
+        .from("purchase_items")
+        .insert(rows);
+
+
+    if(ie){
+
+      await sb
+        .from("purchases")
+        .delete()
+        .eq(
+          "id",
+          row.id
+        );
+
+
+      await sb
+        .from("customers")
+        .delete()
+        .eq(
+          "id",
+          c.id
+        );
+
+
+      throw ie;
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   CLOUD DELETE PURCHASE
+========================================================= */
+
+async function deletePurchaseCloud(
+  reference
+){
+
+  let {
+    data:p,
+    error
+  } =
+    await sb
+      .from("purchases")
+      .select(
+        "id,customer_id"
+      )
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .eq(
+        "reference",
+        reference
+      )
+      .maybeSingle();
+
+
+  if(error)
+    throw error;
+
+
+  if(!p)
+    return;
+
+
+  let {
+    error:ie
+  } =
+    await sb
+      .from("purchase_items")
+      .delete()
+      .eq(
+        "purchase_id",
+        p.id
+      );
+
+
+  if(ie)
+    throw ie;
+
+
+  let {
+    error:pe
+  } =
+    await sb
+      .from("purchases")
+      .delete()
+      .eq(
+        "id",
+        p.id
+      );
+
+
+  if(pe)
+    throw pe;
+
+
+  if(
+    p.customer_id
+  ){
+
+    await sb
+      .from("customers")
+      .delete()
+      .eq(
+        "id",
+        p.customer_id
+      );
+
+  }
+
+}
+
+
+/* =========================================================
+   CLOUD SETTINGS
+========================================================= */
+
+async function saveCloudSettings(){
+
+  if(!currentBusinessId)
+    return;
+
+
+  if(
+    currentMember?.role !== "owner"
+  )
+    return;
+
+
+  let st = {};
+
+
+  Object.keys(defaults)
+    .forEach(
+      k =>
+        st[k] =
+          num(k)
+    );
+
+
+  let {
+    error
+  } =
+    await sb
+      .from("settings")
+      .upsert(
+
+        {
+
+          business_id:
+            currentBusinessId,
+
+          gold_purchase_percent:
+            st.rate18,
+
+          silver_purchase_percent:
+            st.srate925,
+
+          app_settings:
+            st
+
+        },
+
+        {
+          onConflict:
+            "business_id"
+        }
+
+      );
+
+
+  if(error){
+
+    console.warn(
+      "Settings cloud sync:",
+      error.message
+    );
+
+  }
+
+}
 
 
 /* =========================================================
    START
 ========================================================= */
 
-(async function() {
+loadSettings();
 
-    const {
-        data: {
-            session
-        }
-    } = await supabaseClient.auth.getSession();
+addItem();
 
+renderHistory();
 
-    if (session) {
+calculate();
 
-        await initialiseUser();
+moveOriginalCards();
+showPage('dashboard');
+initAuth();
 
-    } else {
-
-        showLogin();
-
-    }
-
-})();
+setInterval(async()=>{
+  if(!currentUser) return;
+  const ok = await verifyCurrentAccess(false);
+  if(ok){
+    await loadCloudData();
+    renderDashboard();
+    renderHistory();
+  }
+},15000);
 
 </script>
+
+
+<!-- =========================================================
+     SERVICE WORKER
+========================================================= -->
+
+<script>
+
+if(
+  "serviceWorker" in navigator
+){
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch(
+          () => {}
+        );
+
+    }
+  );
+
+}
+
+</script>
+
 
 </body>
 </html>
