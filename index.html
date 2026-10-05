@@ -574,6 +574,7 @@ button:disabled{
   <button class="nav-btn" data-page="purchase" onclick="showPage('purchase')">🟡 Nieuwe inkoop</button>
   <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
   <button class="nav-btn" data-page="purchases" onclick="showPage('purchases')">📋 Inkopen</button>
+  <button class="nav-btn" data-page="sales" onclick="showPage('sales')">💰 Verkopen</button>
   <button class="nav-btn" data-page="profits" onclick="showPage('profits')">📈 Winsten</button>
   <button id="adminNav" class="nav-btn" data-page="admin" onclick="showPage('admin')" style="display:none">⚙️ Beheer</button>
   <div class="nav-spacer"></div>
@@ -599,7 +600,8 @@ button:disabled{
     <button class="quick-btn" onclick="showPage('purchase');newPurchase()"><span>🟡</span>Nieuwe inkoop<br><small>Start een nieuwe aankoop</small></button>
     <button class="quick-btn" onclick="showPage('customers')"><span>👥</span>Klanten<br><small>Bekijk klantendossiers</small></button>
     <button class="quick-btn" onclick="showPage('purchases')"><span>📋</span>Inkopen<br><small>Bekijk alle aankopen</small></button>
-    <button class="quick-btn" onclick="showPage('profits')"><span>📈</span>Winsten<br><small>Bekijk je winstoverzicht</small></button>
+    <button class="quick-btn" onclick="showPage('sales')"><span>💰</span>Verkopen<br><small>Verkoopbonnen en verkopen</small></button>
+    <button class="quick-btn" onclick="showPage('profits')"><span>📈</span>Winsten<br><small>Bekijk gerealiseerde winst</small></button>
   </div>
   <div class="dashboard-section"><h3>Recente inkopen vandaag</h3><div id="dashRecent"></div></div>
 </section>
@@ -610,13 +612,26 @@ button:disabled{
   <div id="customerListPage" class="customer-grid"></div><div id="customerDetailPage" class="customer-detail"></div>
 </section>
 <section id="pagePurchases" class="app-page"></section>
+<section id="pageSales" class="app-page">
+  <div class="page-title">
+    <h2>Verkopen</h2>
+    <p>Geregistreerde verkopen en verkoopbonnen</p>
+  </div>
+
+  <div id="saleForm" class="dashboard-section" style="display:none"></div>
+
+  <div class="dashboard-section">
+    <h3>Verkoopgeschiedenis</h3>
+    <div id="salesList"></div>
+  </div>
+</section>
 <section id="pageProfits" class="app-page">
-  <div class="page-title"><h2>Winsten</h2><p>Overzicht van de verwachte bruto winst</p></div>
+  <div class="page-title"><h2>Winsten</h2><p>Overzicht van de gerealiseerde winst uit verkopen</p></div>
   <div class="profit-summary">
-    <div class="dash-card"><small>Aantal inkopen</small><strong id="profitCount">0</strong></div>
-    <div class="dash-card"><small>Totaal ingekocht</small><strong id="profitPurchase">€ 0,00</strong></div>
-    <div class="dash-card"><small>Verwachte verkoop</small><strong id="profitResale">€ 0,00</strong></div>
-    <div class="dash-card gold"><small>Totale bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
+    <div class="dash-card"><small>Aantal verkopen</small><strong id="profitCount">0</strong></div>
+    <div class="dash-card"><small>Inkoopkost verkocht</small><strong id="profitPurchase">€ 0,00</strong></div>
+    <div class="dash-card"><small>Omzet uit verkopen</small><strong id="profitResale">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Gerealiseerde bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
   </div>
   <div class="dashboard-section"><h3>Winst per dag — laatste 14 dagen</h3><div id="profitChart" class="profit-chart"></div></div>
   <div class="dashboard-section"><h3>Winst per werknemer</h3><div id="profitEmployees"></div></div>
@@ -1592,6 +1607,7 @@ function showPage(page){
   if(page==='dashboard') renderDashboard();
   if(page==='customers') renderCustomersPage();
   if(page==='purchases') renderHistory();
+  if(page==='sales') renderSalesPage();
   if(page==='profits') renderProfitPage();
   if(page==='admin' && currentMember?.role==='owner') loadMembers();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1618,8 +1634,20 @@ function renderDashboard(){
   const arr=purchases.filter(p=>{const d=new Date(p.date);d.setHours(0,0,0,0);return d.getTime()===today.getTime()});
   const sum=k=>arr.reduce((a,p)=>a+(Number(p[k])||0),0);
   if(!document.getElementById('dashCount'))return;
-  dashCount.textContent=arr.length;dashPurchase.textContent=euro(sum('total'));dashResale.textContent=euro(sum('resalePrice'));dashProfit.textContent=euro(sum('profit'));
-  dashRecent.innerHTML=arr.slice(0,10).map(p=>`<div class="history"><b>${esc(p.customer?.firstName||'')} ${esc(p.customer?.lastName||'')}</b> <span class="badge">${esc(p.id)}</span><br><small>${new Date(p.date).toLocaleString('nl-BE')}</small><div><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div></div>`).join('')||'<div class="note">Vandaag nog geen inkopen.</div>';
+  dashCount.textContent=arr.length;
+  dashPurchase.textContent=euro(sum('total'));
+  dashResale.textContent=euro(sum('resalePrice'));
+
+  const todaySales = sales.filter(x => {
+    const d = new Date(x.date);
+    d.setHours(0,0,0,0);
+    return d.getTime()===today.getTime();
+  });
+
+  const realizedToday = todaySales.reduce((a,x)=>a+(Number(x.profit)||0),0);
+  dashProfit.textContent=euro(realizedToday);
+
+  dashRecent.innerHTML=arr.slice(0,10).map(p=>`<div class="history"><b>${esc(p.customer?.firstName||'')} ${esc(p.customer?.lastName||'')}</b> <span class="badge">${esc(p.id)}</span><br><small>${new Date(p.date).toLocaleString('nl-BE')}</small><div><b>${euro(p.total)}</b> · verwachte winst ${euro(p.profit)}</div></div>`).join('')||'<div class="note">Vandaag nog geen inkopen.</div>';
 }
 function renderCustomersPage(){
   const q=(document.getElementById('customerSearchPage')?.value||'').toLowerCase().trim();
@@ -1660,16 +1688,373 @@ function showCustomerDetail(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
   const name=((c.first_name||'')+' '+(c.last_name||'')).trim();
   const related=purchases.filter(p=>(((p.customer?.firstName||'')+' '+(p.customer?.lastName||'')).trim()===name));
-  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
+  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><div class="row"><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button><button class="danger" onclick="deleteCustomer('${c.id}')">🗑️ Klant verwijderen</button></div></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
   document.getElementById('customerDetailPage').scrollIntoView({behavior:'smooth'});
 }
+function renderSalesPage(){
+  const list = $("salesList");
+  if(!list) return;
+
+  if(!sales.length){
+    list.innerHTML = '<div class="note">Nog geen verkopen opgeslagen.</div>';
+    return;
+  }
+
+  list.innerHTML = sales.map(sale => `
+    <div class="history">
+      <b>${esc(sale.reference || sale.id || "Verkoop")}</b>
+      <span class="badge">${esc(sale.paymentMethod || "")}</span>
+      <br>
+      <small>${new Date(sale.date).toLocaleString("nl-BE")}</small>
+      <div style="margin-top:6px">
+        ${sale.buyerName ? `<b>Koper:</b> ${esc(sale.buyerName)}<br>` : ""}
+        Inkoop: <b>${euro(sale.costPrice)}</b>
+        · Verkoop: <b>${euro(sale.salePrice)}</b>
+        · <b>Winst: ${euro(sale.profit)}</b>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="light" onclick="printSavedSale('${esc(sale.id)}')">🧾 VERKOOPBON</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function startSale(purchaseId){
+  const p = purchases.find(x => x.id === purchaseId);
+
+  if(!p){
+    alert("Deze aankoop werd niet gevonden.");
+    return;
+  }
+
+  if(sales.some(x => x.purchaseId === p.dbId || x.purchaseReference === p.id)){
+    alert("Deze aankoop is al als verkocht geregistreerd.");
+    return;
+  }
+
+  currentSalePurchaseId = purchaseId;
+  showPage("sales");
+
+  const form = $("saleForm");
+  if(!form) return;
+
+  form.style.display = "block";
+  form.innerHTML = `
+    <div class="page-title" style="margin-top:0">
+      <h3>Verkoop registreren</h3>
+      <p>Inkoop ${esc(p.id)} — ${esc(p.customer?.firstName || "")} ${esc(p.customer?.lastName || "")}</p>
+    </div>
+
+    <div class="g3">
+      <div>
+        <label>Inkoopbedrag</label>
+        <div class="value">${euro(p.total)}</div>
+      </div>
+
+      <div>
+        <label>Verkoopprijs</label>
+        <input id="salePrice" type="number" step="0.01" min="0.01" placeholder="0,00" oninput="updateSaleProfit()">
+      </div>
+
+      <div>
+        <label>Gerealiseerde winst</label>
+        <div class="value" id="saleProfitPreview">€ 0,00</div>
+      </div>
+
+      <div>
+        <label>Koper</label>
+        <input id="saleBuyerName" placeholder="Naam koper (optioneel)">
+      </div>
+
+      <div>
+        <label>Betaling</label>
+        <select id="salePaymentMethod">
+          <option value="cash">Cash</option>
+          <option value="bank_transfer">Bankoverschrijving</option>
+          <option value="other">Andere</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Opmerking</label>
+        <input id="saleNote" placeholder="Optionele opmerking">
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <button class="green" onclick="saveSale()">💾 VERKOOP OPSLAAN</button>
+      <button class="light" onclick="cancelSale()">Annuleren</button>
+    </div>
+  `;
+
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function updateSaleProfit(){
+  const p = purchases.find(x => x.id === currentSalePurchaseId);
+  const el = $("saleProfitPreview");
+  if(!p || !el) return;
+
+  const salePrice = num("salePrice");
+  el.textContent = euro(salePrice - Number(p.total || 0));
+}
+
+function cancelSale(){
+  currentSalePurchaseId = null;
+  const form = $("saleForm");
+  if(form){
+    form.style.display = "none";
+    form.innerHTML = "";
+  }
+}
+
+async function saveSale(){
+  const p = purchases.find(x => x.id === currentSalePurchaseId);
+
+  if(!p){
+    alert("De gekoppelde aankoop werd niet gevonden.");
+    return;
+  }
+
+  const salePrice = num("salePrice");
+
+  if(salePrice <= 0){
+    alert("Vul een geldige verkoopprijs in.");
+    return;
+  }
+
+  if(sales.some(x => x.purchaseId === p.dbId || x.purchaseReference === p.id)){
+    alert("Deze aankoop is al verkocht.");
+    return;
+  }
+
+  if(!currentUser || !currentBusinessId){
+    alert("Log eerst in.");
+    return;
+  }
+
+  const saleId =
+    "GMV-" +
+    new Date().getFullYear() +
+    "-" +
+    String(Date.now()).slice(-6);
+
+  const costPrice = Number(p.total) || 0;
+  const profit = salePrice - costPrice;
+
+  const sale = {
+    id: saleId,
+    date: new Date().toISOString(),
+    purchaseId: p.dbId || null,
+    purchaseReference: p.id,
+    salePrice,
+    costPrice,
+    profit,
+    buyerName: $("saleBuyerName")?.value.trim() || "",
+    paymentMethod: $("salePaymentMethod")?.value || "other",
+    note: $("saleNote")?.value.trim() || "",
+    createdBy: currentUser.id,
+    employeeName:
+      currentMember?.display_name ||
+      currentUser?.email ||
+      "",
+    items: JSON.parse(JSON.stringify(p.items || [])),
+    customer: JSON.parse(JSON.stringify(p.customer || {}))
+  };
+
+  try{
+    const { error } = await sb
+      .from("sales")
+      .insert({
+        business_id: currentBusinessId,
+        purchase_id: sale.purchaseId,
+        purchase_reference: sale.purchaseReference,
+        reference: sale.id,
+        sold_at: sale.date,
+        sale_price: sale.salePrice,
+        cost_price: sale.costPrice,
+        profit: sale.profit,
+        buyer_name: sale.buyerName,
+        payment_method: sale.paymentMethod,
+        note: sale.note,
+        created_by: sale.createdBy,
+        items_snapshot: sale.items,
+        customer_snapshot: sale.customer
+      });
+
+    if(error) throw error;
+
+    sales.unshift(sale);
+    currentSalePurchaseId = null;
+
+    renderSalesPage();
+    renderHistory();
+    renderProfitPage();
+    renderDashboard();
+
+    const form = $("saleForm");
+    if(form){
+      form.style.display = "none";
+      form.innerHTML = "";
+    }
+
+    alert(
+      "Verkoop opgeslagen.\n\n" +
+      "Verkoopbon: " + sale.id + "\n" +
+      "Winst: " + euro(sale.profit)
+    );
+
+    openSalePrint(sale);
+
+  }catch(e){
+    console.error(e);
+
+    alert(
+      "De verkoop kon niet naar Supabase worden opgeslagen.\n\n" +
+      (e.message || e)
+    );
+  }
+}
+
+function openSalePrint(sale){
+  const w = window.open("", "_blank");
+
+  if(!w){
+    alert("Sta pop-ups toe voor de verkoopbon.");
+    return;
+  }
+
+  w.document.write(saleReceipt(sale));
+  w.document.close();
+
+  setTimeout(() => w.print(), 300);
+}
+
+function printSavedSale(id){
+  const sale = sales.find(x => x.id === id);
+
+  if(sale){
+    openSalePrint(sale);
+  }
+}
+
+function saleReceipt(sale){
+  const c = sale.customer || {};
+
+  return `
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${esc(sale.id)}</title>
+<style>
+body{font-family:Arial;max-width:850px;margin:auto;padding:30px;color:#111}
+h1{letter-spacing:2px}
+table{width:100%;border-collapse:collapse;margin-top:25px}
+th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left}
+.total{font-size:24px;font-weight:bold;margin-top:25px}
+.small{font-size:12px;color:#666}
+</style>
+</head>
+<body>
+<h1>DE GOUDMARSJAN</h1>
+<h3>EDELMETALEN — VERKOOPBON</h3>
+
+<p>
+<b>Referentie:</b> ${esc(sale.id)}<br>
+<b>Datum:</b> ${new Date(sale.date).toLocaleString("nl-BE")}<br>
+<b>Koper:</b> ${esc(sale.buyerName || "—")}<br>
+<b>Betaling:</b> ${esc(sale.paymentMethod || "—")}
+</p>
+
+<p>
+<b>Bijhorende inkoop:</b> ${esc(sale.purchaseReference || "—")}<br>
+<b>Oorspronkelijke klant:</b> ${esc(c.firstName || "")} ${esc(c.lastName || "")}
+</p>
+
+<table>
+<tr><th>Type</th><th>Metaal / zuiverheid</th></tr>
+${(sale.items || []).map(it => {
+  const metal = it.metal || "goud";
+  const f = it.fineness || it.karat || "";
+  const label =
+    metal === "goud" ? f + "K" :
+    metal === "zilver" ? "Zilver " + f + "‰" :
+    "Verzilverd";
+
+  return `<tr><td>${esc(it.type || "Juweel")}</td><td>${esc(label)}</td></tr>`;
+}).join("")}
+</table>
+
+<div class="total">
+Verkoopprijs: ${euro(sale.salePrice)}<br>
+Inkoopkost: ${euro(sale.costPrice)}<br>
+Winst: ${euro(sale.profit)}
+</div>
+
+<p class="small">DE GOUDMARSJAN — Edelmetalen</p>
+</body>
+</html>`;
+}
+
 function renderProfitPage(){
-  const total=k=>purchases.reduce((a,p)=>a+(Number(p[k])||0),0);
-  if(!document.getElementById('profitCount'))return;
-  profitCount.textContent=purchases.length;profitPurchase.textContent=euro(total('total'));profitResale.textContent=euro(total('resalePrice'));profitTotal.textContent=euro(total('profit'));
-  const days=[],now=new Date();for(let i=13;i>=0;i--){const d=new Date(now);d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);const profit=purchases.filter(p=>new Date(p.date).toISOString().slice(0,10)===key).reduce((a,p)=>a+(Number(p.profit)||0),0);days.push({d,profit})}const max=Math.max(1,...days.map(x=>x.profit));
-  profitChart.innerHTML=days.map(x=>`<div class="profit-bar-wrap"><div class="profit-bar-value">${euro(x.profit)}</div><div class="profit-bar" style="height:${Math.max(3,x.profit/max*190)}px"></div><div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div></div>`).join('');
-  profitEmployees.innerHTML='<div class="note">Per werknemer wordt verder gekoppeld zodra de medewerkernaam aan de aankoop wordt opgeslagen.</div>';
+  const count = sales.length;
+  const cost = sales.reduce((a,s)=>a+(Number(s.costPrice)||0),0);
+  const revenue = sales.reduce((a,s)=>a+(Number(s.salePrice)||0),0);
+  const profit = sales.reduce((a,s)=>a+(Number(s.profit)||0),0);
+
+  if(!document.getElementById('profitCount')) return;
+
+  profitCount.textContent = count;
+  profitPurchase.textContent = euro(cost);
+  profitResale.textContent = euro(revenue);
+  profitTotal.textContent = euro(profit);
+
+  const days = [];
+  const now = new Date();
+
+  for(let i=13;i>=0;i--){
+    const d = new Date(now);
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate()-i);
+
+    const key = d.toISOString().slice(0,10);
+
+    const dayProfit = sales
+      .filter(x => new Date(x.date).toISOString().slice(0,10) === key)
+      .reduce((a,x)=>a+(Number(x.profit)||0),0);
+
+    days.push({d,profit:dayProfit});
+  }
+
+  const max = Math.max(1,...days.map(x=>x.profit));
+
+  if($("profitChart")){
+    profitChart.innerHTML = days.map(x => `
+      <div class="profit-bar-wrap">
+        <div class="profit-bar-value">${euro(x.profit)}</div>
+        <div class="profit-bar" style="height:${Math.max(3,x.profit/max*190)}px"></div>
+        <div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div>
+      </div>
+    `).join("");
+  }
+
+  if($("profitEmployees")){
+    const byEmployee = {};
+
+    sales.forEach(x => {
+      const name = x.employeeName || "Onbekend";
+      byEmployee[name] = (byEmployee[name] || 0) + (Number(x.profit) || 0);
+    });
+
+    const rows = Object.entries(byEmployee);
+
+    profitEmployees.innerHTML = rows.length
+      ? rows.map(([name,value]) =>
+          `<div class="history"><b>${esc(name)}</b><div>${euro(value)} gerealiseerde winst</div></div>`
+        ).join("")
+      : '<div class="note">Nog geen gerealiseerde verkopen.</div>';
+  }
 }
 
 /* =========================================================
@@ -1758,6 +2143,10 @@ let purchases =
       "goudmarsjan_purchases"
     ) || "[]"
   );
+
+let sales = [];
+
+let currentSalePurchaseId = null;
 
 
 let currentUser = null;
@@ -3134,6 +3523,12 @@ onclick="printSaved('${p.id}')"
 🧾 BON
 </button>
 
+${
+  sales.some(x => x.purchaseId === p.dbId || x.purchaseReference === p.id)
+    ? `<span class="badge">VERKOCHT</span>`
+    : `<button class="green" onclick="startSale('${p.id}')">💰 VERKOPEN</button>`
+}
+
 <button
 class="danger"
 onclick="deletePurchase('${p.id}')"
@@ -4480,12 +4875,12 @@ function onLoggedOut(){
 
 // Controleer ook opnieuw wanneer de gebruiker terugkeert naar de pagina.
 window.addEventListener("focus", () => {
-  if(currentUser) verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); }); });
+  if(currentUser) verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); renderSalesPage(); renderProfitPage(); }); });
 });
 
 document.addEventListener("visibilitychange", () => {
   if(document.visibilityState === "visible" && currentUser){
-    verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); }); });
+    verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); renderSalesPage(); renderProfitPage(); }); });
   }
 });
 
@@ -4901,7 +5296,9 @@ async function loadCloudData(){
 
       customersResult,
 
-      itemsResult
+      itemsResult,
+
+      salesResult
 
     ] =
       await Promise.all([
@@ -4937,7 +5334,22 @@ async function loadCloudData(){
           .eq(
             "business_id",
             currentBusinessId
+          ),
+
+        sb
+          .from("sales")
+          .select("*")
+          .eq(
+            "business_id",
+            currentBusinessId
           )
+          .order(
+            "sold_at",
+            {
+              ascending:false
+            }
+          )
+          .limit(500)
 
       ]);
 
@@ -4945,13 +5357,15 @@ async function loadCloudData(){
     if(
       purchasesResult.error ||
       customersResult.error ||
-      itemsResult.error
+      itemsResult.error ||
+      salesResult.error
     ){
 
       throw(
         purchasesResult.error ||
         customersResult.error ||
-        itemsResult.error
+        itemsResult.error ||
+        salesResult.error
       );
 
     }
@@ -5062,6 +5476,9 @@ async function loadCloudData(){
       .map(
         x => ({
 
+          dbId:
+            x.id,
+
           id:
             x.reference ||
             x.id,
@@ -5134,6 +5551,64 @@ async function loadCloudData(){
         })
       );
 
+
+    sales =
+      (
+        salesResult.data ||
+        []
+      )
+      .map(
+        x => ({
+          id:
+            x.reference ||
+            x.id,
+
+          dbId:
+            x.id,
+
+          purchaseId:
+            x.purchase_id || null,
+
+          purchaseReference:
+            x.purchase_reference || "",
+
+          date:
+            x.sold_at ||
+            x.created_at ||
+            new Date().toISOString(),
+
+          salePrice:
+            Number(x.sale_price) || 0,
+
+          costPrice:
+            Number(x.cost_price) || 0,
+
+          profit:
+            Number(x.profit) || 0,
+
+          buyerName:
+            x.buyer_name || "",
+
+          paymentMethod:
+            x.payment_method || "other",
+
+          note:
+            x.note || "",
+
+          createdBy:
+            x.created_by || null,
+
+          employeeName:
+            memberCache.find(m => m.user_id === x.created_by)?.display_name ||
+            "",
+
+          items:
+            x.items_snapshot || [],
+
+          customer:
+            x.customer_snapshot || {}
+        })
+      );
 
     localStorage.setItem(
       "goudmarsjan_purchases",
