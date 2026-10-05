@@ -1624,8 +1624,38 @@ function renderDashboard(){
 function renderCustomersPage(){
   const q=(document.getElementById('customerSearchPage')?.value||'').toLowerCase().trim();
   const arr=customers.filter(c=>[c.first_name,c.last_name,c.phone,c.id_number,c.city,c.postal_code].join(' ').toLowerCase().includes(q));
-  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')"><b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b><small>${esc(c.phone||'Geen telefoon')}</small><small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small><small>${esc(c.id_number||'Geen ID-nummer')}</small></div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
+  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')">
+  <b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b>
+  <small>${esc(c.phone||'Geen telefoon')}</small>
+  <small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small>
+  <small>${esc(c.id_number||'Geen ID-nummer')}</small>
+  <button class="danger" style="margin-top:10px;width:100%" onclick="event.stopPropagation();deleteCustomer('${c.id}')">🗑️ Klant verwijderen</button>
+</div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
 }
+async function deleteCustomer(id){
+  const c=customers.find(x=>x.id===id);
+  if(!c){ alert("Klant niet gevonden."); return; }
+  const name=((c.first_name||"")+" "+(c.last_name||"")).trim();
+  if(!confirm("Klant \""+name+"\" definitief verwijderen?\n\nDit kan alleen als er geen aankopen aan deze klant gekoppeld zijn.")) return;
+  try{
+    const {data:linkedPurchases,error:checkError}=await sb.from("purchases").select("id").eq("business_id",currentBusinessId).eq("customer_id",id).limit(1);
+    if(checkError) throw checkError;
+    if(linkedPurchases && linkedPurchases.length){
+      alert("Deze klant kan niet verwijderd worden omdat er nog een aankoop aan gekoppeld is.\n\nVerwijder de gekoppelde aankoop eerst.");
+      return;
+    }
+    const {error}=await sb.from("customers").delete().eq("id",id).eq("business_id",currentBusinessId);
+    if(error) throw error;
+    customers=customers.filter(x=>x.id!==id);
+    document.getElementById("customerDetailPage").innerHTML="";
+    renderCustomersPage();
+    alert("Klant verwijderd.");
+  }catch(e){
+    console.error(e);
+    alert("De klant kon niet worden verwijderd.\n\n"+(e.message||e));
+  }
+}
+
 function showCustomerDetail(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
   const name=((c.first_name||'')+' '+(c.last_name||'')).trim();
@@ -3549,6 +3579,15 @@ IBAN:
 
 ${esc(c.iban || "")}
 
+<br>
+
+<b>
+ID-document:
+</b>
+
+${esc(c.idType || "—")}
+${c.idNumber ? " — " + esc(c.idNumber) : ""}
+
 </p>
 
 
@@ -5226,6 +5265,9 @@ async function savePurchaseCloud(p){
 
         street:
           p.customer.street,
+
+        house_number:
+          p.customer.houseNumber,
 
         postal_code:
           p.customer.postalCode,
