@@ -3384,20 +3384,12 @@ function receipt(p){
               : metal === "zilver"
                 ? "Zilver "+f+"‰"
                 : "Verzilverd";
-
-
           /*
-             BELANGRIJK:
-
-             Hier wordt GEEN marketValue
-             naar de klant gestuurd.
-
-             Alleen:
-             Type
-             Metaal/zuiverheid
-             Netto gram
-             Inkoop
+             Op de klantenbon worden alleen
+             type, metaal/zuiverheid en het
+             aankoopbedrag getoond.
           */
+
 
           return `
 
@@ -3409,10 +3401,6 @@ ${esc(it.type)}
 
 <td>
 ${label}
-</td>
-
-<td>
-${net.toFixed(2)} g
 </td>
 
 <td>
@@ -3574,10 +3562,6 @@ Type
 
 <th>
 Metaal/zuiverheid
-</th>
-
-<th>
-Netto gram
 </th>
 
 <th>
@@ -5242,9 +5226,6 @@ async function savePurchaseCloud(p){
 
         street:
           p.customer.street,
-
-        house_number:
-          p.customer.houseNumber,
 
         postal_code:
           p.customer.postalCode,
