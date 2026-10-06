@@ -593,7 +593,7 @@ button:disabled{
     <div class="dash-card"><small>Inkopen vandaag</small><strong id="dashCount">0</strong></div>
     <div class="dash-card"><small>Totaal ingekocht vandaag</small><strong id="dashPurchase">€ 0,00</strong></div>
     <div class="dash-card"><small>Verwachte verkoop vandaag</small><strong id="dashResale">€ 0,00</strong></div>
-    <div class="dash-card gold"><small>Verwachte winst vandaag</small><strong id="dashProfit">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Totale winst vandaag</small><strong id="dashProfit">€ 0,00</strong></div>
   </div>
   <div class="quick-grid">
     <button class="quick-btn" onclick="showPage('purchase');newPurchase()"><span>🟡</span>Nieuwe inkoop<br><small>Start een nieuwe aankoop</small></button>
@@ -616,7 +616,7 @@ button:disabled{
     <div class="dash-card"><small>Aantal inkopen</small><strong id="profitCount">0</strong></div>
     <div class="dash-card"><small>Totaal ingekocht</small><strong id="profitPurchase">€ 0,00</strong></div>
     <div class="dash-card"><small>Verwachte verkoop</small><strong id="profitResale">€ 0,00</strong></div>
-    <div class="dash-card gold"><small>Verwachte bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Totale bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
   </div>
   <div class="dashboard-section"><h3>Winst per dag — laatste 14 dagen</h3><div id="profitChart" class="profit-chart"></div></div>
   <div class="dashboard-section"><h3>Winst per werknemer</h3><div id="profitEmployees"></div></div>
@@ -774,7 +774,7 @@ button:disabled{
     <div>
 
       <label>
-        Verwachte verkoopprijs (€)
+        Verwachte verkoopprijs (€) — automatisch = metaalwaarde
       </label>
 
       <input
@@ -782,7 +782,8 @@ button:disabled{
         type="number"
         step="0.01"
         min="0"
-        oninput="calculate()"
+        readonly
+        placeholder="Automatisch berekend"
       >
 
     </div>
@@ -1618,508 +1619,197 @@ function renderDashboard(){
   const arr=purchases.filter(p=>{const d=new Date(p.date);d.setHours(0,0,0,0);return d.getTime()===today.getTime()});
   const sum=k=>arr.reduce((a,p)=>a+(Number(p[k])||0),0);
   if(!document.getElementById('dashCount'))return;
-  dashCount.textContent=arr.length;dashPurchase.textContent=euro(sum('total'));dashResale.textContent=euro(sum('resalePrice'));dashProfit.textContent=euro(sum('profit'));
+  dashCount.textContent=arr.length;
+  dashPurchase.textContent=euro(sum('total'));
+  dashResale.textContent=euro(sum('marketValue'));
+  dashProfit.textContent=euro(sum('profit'));
   dashRecent.innerHTML=arr.slice(0,10).map(p=>`<div class="history"><b>${esc(p.customer?.firstName||'')} ${esc(p.customer?.lastName||'')}</b> <span class="badge">${esc(p.id)}</span><br><small>${new Date(p.date).toLocaleString('nl-BE')}</small><div><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div></div>`).join('')||'<div class="note">Vandaag nog geen inkopen.</div>';
 }
-function renderCustomersPage(){
-
-  const q =
-    (
-      document.getElementById("customerSearchPage")?.value ||
-      ""
-    )
-    .toLowerCase()
-    .trim();
-
-  const arr =
-    customers.filter(c =>
-      [
-        c.first_name,
-        c.last_name,
-        c.phone,
-        c.id_number,
-        c.city,
-        c.postal_code
-      ]
-      .join(" ")
-      .toLowerCase()
-      .includes(q)
-    );
-
-  document.getElementById("customerListPage").innerHTML =
-    arr.map(c => `
-
-      <div
-        class="customer-card"
-        onclick="showCustomerDetail('${c.id}')"
-      >
-        <b>
-          ${esc(c.first_name || "")}
-          ${esc(c.last_name || "")}
-        </b>
-
-        <small>
-          ${esc(c.phone || "Geen telefoon")}
-        </small>
-
-        <small>
-          ${esc(
-            [c.postal_code,c.city]
-              .filter(Boolean)
-              .join(" ") || ""
-          )}
-        </small>
-
-        <small>
-          ${esc(c.id_number || "Geen ID-nummer")}
-        </small>
-      </div>
-
-    `)
-    .join("")
-    ||
-    '<div class="note">Geen klanten gevonden.</div>';
+function canDeleteCustomers(){
+  return currentMember?.role === "owner";
 }
 
-
+function renderCustomersPage(){
+  const q=(document.getElementById('customerSearchPage')?.value||'').toLowerCase().trim();
+  const arr=customers.filter(c=>[c.first_name,c.last_name,c.phone,c.id_number,c.city,c.postal_code].join(' ').toLowerCase().includes(q));
+  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')">
+  <b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b>
+  <small>${esc(c.phone||'Geen telefoon')}</small>
+  <small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small>
+  <small>${esc(c.id_number||'Geen ID-nummer')}</small>
+  ${canDeleteCustomers() ? `<button class="danger" style="margin-top:10px;width:100%" onclick="event.stopPropagation();deleteCustomer('${c.id}')">🗑️ Klant verwijderen</button>` : ''}
+</div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
+}
 async function deleteCustomer(id){
-
-  const c =
-    customers.find(x => x.id === id);
-
-  if(!c)
+  if(currentMember?.role !== "owner"){
+    alert("Alleen het hoofd/de eigenaar kan klanten verwijderen.");
     return;
+  }
 
-  const name =
-    (
-      (c.first_name || "") +
-      " " +
-      (c.last_name || "")
-    ).trim();
+  const c=customers.find(x=>x.id===id);
+  if(!c){ alert("Klant niet gevonden."); return; }
 
-  const relatedCount =
-    purchases.filter(p =>
-      (
-        (p.customer?.firstName || "") +
-        " " +
-        (p.customer?.lastName || "")
-      )
-      .trim()
-      === name
-    ).length;
+  const name=((c.first_name||"")+" "+(c.last_name||"")).trim();
 
-  const ok =
-    confirm(
-      "KLANT VERWIJDEREN?\n\n" +
-      name +
-      "\n\n" +
-      (
-        relatedCount
-          ? relatedCount +
-            " gekoppelde aankoop/aankopen worden ook verwijderd."
-          : "Deze klant heeft geen gekoppelde aankopen."
-      ) +
-      "\n\nDit kan niet ongedaan worden gemaakt."
-    );
+  if(!confirm(
+    "Klant \""+name+"\" definitief verwijderen?\n\n"+
+    "De gekoppelde aankoopgeschiedenis en aankoopstukken worden ook verwijderd."
+  )) return;
 
-  if(!ok)
+  if(!sb || !currentBusinessId){
+    alert("Je bent niet correct ingelogd op Supabase.");
     return;
+  }
 
   try{
+    // Eerst de gekoppelde aankopen zoeken.
+    const {data: linked, error: findError}=await sb
+      .from("purchases")
+      .select("id")
+      .eq("business_id",currentBusinessId)
+      .eq("customer_id",id);
 
-    await deleteCustomerCloud(id);
+    if(findError) throw findError;
 
-    customers =
-      customers.filter(x => x.id !== id);
+    const purchaseIds=(linked||[]).map(x=>x.id);
 
-    purchases =
-      purchases.filter(p =>
-        (
-          (p.customer?.firstName || "") +
-          " " +
-          (p.customer?.lastName || "")
-        )
-        .trim()
-        !== name
-      );
+    // Eerst aankoopstukken verwijderen, daarna aankopen, daarna de klant.
+    if(purchaseIds.length){
+      const {error:itemError}=await sb
+        .from("purchase_items")
+        .delete()
+        .eq("business_id",currentBusinessId)
+        .in("purchase_id",purchaseIds);
+
+      if(itemError) throw itemError;
+
+      const {error:purchaseError}=await sb
+        .from("purchases")
+        .delete()
+        .eq("business_id",currentBusinessId)
+        .in("id",purchaseIds);
+
+      if(purchaseError) throw purchaseError;
+    }
+
+    const {error:customerError}=await sb
+      .from("customers")
+      .delete()
+      .eq("business_id",currentBusinessId)
+      .eq("id",id);
+
+    if(customerError) throw customerError;
+
+    customers=customers.filter(x=>x.id!==id);
+    purchases=purchases.filter(p=>{
+      const customerId=p.customer_id || null;
+      return customerId !== id;
+    });
 
     localStorage.setItem(
       "goudmarsjan_purchases",
       JSON.stringify(purchases)
     );
 
-    document.getElementById(
-      "customerDetailPage"
-    ).innerHTML = "";
-
+    document.getElementById("customerDetailPage").innerHTML="";
     renderCustomersPage();
     renderHistory();
+    renderDashboard();
     renderProfitPage();
 
-    alert(
-      "Klant en gekoppelde gegevens zijn verwijderd."
-    );
+    alert("Klant en gekoppelde aankopen zijn verwijderd.");
 
   }catch(e){
+    console.error("deleteCustomer:",e);
 
-    console.error(e);
+    const msg=e?.message || String(e);
 
-    alert(
-      "Klant verwijderen mislukt.\n\n" +
-      (e.message || e)
-    );
-
+    if(/permission denied|row-level security|rls/i.test(msg)){
+      alert(
+        "Klant verwijderen wordt door Supabase geblokkeerd.\n\n"+
+        "De HTML-knop werkt, maar de ingelogde gebruiker heeft in Supabase "+
+        "nog geen DELETE-rechten op customers/purchases/purchase_items."
+      );
+    }else{
+      alert("Klant verwijderen mislukt.\n\n"+msg);
+    }
   }
-
 }
-
 
 function showCustomerDetail(id){
-
-  const c =
-    customers.find(x => x.id === id);
-
-  if(!c)
-    return;
-
-  const name =
-    (
-      (c.first_name || "") +
-      " " +
-      (c.last_name || "")
-    ).trim();
-
-  const related =
-    purchases.filter(p =>
-      (
-        (p.customer?.firstName || "") +
-        " " +
-        (p.customer?.lastName || "")
-      )
-      .trim()
-      === name
-    );
-
-  document.getElementById(
-    "customerDetailPage"
-  ).innerHTML = `
-
-    <div class="card">
-
-      <div class="row">
-
-        <div>
-
-          <h2>
-            ${esc(name)}
-          </h2>
-
-          <span class="badge">
-            ${
-              c.id_checked
-                ? "ID gecontroleerd"
-                : "ID niet gecontroleerd"
-            }
-          </span>
-
-        </div>
-
-        <div class="row">
-
-          <button
-            class="light"
-            onclick="
-              document.getElementById(
-                'customerDetailPage'
-              ).innerHTML=''
-            "
-          >
-            Sluiten
-          </button>
-
-          <button
-            class="danger"
-            onclick="deleteCustomer('${c.id}')"
-          >
-            🗑️ KLANT VERWIJDEREN
-          </button>
-
-        </div>
-
-      </div>
-
-      <div
-        class="g3"
-        style="margin-top:15px"
-      >
-
-        <div>
-          <label>Geboortedatum</label>
-          <div class="value">
-            ${esc(c.birth_date || "—")}
-          </div>
-        </div>
-
-        <div>
-          <label>Telefoon</label>
-          <div class="value">
-            ${esc(c.phone || "—")}
-          </div>
-        </div>
-
-        <div>
-          <label>IBAN</label>
-          <div class="value">
-            ${esc(c.iban || "—")}
-          </div>
-        </div>
-
-        <div>
-          <label>Adres</label>
-          <div class="value">
-            ${esc(
-              [
-                c.street,
-                c.house_number
-              ]
-              .filter(Boolean)
-              .join(" ") || "—"
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label>Postcode / gemeente</label>
-          <div class="value">
-            ${esc(
-              [
-                c.postal_code,
-                c.city
-              ]
-              .filter(Boolean)
-              .join(" ") || "—"
-            )}
-          </div>
-        </div>
-
-        <div>
-          <label>ID-document</label>
-          <div class="value">
-            ${esc(
-              [
-                c.id_type,
-                c.id_number
-              ]
-              .filter(Boolean)
-              .join(" — ") || "—"
-            )}
-          </div>
-        </div>
-
-      </div>
-
-      <h3>
-        Aankoopgeschiedenis
-      </h3>
-
-      ${
-        related.map(p => `
-
-          <div class="history">
-
-            <b>
-              ${esc(p.id)}
-            </b>
-
-            ·
-
-            ${new Date(p.date)
-              .toLocaleDateString("nl-BE")}
-
-            <br>
-
-            <b>
-              ${euro(p.total)}
-            </b>
-
-            · winst
-            ${euro(p.profit)}
-
-          </div>
-
-        `).join("")
-        ||
-        '<div class="note">Geen aankoophistorie gevonden.</div>'
-      }
-
-    </div>
-  `;
-
-  document
-    .getElementById("customerDetailPage")
-    .scrollIntoView({
-      behavior:"smooth"
-    });
-
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  const name=((c.first_name||'')+' '+(c.last_name||'')).trim();
+  const related=purchases.filter(p =>
+    p.customer_id === c.id ||
+    (!p.customer_id &&
+      (((p.customer?.firstName||'')+' '+(p.customer?.lastName||'')).trim()===name))
+  );
+  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><div class="row"><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button>${canDeleteCustomers() ? `<button class="danger" onclick="deleteCustomer('${c.id}')">🗑️ Klant verwijderen</button>` : ''}</div></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
+  document.getElementById('customerDetailPage').scrollIntoView({behavior:'smooth'});
 }
-
-
 function renderProfitPage(){
+  if(!document.getElementById('profitCount'))return;
 
-  if(!document.getElementById("profitCount"))
-    return;
+  const purchaseValue=purchases.reduce((a,p)=>a+(Number(p.total)||0),0);
+  const resaleValue=purchases.reduce((a,p)=>a+(Number(p.marketValue ?? p.resalePrice)||0),0);
 
-  const total =
-    key =>
-      purchases.reduce(
-        (sum,p) =>
-          sum +
-          (Number(p[key]) || 0),
-        0
-      );
+  // De winst is altijd de ruimte tussen de originele metaalwaarde en de inkoopprijs.
+  const profitValue=purchases.reduce((a,p)=>{
+    const market=Number(p.marketValue ?? p.resalePrice)||0;
+    const total=Number(p.total)||0;
+    return a + (market-total);
+  },0);
 
-  const purchaseTotal =
-    total("total");
+  profitCount.textContent=purchases.length;
+  profitPurchase.textContent=euro(purchaseValue);
+  profitResale.textContent=euro(resaleValue);
+  profitTotal.textContent=euro(profitValue);
 
-  const resaleTotal =
-    total("resalePrice");
-
-  const profitTotal =
-    total("profit");
-
-  profitCount.textContent =
-    purchases.length;
-
-  profitPurchase.textContent =
-    euro(purchaseTotal);
-
-  profitResale.textContent =
-    euro(resaleTotal);
-
-  profitTotal.textContent =
-    euro(profitTotal);
-
-  const days = [];
-  const now = new Date();
-
+  const days=[],now=new Date();
   for(let i=13;i>=0;i--){
-
-    const d =
-      new Date(now);
-
+    const d=new Date(now);
     d.setHours(0,0,0,0);
-    d.setDate(
-      d.getDate() - i
-    );
+    d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
 
-    const key =
-      d.toISOString()
-       .slice(0,10);
+    const profit=purchases
+      .filter(p=>new Date(p.date).toISOString().slice(0,10)===key)
+      .reduce((a,p)=>{
+        const market=Number(p.marketValue ?? p.resalePrice)||0;
+        const total=Number(p.total)||0;
+        return a+(market-total);
+      },0);
 
-    const profit =
-      purchases
-        .filter(p =>
-          new Date(p.date)
-            .toISOString()
-            .slice(0,10)
-            === key
-        )
-        .reduce(
-          (sum,p) =>
-            sum +
-            (Number(p.profit) || 0),
-          0
-        );
-
-    days.push({
-      d,
-      profit
-    });
-
+    days.push({d,profit});
   }
 
-  const max =
-    Math.max(
-      1,
-      ...days.map(x => x.profit)
-    );
+  const max=Math.max(1,...days.map(x=>Math.max(0,x.profit)));
 
-  if(document.getElementById("profitChart")){
+  profitChart.innerHTML=days.map(x=>`
+    <div class="profit-bar-wrap">
+      <div class="profit-bar-value">${euro(x.profit)}</div>
+      <div class="profit-bar" style="height:${Math.max(3,Math.max(0,x.profit)/max*190)}px"></div>
+      <div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div>
+    </div>
+  `).join('');
 
-    profitChart.innerHTML =
-      days
-        .map(x => `
+  const employeeMap={};
+  purchases.forEach(p=>{
+    const name=p.employeeName || 'Hoofd / eigenaar';
+    const market=Number(p.marketValue ?? p.resalePrice)||0;
+    const total=Number(p.total)||0;
+    employeeMap[name]=(employeeMap[name]||0)+(market-total);
+  });
 
-          <div class="profit-bar-wrap">
-
-            <div class="profit-bar-value">
-              ${euro(x.profit)}
-            </div>
-
-            <div
-              class="profit-bar"
-              style="
-                height:${Math.max(
-                  3,
-                  x.profit / max * 190
-                )}px
-              "
-            ></div>
-
-            <div class="profit-bar-label">
-              ${x.d.toLocaleDateString(
-                "nl-BE",
-                {
-                  day:"2-digit",
-                  month:"2-digit"
-                }
-              )}
-            </div>
-
-          </div>
-
-        `)
-        .join("");
-
-  }
-
-  if(document.getElementById("profitEmployees")){
-
-    const grouped = {};
-
-    purchases.forEach(p => {
-
-      const employee =
-        p.createdBy ||
-        "Hoofd / eigenaar";
-
-      grouped[employee] =
-        (grouped[employee] || 0) +
-        (Number(p.profit) || 0);
-
-    });
-
-    const entries =
-      Object.entries(grouped);
-
-    profitEmployees.innerHTML =
-      entries.length
-        ? entries
-            .map(([employee,profit]) => `
-              <div class="history">
-                <b>${esc(employee)}</b>
-                <span style="float:right">
-                  ${euro(profit)}
-                </span>
-              </div>
-            `)
-            .join("")
-        : '<div class="note">Nog geen geregistreerde winst.</div>';
-
-  }
-
+  profitEmployees.innerHTML=Object.keys(employeeMap).length
+    ? Object.entries(employeeMap).map(([name,value])=>`
+        <div class="member-row">
+          <b>${esc(name)}</b>
+          <strong>${euro(value)}</strong>
+        </div>
+      `).join('')
+    : '<div class="note">Nog geen winstgegevens.</div>';
 }
-
 
 /* =========================================================
    SUPABASE
@@ -2131,11 +1821,27 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_mj_YFZgUnC3DR9lzDgWlYA_CUUozF43";
 
-const sb =
-  window.supabase.createClient(
+let sb = null;
+
+try{
+  if(!window.supabase || typeof window.supabase.createClient !== "function"){
+    throw new Error("Supabase JavaScript library kon niet geladen worden.");
+  }
+
+  sb = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_KEY,
+    {
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:false
+      }
+    }
   );
+}catch(err){
+  console.error("Supabase initialisatie mislukt:", err);
+}
 
 
 /* =========================================================
@@ -2196,6 +1902,8 @@ let purchases =
 let currentUser = null;
 let currentMember = null;
 let currentBusinessId = null;
+let memberCache = [];
+let accessCheckInProgress = false;
 
 
 /* =========================================================
@@ -3103,14 +2811,13 @@ function calculate(){
       : "—";
 
 
-  let resale =
-    num("resalePrice");
+  // Verwachte verkoop = volledige metaalwaarde.
+  // Verwachte bruto winst = metaalwaarde - inkoopprijs.
+  let resale = market;
+  let profit = market - offer;
 
 
-  let profit =
-    resale - offer;
-
-
+  if($("resalePrice")) $("resalePrice").value = market ? market.toFixed(2) : "";
   $("resaleDisplay")
     .textContent =
     euro(resale);
@@ -3271,8 +2978,8 @@ function data(){
     );
 
 
-  let resale =
-    num("resalePrice");
+  // De verwachte verkoop is gekoppeld aan de originele metaalwaarde.
+  let resale = market;
 
 
   return {
@@ -3290,6 +2997,9 @@ function data(){
 
     customer:
       customer(),
+
+    customer_id:
+      null,
 
     paymentMethod:
       $("paymentMethod").value,
@@ -3314,8 +3024,17 @@ function data(){
     resalePrice:
       resale,
 
+    // Winst = ruimte t.o.v. metaalwaarde.
     profit:
-      resale - total,
+      market - total,
+
+    createdBy:
+      currentUser?.id || null,
+
+    employeeName:
+      currentMember?.display_name ||
+      currentUser?.email ||
+      "",
 
     note:
       $("purchaseNote")
@@ -3440,8 +3159,10 @@ async function savePurchase(){
 
   try{
 
-    await savePurchaseCloud(p);
+    const saved = await savePurchaseCloud(p);
 
+    if(saved?.customerId) p.customer_id = saved.customerId;
+    if(saved?.purchaseId) p.cloudPurchaseId = saved.purchaseId;
 
     purchases.unshift(p);
 
@@ -3453,9 +3174,6 @@ async function savePurchase(){
 
 
     renderHistory();
-    renderProfitPage();
-    renderCustomersPage();
-    calculate();
 
 
     alert(
@@ -3840,20 +3558,12 @@ function receipt(p){
               : metal === "zilver"
                 ? "Zilver "+f+"‰"
                 : "Verzilverd";
-
-
           /*
-             BELANGRIJK:
-
-             Hier wordt GEEN marketValue
-             naar de klant gestuurd.
-
-             Alleen:
-             Type
-             Metaal/zuiverheid
-             Netto gram
-             Inkoop
+             Op de klantenbon worden alleen
+             type, metaal/zuiverheid en het
+             aankoopbedrag getoond.
           */
+
 
           return `
 
@@ -3865,10 +3575,6 @@ ${esc(it.type)}
 
 <td>
 ${label}
-</td>
-
-<td>
-${net.toFixed(2)} g
 </td>
 
 <td>
@@ -4017,6 +3723,15 @@ IBAN:
 
 ${esc(c.iban || "")}
 
+<br>
+
+<b>
+ID-document:
+</b>
+
+${esc(c.idType || "—")}
+${c.idNumber ? " — " + esc(c.idNumber) : ""}
+
 </p>
 
 
@@ -4030,10 +3745,6 @@ Type
 
 <th>
 Metaal/zuiverheid
-</th>
-
-<th>
-Netto gram
 </th>
 
 <th>
@@ -4500,55 +4211,73 @@ function exportCSV(){
 
 async function login(){
 
-  let email =
-    $("loginEmail")
-      .value
-      .trim();
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+  const errorBox = $("authError");
 
+  errorBox.textContent = "";
 
-  let password =
-    $("loginPassword")
-      .value;
-
-
-  $("authError")
-    .textContent = "";
-
-
-  if(
-    !email ||
-    !password
-  ){
-
-    $("authError")
-      .textContent =
-      "Vul e-mail en wachtwoord in.";
-
+  if(!email || !password){
+    errorBox.textContent = "Vul e-mail en wachtwoord in.";
     return;
-
   }
 
-
-  let {
-    error
-  } =
-    await sb.auth.signInWithPassword({
-
-      email,
-
-      password
-
-    });
-
-
-  if(error){
-
-    $("authError")
-      .textContent =
-      error.message;
-
+  if(!sb){
+    errorBox.textContent = "De verbinding met Supabase kon niet worden gestart. Vernieuw de pagina.";
+    return;
   }
 
+  const button = document.querySelector('#authLock button[onclick="login()"]');
+
+  if(button){
+    button.disabled = true;
+    button.textContent = "INLOGGEN...";
+  }
+
+  try{
+
+    const { data, error } =
+      await sb.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if(error){
+      console.error("Supabase login error:", error);
+
+      let message = error.message || "Inloggen mislukt.";
+
+      if(error.message?.toLowerCase().includes("invalid login credentials")){
+        message = "E-mailadres of wachtwoord is niet correct.";
+      }
+
+      errorBox.textContent = message;
+      return;
+    }
+
+    if(!data?.user){
+      errorBox.textContent = "Supabase heeft geen gebruiker teruggegeven.";
+      return;
+    }
+
+    await onLoggedIn(data.user, true);
+
+  }catch(err){
+
+    console.error("Login exception:", err);
+
+    errorBox.textContent =
+      err?.message ||
+      "Er ging iets mis tijdens het inloggen. Controleer je internetverbinding en Supabase-configuratie.";
+
+  }finally{
+
+    if(button){
+      button.disabled = false;
+      button.textContent = "INLOGGEN";
+    }
+
+  }
 }
 
 
@@ -4660,212 +4389,249 @@ function applyRolePermissions(){
    AUTH INIT
 ========================================================= */
 
+async function getActiveMembership(user){
+
+  if(!user?.id) return { member:null, error:null };
+
+  // Werknemer: uitsluitend toegang met een actieve membership.
+  const { data: memberships, error: memberError } = await sb
+    .from("business_members")
+    .select("business_id,user_id,role,active,display_name,created_at")
+    .eq("user_id", user.id)
+    .eq("active", true)
+    .order("created_at", { ascending:true })
+    .limit(1);
+
+  if(memberError){
+    return { member:null, error:memberError };
+  }
+
+  if(memberships?.[0]){
+    return { member:memberships[0], error:null };
+  }
+
+  // Eigenaar kan ook toegang krijgen via businesses.owner_id.
+  const { data: owned, error: ownerError } = await sb
+    .from("businesses")
+    .select("id,owner_id")
+    .eq("owner_id", user.id)
+    .limit(1);
+
+  if(!ownerError && owned?.[0]){
+    return {
+      member:{
+        business_id:owned[0].id,
+        user_id:user.id,
+        role:"owner",
+        active:true,
+        display_name:user.user_metadata?.display_name || user.email
+      },
+      error:null
+    };
+  }
+
+  return { member:null, error:null };
+}
+
+async function verifyCurrentAccess(showError=true){
+
+  if(accessCheckInProgress) return false;
+  accessCheckInProgress = true;
+
+  try{
+    const { data:{ user }, error:userError } = await sb.auth.getUser();
+
+    if(userError || !user){
+      onLoggedOut();
+      return false;
+    }
+
+    const { member, error } = await getActiveMembership(user);
+
+    if(error || !member || member.active !== true){
+      currentUser = null;
+      currentMember = null;
+      currentBusinessId = null;
+      customers = [];
+      purchases = [];
+      localStorage.removeItem("goudmarsjan_purchases");
+      await sb.auth.signOut();
+      onLoggedOut();
+      if(showError){
+        $("authError").textContent = error
+          ? "Toegang kon niet gecontroleerd worden. Controleer de Supabase RLS-regels."
+          : "Dit account heeft momenteel geen actieve toegang tot DE GOUDMARSJAN.";
+      }
+      return false;
+    }
+
+    currentUser = user;
+    currentMember = member;
+    currentBusinessId = member.business_id;
+    return true;
+  } finally {
+    accessCheckInProgress = false;
+  }
+}
+
 async function initAuth(){
 
-  const {
-    data:{
-      session
-    }
-  } =
-    await sb.auth.getSession();
-
-
-  if(session){
-
-    await onLoggedIn(
-      session.user
-    );
-
+  if(!sb){
+    onLoggedOut();
+    $("authError").textContent =
+      "Supabase kon niet worden geladen. Vernieuw de pagina.";
+    return;
   }
 
+  try{
 
-  sb.auth.onAuthStateChange(
-    async(
-      _event,
-      session
-    ) => {
+    const {
+      data,
+      error
+    } = await sb.auth.getSession();
 
-      if(session){
-
-        await onLoggedIn(
-          session.user
-        );
-
-      }
-
-      else{
-
-        onLoggedOut();
-
-      }
-
+    if(error){
+      console.error("Supabase session error:", error);
+      onLoggedOut();
+      $("authError").textContent =
+        "De bestaande login-sessie kon niet worden gecontroleerd.";
+    }else if(data?.session?.user){
+      await onLoggedIn(data.session.user);
+    }else{
+      onLoggedOut();
     }
-  );
 
-}
+  }catch(err){
 
-
-/* =========================================================
-   LOGGED IN
-========================================================= */
-
-async function onLoggedIn(
-  user
-){
-
-  currentUser =
-    user;
-
-
-  let {
-    data:member,
-    error
-  } =
-    await sb
-      .from("business_members")
-      .select(
-        "business_id,user_id,role,active,display_name"
-      )
-      .eq(
-        "user_id",
-        user.id
-      )
-      .eq(
-        "active",
-        true
-      )
-      .maybeSingle();
-
-
-  if(
-    error ||
-    !member
-  ){
-
+    console.error("Auth initialisatie mislukt:", err);
     onLoggedOut();
 
-
-    $("authError")
-      .textContent =
-      "Dit account heeft geen actieve toegang tot DE GOUDMARSJAN.";
-
-
-    await sb.auth.signOut();
-
-
-    return;
+    if($("authError")){
+      $("authError").textContent =
+        err?.message ||
+        "De login kon niet worden geïnitialiseerd.";
+    }
 
   }
 
+  sb.auth.onAuthStateChange((event, session) => {
 
-  currentMember =
-    member;
+    if(event === "SIGNED_OUT" || !session){
+      onLoggedOut();
+      return;
+    }
 
+    if(
+      event === "SIGNED_IN" ||
+      event === "INITIAL_SESSION" ||
+      event === "TOKEN_REFRESHED" ||
+      event === "USER_UPDATED"
+    ){
 
-  currentBusinessId =
-    member.business_id;
+      setTimeout(() => {
+        onLoggedIn(session.user);
+      }, 0);
 
+    }
 
-  $("authLock")
-    .classList
-    .add("hidden");
-
-
-  $("currentUserName")
-    .textContent =
-    member.display_name ||
-    user.email;
-
-
-  $("currentUserRole")
-    .textContent =
-    member.role === "owner"
-      ? "Hoofd / eigenaar"
-      : "Werknemer";
-
-
-  $("sideUserName").textContent = member.display_name || user.email;
-  $("sideUserRole").textContent = member.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
-  $("topUserName").textContent = member.display_name || user.email;
-  $("topUserRole").textContent = member.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
-
-  applyRolePermissions();
-
-
-  loadSettings();
-
-
-  await loadCloudData();
-
-
-  if(
-    member.role === "owner"
-  ){
-
-    await loadMembers();
-
-  }
-
-
-  if(
-    !items.length
-  ){
-
-    addItem();
-
-  }
-
-
-  renderHistory();
-
-  calculate();
+  });
 
 }
 
+async function onLoggedIn(user, fromLogin=false){
 
-/* =========================================================
-   LOGGED OUT
-========================================================= */
+  if(!user?.id) return;
+
+  const allowed = await verifyUserAccess(user, fromLogin);
+  if(!allowed) return;
+
+  $("authLock").classList.add("hidden");
+
+  const displayName = currentMember.display_name || user.email;
+  const roleName = currentMember.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
+
+  $("currentUserName").textContent = displayName;
+  $("currentUserRole").textContent = roleName;
+  $("sideUserName").textContent = displayName;
+  $("sideUserRole").textContent = roleName;
+  $("topUserName").textContent = displayName;
+  $("topUserRole").textContent = roleName;
+
+  applyRolePermissions();
+  loadSettings();
+  await loadCloudData();
+
+  if(currentMember.role === "owner") await loadMembers();
+
+  if(!items.length) addItem();
+
+  renderHistory();
+  renderDashboard();
+  calculate();
+}
+
+async function verifyUserAccess(user, fromLogin=false){
+
+  if(!user?.id) return false;
+
+  const { member, error } = await getActiveMembership(user);
+
+  if(error || !member || member.active !== true){
+
+    console.error("DE GOUDMARSJAN toegang geweigerd:", error || "Geen actieve membership.");
+
+    await sb.auth.signOut();
+    onLoggedOut();
+
+    $("authError").textContent = error
+      ? (
+          "Inloggen lukt, maar de toegang tot je DE GOUDMARSJAN-account kan niet worden gecontroleerd. " +
+          "Controleer de Supabase RLS-policy op business_members. " +
+          (error.message ? "Fout: " + error.message : "")
+        )
+      : "Dit account heeft momenteel geen actieve toegang tot DE GOUDMARSJAN.";
+
+    return false;
+  }
+
+  currentUser = user;
+  currentMember = member;
+  currentBusinessId = member.business_id;
+  return true;
+}
 
 function onLoggedOut(){
 
   customers = [];
+  purchases = [];
+  memberCache = [];
+
   if($("adminNav")) $("adminNav").style.display = "none";
   $("sideUserName").textContent = "Niet ingelogd";
   $("sideUserRole").textContent = "—";
   $("topUserName").textContent = "Niet ingelogd";
   $("topUserRole").textContent = "—";
+  $("currentUserName").textContent = "Niet ingelogd";
+  $("currentUserRole").textContent = "—";
 
-  currentUser =
-    null;
+  currentUser = null;
+  currentMember = null;
+  currentBusinessId = null;
 
-  currentMember =
-    null;
-
-  currentBusinessId =
-    null;
-
-
-  $("authLock")
-    .classList
-    .remove("hidden");
-
-
-  $("ownerPanel")
-    .style.display =
-    "none";
-
-
-  $("currentUserName")
-    .textContent =
-    "Niet ingelogd";
-
-
-  $("currentUserRole")
-    .textContent =
-    "—";
-
+  $("authLock").classList.remove("hidden");
+  $("ownerPanel").style.display = "none";
 }
+
+// Controleer ook opnieuw wanneer de gebruiker terugkeert naar de pagina.
+window.addEventListener("focus", () => {
+  if(currentUser) verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); }); });
+});
+
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "visible" && currentUser){
+    verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); }); });
+  }
+});
 
 
 /* =========================================================
@@ -4901,6 +4667,10 @@ async function loadMembers(){
         }
       );
 
+
+  if(!error){
+    memberCache = data || [];
+  }
 
   if(error){
 
@@ -5452,6 +5222,9 @@ async function loadCloudData(){
               ) || {}
             ),
 
+          customer_id:
+            x.customer_id || null,
+
           paymentMethod:
             x.payment_method ||
             "overschrijving",
@@ -5481,15 +5254,20 @@ async function loadCloudData(){
               x.total
             ) || 0,
 
+          // Oude records kunnen een foutieve resale/profit bevatten.
+          // Herbereken altijd vanuit de originele metaalwaarde.
           resalePrice:
-            Number(
-              x.resale_price
-            ) || 0,
+            Number(x.market_value) || Number(x.resale_price) || 0,
 
           profit:
-            Number(
-              x.profit
-            ) || 0,
+            (Number(x.market_value) || 0) - (Number(x.total) || 0),
+
+          createdBy:
+            x.created_by || null,
+
+          employeeName:
+            memberCache.find(m => m.user_id === x.created_by)?.display_name ||
+            "",
 
           note:
             x.note || "",
@@ -5590,434 +5368,132 @@ function mapCustomer(c){
 
 
 /* =========================================================
-   SUPABASE SCHEMA-SAFE INSERTS
-   Deze helpers vangen ontbrekende optionele kolommen op.
-   Zo blijft de app werken wanneer de database nog niet alle
-   oudere kolommen bevat.
-========================================================= */
-
-function missingSchemaColumn(error){
-  const msg = String(error?.message || error || "");
-  let m = msg.match(/Could not find the '([^']+)' column of '([^']+)' in the schema cache/i);
-  if(m) return m[1];
-  m = msg.match(/column ['"]?([a-zA-Z0-9_]+)['"]? of relation .* does not exist/i);
-  if(m) return m[1];
-  return null;
-}
-
-async function insertOneSchemaSafe(table, payload, selectClause="id"){
-  let working = {...payload};
-  const removed = [];
-
-  for(let attempt=0; attempt<40; attempt++){
-    let q = sb.from(table).insert(working);
-    if(selectClause){
-      q = q.select(selectClause).single();
-    }
-
-    const {data,error} = await q;
-
-    if(!error){
-      return {data, removed};
-    }
-
-    const missing = missingSchemaColumn(error);
-
-    if(!missing || !(missing in working)){
-      throw error;
-    }
-
-    delete working[missing];
-    removed.push(missing);
-  }
-
-  throw new Error(
-    "Supabase: te veel ontbrekende kolommen gevonden in "+table+"."
-  );
-}
-
-async function insertManySchemaSafe(table, rows){
-  let working = rows.map(row => ({...row}));
-  const removed = [];
-
-  for(let attempt=0; attempt<40; attempt++){
-    const {error} = await sb.from(table).insert(working);
-
-    if(!error){
-      return {removed};
-    }
-
-    const missing = missingSchemaColumn(error);
-
-    if(!missing || !working.length || !(missing in working[0])){
-      throw error;
-    }
-
-    working.forEach(row => delete row[missing]);
-    removed.push(missing);
-  }
-
-  throw new Error(
-    "Supabase: te veel ontbrekende kolommen gevonden in "+table+"."
-  );
-}
-
-
-/* =========================================================
-   CLOUD DATA
-========================================================= */
-
-async function loadCloudData(){
-
-  if(!currentBusinessId)
-    return;
-
-  try{
-
-    const [
-      purchasesResult,
-      customersResult,
-      itemsResult
-    ] = await Promise.all([
-
-      sb
-        .from("purchases")
-        .select("*")
-        .eq("business_id", currentBusinessId)
-        .order("created_at", {ascending:false})
-        .limit(500),
-
-      sb
-        .from("customers")
-        .select("*")
-        .eq("business_id", currentBusinessId),
-
-      sb
-        .from("purchase_items")
-        .select("*")
-        .eq("business_id", currentBusinessId)
-
-    ]);
-
-    if(
-      purchasesResult.error ||
-      customersResult.error ||
-      itemsResult.error
-    ){
-      throw(
-        purchasesResult.error ||
-        customersResult.error ||
-        itemsResult.error
-      );
-    }
-
-    customers = customersResult.data || [];
-
-    const customerMap = new Map(
-      (customersResult.data || []).map(c => [c.id,c])
-    );
-
-    const itemMap = new Map();
-
-    (itemsResult.data || []).forEach(x => {
-
-      if(!itemMap.has(x.purchase_id)){
-        itemMap.set(x.purchase_id, []);
-      }
-
-      itemMap.get(x.purchase_id).push({
-
-        metal: x.metal || "goud",
-
-        type: x.item_type || "Juweel",
-
-        description: x.description || "",
-
-        fineness:
-          Number(x.fineness) ||
-          18,
-
-        karat:
-          Number(x.fineness) ||
-          18,
-
-        weight:
-          Number(x.weight) ||
-          0,
-
-        nonGold:
-          Number(x.non_gold) ||
-          0,
-
-        manualOffer:
-          Number(x.purchase_price) ||
-          0
-
-      });
-
-    });
-
-    purchases =
-      (purchasesResult.data || []).map(x => ({
-
-        id:
-          x.reference ||
-          x.id,
-
-        date:
-          x.created_at ||
-          new Date().toISOString(),
-
-        customer:
-          mapCustomer(
-            customerMap.get(x.customer_id) || {}
-          ),
-
-        paymentMethod:
-          x.payment_method ||
-          "overschrijving",
-
-        items:
-          itemMap.get(x.id) || [],
-
-        goldPrice:
-          Number(x.gold_price) || 0,
-
-        silverPrice:
-          Number(x.silver_price) || 0,
-
-        marketValue:
-          Number(x.market_value) || 0,
-
-        total:
-          Number(x.total) || 0,
-
-        resalePrice:
-          Number(x.resale_price) || 0,
-
-        profit:
-          Number(x.profit) || 0,
-
-        note:
-          x.note || "",
-
-        reference:
-          x.reference ||
-          x.id,
-
-        createdBy:
-          x.created_by || ""
-
-      }));
-
-    localStorage.setItem(
-      "goudmarsjan_purchases",
-      JSON.stringify(purchases)
-    );
-
-    renderHistory();
-    renderProfitPage();
-    renderCustomersPage();
-
-  }catch(e){
-
-    console.error(e);
-
-    alert(
-      "Supabase-historie kon niet geladen worden.\n\n"+
-      (e.message || e)
-    );
-
-  }
-
-}
-
-
-function mapCustomer(c){
-
-  return {
-
-    id:
-      c.id || "",
-
-    firstName:
-      c.first_name || "",
-
-    lastName:
-      c.last_name || "",
-
-    birthDate:
-      c.birth_date || "",
-
-    phone:
-      c.phone || "",
-
-    iban:
-      c.iban || "",
-
-    idChecked:
-      c.id_checked === true ||
-      c.id_checked === "ja"
-        ? "ja"
-        : "nee",
-
-    idType:
-      c.id_type || "",
-
-    idNumber:
-      c.id_number || "",
-
-    street:
-      c.street || "",
-
-    houseNumber:
-      c.house_number || "",
-
-    postalCode:
-      c.postal_code || "",
-
-    city:
-      c.city || "",
-
-    note:
-      c.note || ""
-
-  };
-
-}
-
-
-/* =========================================================
    CLOUD SAVE PURCHASE
 ========================================================= */
 
 async function savePurchaseCloud(p){
 
-  const customerPayload = {
+  let {
+    data:c,
+    error:ce
+  } =
+    await sb
+      .from("customers")
+      .insert({
 
-    business_id:
-      currentBusinessId,
+        business_id:
+          currentBusinessId,
 
-    first_name:
-      p.customer.firstName,
+        first_name:
+          p.customer.firstName,
 
-    last_name:
-      p.customer.lastName,
+        last_name:
+          p.customer.lastName,
 
-    birth_date:
-      p.customer.birthDate,
+        birth_date:
+          p.customer.birthDate,
 
-    phone:
-      p.customer.phone,
+        phone:
+          p.customer.phone,
 
-    iban:
-      p.customer.iban,
+        iban:
+          p.customer.iban,
 
-    id_checked:
-      p.customer.idChecked === "ja",
+        id_checked:
+          p.customer.idChecked === "ja",
 
-    id_type:
-      p.customer.idType,
+        id_type:
+          p.customer.idType,
 
-    id_number:
-      p.customer.idNumber,
+        id_number:
+          p.customer.idNumber,
 
-    street:
-      p.customer.street,
+        street:
+          p.customer.street,
 
-    house_number:
-      p.customer.houseNumber,
+        house_number:
+          p.customer.houseNumber,
 
-    postal_code:
-      p.customer.postalCode,
+        postal_code:
+          p.customer.postalCode,
 
-    city:
-      p.customer.city,
+        city:
+          p.customer.city,
 
-    note:
-      p.customer.note
+        note:
+          p.customer.note
 
-  };
+      })
+      .select("id")
+      .single();
 
-  const customerResult =
-    await insertOneSchemaSafe(
-      "customers",
-      customerPayload,
-      "id"
-    );
 
-  const c = customerResult.data;
+  if(ce)
+    throw ce;
 
-  if(!c?.id){
-    throw new Error(
-      "Klant werd niet opgeslagen: Supabase gaf geen klant-ID terug."
-    );
-  }
 
-  const purchasePayload = {
+  let {
+    data:row,
+    error:pe
+  } =
+    await sb
+      .from("purchases")
+      .insert({
 
-    business_id:
-      currentBusinessId,
+        business_id:
+          currentBusinessId,
 
-    customer_id:
-      c.id,
+        customer_id:
+          c.id,
 
-    created_by:
-      p.createdBy ||
-      currentUser.id,
+        created_by:
+          p.createdBy || currentUser.id,
 
-    reference:
-      p.id,
+        reference:
+          p.id,
 
-    payment_method:
-      p.paymentMethod,
+        payment_method:
+          p.paymentMethod,
 
-    gold_price:
-      p.goldPrice,
+        gold_price:
+          p.goldPrice,
 
-    silver_price:
-      p.silverPrice,
+        silver_price:
+          p.silverPrice,
 
-    market_value:
-      p.marketValue,
+        market_value:
+          p.marketValue,
 
-    total:
-      p.total,
+        total:
+          p.total,
 
-    resale_price:
-      p.resalePrice,
+        resale_price:
+          p.marketValue,
 
-    profit:
-      p.profit,
+        // Bewaar de winst ook in de database zodat het dashboard,
+        // de historie en latere rapporten dezelfde waarde gebruiken.
+        profit:
+          Number(p.marketValue || 0) - Number(p.total || 0),
 
-    note:
-      p.note
+        note:
+          p.note
 
-  };
+      })
+      .select("id")
+      .single();
 
-  let row;
 
-  try{
+  if(pe)
+    throw pe;
 
-    const purchaseResult =
-      await insertOneSchemaSafe(
-        "purchases",
-        purchasePayload,
-        "id"
-      );
 
-    row = purchaseResult.data;
+  let rows =
+    p.items.map(
+      it => {
 
-    if(!row?.id){
-      throw new Error(
-        "Inkoop werd niet opgeslagen: Supabase gaf geen aankoop-ID terug."
-      );
-    }
+        let x =
+          calc(it);
 
-    const rows =
-      p.items.map(it => {
-
-        const x = calc(it);
 
         return {
 
@@ -6045,56 +5521,60 @@ async function savePurchaseCloud(p){
                 ),
 
           weight:
-            Number(it.weight) || 0,
+            Number(
+              it.weight
+            ) || 0,
 
           non_gold:
-            Number(it.nonGold) || 0,
+            Number(
+              it.nonGold
+            ) || 0,
 
           net_weight:
-            Number(x.net) || 0,
+            Number(
+              x.net
+            ) || 0,
 
           metal_value:
-            Number(x.market) || 0,
+            Number(
+              x.market
+            ) || 0,
 
           purchase_price:
-            Number(x.offer) || 0,
+            Number(
+              x.offer
+            ) || 0,
 
           description:
-            it.description || ""
+            it.description ||
+            ""
 
         };
 
-      });
+      }
+    );
 
-    if(rows.length){
-      await insertManySchemaSafe(
-        "purchase_items",
-        rows
-      );
-    }
 
-  }catch(e){
+  if(rows.length){
 
-    if(row?.id){
+    let {
+      error:ie
+    } =
       await sb
         .from("purchase_items")
-        .delete()
-        .eq("purchase_id", row.id);
+        .insert(rows);
 
-      await sb
-        .from("purchases")
-        .delete()
-        .eq("id", row.id);
+    if(ie){
+      await sb.from("purchases").delete().eq("id",row.id);
+      await sb.from("customers").delete().eq("id",c.id);
+      throw ie;
     }
-
-    await sb
-      .from("customers")
-      .delete()
-      .eq("id", c.id);
-
-    throw e;
   }
 
+  return {
+    customerId:c.id,
+    purchaseId:row.id
+  };
 }
 
 
@@ -6102,111 +5582,83 @@ async function savePurchaseCloud(p){
    CLOUD DELETE PURCHASE
 ========================================================= */
 
-async function deletePurchaseCloud(reference){
+async function deletePurchaseCloud(
+  reference
+){
 
-  const {data:p,error} =
+  let {
+    data:p,
+    error
+  } =
     await sb
       .from("purchases")
-      .select("id,customer_id")
-      .eq("business_id", currentBusinessId)
-      .eq("reference", reference)
+      .select(
+        "id,customer_id"
+      )
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .eq(
+        "reference",
+        reference
+      )
       .maybeSingle();
+
 
   if(error)
     throw error;
 
+
   if(!p)
     return;
 
-  const {error:ie} =
+
+  let {
+    error:ie
+  } =
     await sb
       .from("purchase_items")
       .delete()
-      .eq("purchase_id", p.id);
+      .eq(
+        "purchase_id",
+        p.id
+      );
+
 
   if(ie)
     throw ie;
 
-  const {error:pe} =
+
+  let {
+    error:pe
+  } =
     await sb
       .from("purchases")
       .delete()
-      .eq("id", p.id);
+      .eq(
+        "id",
+        p.id
+      );
+
 
   if(pe)
     throw pe;
 
-  if(p.customer_id){
 
-    const {error:ce} =
-      await sb
-        .from("customers")
-        .delete()
-        .eq("id", p.customer_id);
+  if(
+    p.customer_id
+  ){
 
-    if(ce)
-      throw ce;
-
-  }
-
-}
-
-
-/* =========================================================
-   CLOUD DELETE CUSTOMER
-   Verwijdert ook gekoppelde aankopen zodat de foreign key
-   geen probleem vormt.
-========================================================= */
-
-async function deleteCustomerCloud(customerId){
-
-  if(!customerId)
-    throw new Error("Geen klant-ID ontvangen.");
-
-  const {data:linked,error:findError} =
-    await sb
-      .from("purchases")
-      .select("id")
-      .eq("business_id", currentBusinessId)
-      .eq("customer_id", customerId);
-
-  if(findError)
-    throw findError;
-
-  const purchaseIds =
-    (linked || []).map(x => x.id);
-
-  if(purchaseIds.length){
-
-    const {error:itemsError} =
-      await sb
-        .from("purchase_items")
-        .delete()
-        .in("purchase_id", purchaseIds);
-
-    if(itemsError)
-      throw itemsError;
-
-    const {error:purchasesError} =
-      await sb
-        .from("purchases")
-        .delete()
-        .in("id", purchaseIds);
-
-    if(purchasesError)
-      throw purchasesError;
-
-  }
-
-  const {error:customerError} =
     await sb
       .from("customers")
       .delete()
-      .eq("id", customerId)
-      .eq("business_id", currentBusinessId);
+      .eq(
+        "id",
+        p.customer_id
+      );
 
-  if(customerError)
-    throw customerError;
+  }
 
 }
 
@@ -6295,13 +5747,22 @@ calculate();
 
 moveOriginalCards();
 showPage('dashboard');
-initAuth();
+initAuth().catch(err=>{
+  console.error("initAuth() mislukt:", err);
+  onLoggedOut();
+  if($("authError")) $("authError").textContent =
+    err?.message || "Login kon niet worden gestart.";
+});
 
 setInterval(async()=>{
-  if(!currentUser || !currentBusinessId)return;
-  const {data:member}=await sb.from('business_members').select('active').eq('business_id',currentBusinessId).eq('user_id',currentUser.id).maybeSingle();
-  if(!member || member.active!==true){await sb.auth.signOut();}
-},60000);
+  if(!currentUser) return;
+  const ok = await verifyCurrentAccess(false);
+  if(ok){
+    await loadCloudData();
+    renderDashboard();
+    renderHistory();
+  }
+},15000);
 
 </script>
 
