@@ -5768,6 +5768,302 @@ setInterval(async()=>{
 
 
 <!-- =========================================================
+     GOUDMARSJAN DEFINITIEVE DATABASE-FIX
+     Dit blok overschrijft uitsluitend de cloudfuncties die
+     verantwoordelijk zijn voor opslaan, verwijderen en winst.
+     De rest van het bestaande programma blijft behouden.
+========================================================= -->
+<script>
+(function(){
+  "use strict";
+
+  window.GOUDMARSJAN_DB_FIX = "2026-10-06-v2";
+
+  function gmNumber(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  /* =========================================================
+     DEFINITIEVE OPSLAG VAN EEN INKOOP
+     - klant
+     - aankoop
+     - alle aankoopstukken
+     - originele metaalwaarde
+     - inkoopprijs
+     - winst/ruimte
+  ========================================================= */
+  window.savePurchaseCloud = async function(p){
+    if(!sb) throw new Error("Supabase is niet geïnitialiseerd.");
+    if(!currentUser || !currentBusinessId) throw new Error("Geen actieve Supabase-sessie.");
+
+    let customerId = null;
+    let purchaseId = null;
+
+    try{
+      const customerPayload = {
+        business_id: currentBusinessId,
+        first_name: p.customer?.firstName || "",
+        last_name: p.customer?.lastName || "",
+        birth_date: p.customer?.birthDate || null,
+        phone: p.customer?.phone || "",
+        iban: p.customer?.iban || "",
+        id_checked: p.customer?.idChecked === "ja",
+        id_type: p.customer?.idType || "",
+        id_number: p.customer?.idNumber || "",
+        street: p.customer?.street || "",
+        house_number: p.customer?.houseNumber || "",
+        postal_code: p.customer?.postalCode || "",
+        city: p.customer?.city || "",
+        note: p.customer?.note || ""
+      };
+
+      const {data:customer,error:customerError} = await sb
+        .from("customers")
+        .insert(customerPayload)
+        .select("id")
+        .single();
+
+      if(customerError) throw customerError;
+      customerId = customer.id;
+
+      const marketValue = gmNumber(p.marketValue);
+      const purchaseValue = gmNumber(p.total);
+      const profit = marketValue - purchaseValue;
+
+      const purchasePayload = {
+        business_id: currentBusinessId,
+        customer_id: customerId,
+        created_by: p.createdBy || currentUser.id,
+        reference: p.id,
+        payment_method: p.paymentMethod || "overschrijving",
+        gold_price: gmNumber(p.goldPrice),
+        silver_price: gmNumber(p.silverPrice),
+        market_value: marketValue,
+        total: purchaseValue,
+        resale_price: marketValue,
+        profit: profit,
+        note: p.note || ""
+      };
+
+      const {data:purchase,error:purchaseError} = await sb
+        .from("purchases")
+        .insert(purchasePayload)
+        .select("id")
+        .single();
+
+      if(purchaseError) throw purchaseError;
+      purchaseId = purchase.id;
+
+      const rows = (p.items || []).map(it=>{
+        const x = calc(it);
+        return {
+          purchase_id: purchaseId,
+          business_id: currentBusinessId,
+          item_type: it.type || "Juweel",
+          metal: it.metal || "goud",
+          fineness: it.metal === "verzilverd" ? 0 : gmNumber(it.fineness || it.karat),
+          weight: gmNumber(it.weight),
+          non_gold: gmNumber(it.nonGold),
+          net_weight: gmNumber(x.net),
+          metal_value: gmNumber(x.market),
+          purchase_price: gmNumber(x.offer),
+          description: it.description || ""
+        };
+      });
+
+      if(rows.length){
+        const {error:itemError} = await sb
+          .from("purchase_items")
+          .insert(rows);
+
+        if(itemError) throw itemError;
+      }
+
+      return {customerId, purchaseId};
+
+    }catch(error){
+      /* Rollback zodat er nooit een halve aankoop achterblijft. */
+      try{
+        if(purchaseId) await sb.from("purchase_items").delete().eq("purchase_id",purchaseId);
+      }catch(_e){}
+      try{
+        if(purchaseId) await sb.from("purchases").delete().eq("id",purchaseId);
+      }catch(_e){}
+      try{
+        if(customerId) await sb.from("customers").delete().eq("id",customerId);
+      }catch(_e){}
+      throw error;
+    }
+  };
+
+  /* =========================================================
+     KLANT DEFINITIEF VERWIJDEREN
+     Alleen owner. Eerst items, dan purchases, dan customer.
+  ========================================================= */
+  window.deleteCustomer = async function(id){
+    if(currentMember?.role !== "owner"){
+      alert("Alleen het hoofd/de eigenaar kan klanten verwijderen.");
+      return;
+    }
+
+    const c = (customers || []).find(x=>x.id===id);
+    if(!c){
+      alert("Klant niet gevonden.");
+      return;
+    }
+
+    const name = ((c.first_name || "")+" "+(c.last_name || "")).trim();
+
+    if(!confirm(
+      "Klant \""+name+"\" definitief verwijderen?\n\n"+
+      "De gekoppelde aankoopgeschiedenis en aankoopstukken worden ook verwijderd."
+    )) return;
+
+    try{
+      const {data:linked,error:findError} = await sb
+        .from("purchases")
+        .select("id")
+        .eq("business_id",currentBusinessId)
+        .eq("customer_id",id);
+
+      if(findError) throw findError;
+
+      const purchaseIds = (linked || []).map(x=>x.id);
+
+      if(purchaseIds.length){
+        const {error:itemError} = await sb
+          .from("purchase_items")
+          .delete()
+          .eq("business_id",currentBusinessId)
+          .in("purchase_id",purchaseIds);
+        if(itemError) throw itemError;
+
+        const {error:purchaseError} = await sb
+          .from("purchases")
+          .delete()
+          .eq("business_id",currentBusinessId)
+          .in("id",purchaseIds);
+        if(purchaseError) throw purchaseError;
+      }
+
+      const {error:customerError} = await sb
+        .from("customers")
+        .delete()
+        .eq("business_id",currentBusinessId)
+        .eq("id",id);
+      if(customerError) throw customerError;
+
+      customers = (customers || []).filter(x=>x.id!==id);
+      purchases = (purchases || []).filter(p=>p.customer_id!==id);
+
+      localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));
+
+      const detail=document.getElementById("customerDetailPage");
+      if(detail) detail.innerHTML="";
+
+      renderCustomersPage();
+      renderHistory();
+      renderDashboard();
+      renderProfitPage();
+
+      alert("Klant en gekoppelde aankopen zijn definitief verwijderd.");
+
+    }catch(error){
+      console.error("deleteCustomer",error);
+      alert("Klant verwijderen mislukt.\n\n"+(error?.message || error));
+    }
+  };
+
+  /* =========================================================
+     WINST: ALTIJD ORIGINELE METAALWAARDE - INKOOPPRIJS
+     Geen resale-prijs of andere waarde gebruiken.
+  ========================================================= */
+  window.renderProfitPage = function(){
+    if(!document.getElementById("profitCount")) return;
+
+    const purchaseValue = (purchases || []).reduce((sum,p)=>sum+gmNumber(p.total),0);
+    const marketValue = (purchases || []).reduce((sum,p)=>sum+gmNumber(p.marketValue),0);
+    const profitValue = (purchases || []).reduce((sum,p)=>sum+(gmNumber(p.marketValue)-gmNumber(p.total)),0);
+
+    profitCount.textContent = purchases.length;
+    profitPurchase.textContent = euro(purchaseValue);
+    profitResale.textContent = euro(marketValue);
+    profitTotal.textContent = euro(profitValue);
+
+    const days=[];
+    const now=new Date();
+    for(let i=13;i>=0;i--){
+      const d=new Date(now);
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate()-i);
+      const key=d.toISOString().slice(0,10);
+      const value=(purchases || [])
+        .filter(p=>new Date(p.date).toISOString().slice(0,10)===key)
+        .reduce((sum,p)=>sum+(gmNumber(p.marketValue)-gmNumber(p.total)),0);
+      days.push({d,profit:value});
+    }
+
+    const max=Math.max(1,...days.map(x=>Math.max(0,x.profit)));
+    const chart=document.getElementById("profitChart");
+    if(chart){
+      chart.innerHTML=days.map(x=>`
+        <div class="profit-bar-wrap">
+          <div class="profit-bar-value">${euro(x.profit)}</div>
+          <div class="profit-bar" style="height:${Math.max(3,Math.max(0,x.profit)/max*190)}px"></div>
+          <div class="profit-bar-label">${x.d.toLocaleDateString("nl-BE",{day:"2-digit",month:"2-digit"})}</div>
+        </div>
+      `).join("");
+    }
+
+    const employeeMap={};
+    (purchases || []).forEach(p=>{
+      const name=p.employeeName || "Hoofd / eigenaar";
+      employeeMap[name]=(employeeMap[name]||0)+(gmNumber(p.marketValue)-gmNumber(p.total));
+    });
+
+    const employeeBox=document.getElementById("profitEmployees");
+    if(employeeBox){
+      employeeBox.innerHTML=Object.keys(employeeMap).length
+        ? Object.entries(employeeMap).map(([name,value])=>`
+            <div class="member-row"><b>${esc(name)}</b><strong>${euro(value)}</strong></div>
+          `).join("")
+        : '<div class="note">Nog geen winstgegevens.</div>';
+    }
+  };
+
+  /* =========================================================
+     NA CLOUD-SAVE OOK DE LOKALE WEERGAVE VERNIEUWEN
+  ========================================================= */
+  window.savePurchase = async function(){
+    if(!valid()) return;
+
+    const p=data();
+
+    try{
+      const saved=await window.savePurchaseCloud(p);
+      if(saved?.customerId) p.customer_id=saved.customerId;
+      if(saved?.purchaseId) p.cloudPurchaseId=saved.purchaseId;
+
+      purchases.unshift(p);
+      localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));
+
+      await loadCloudData();
+      renderHistory();
+      renderDashboard();
+      renderProfitPage();
+
+      alert("Inkoop opgeslagen in Supabase!\n\n"+p.id);
+    }catch(error){
+      console.error("savePurchase",error);
+      alert("De aankoop kon niet naar Supabase worden opgeslagen.\n\n"+(error?.message || error));
+    }
+  };
+})();
+</script>
+
+
+<!-- =========================================================
      SERVICE WORKER
 ========================================================= -->
 
