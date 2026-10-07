@@ -593,7 +593,7 @@ button:disabled{
     <div class="dash-card"><small>Inkopen vandaag</small><strong id="dashCount">0</strong></div>
     <div class="dash-card"><small>Totaal ingekocht vandaag</small><strong id="dashPurchase">€ 0,00</strong></div>
     <div class="dash-card"><small>Verwachte verkoop vandaag</small><strong id="dashResale">€ 0,00</strong></div>
-    <div class="dash-card gold"><small>Totale winst vandaag</small><strong id="dashProfit">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Verwachte winst vandaag</small><strong id="dashProfit">€ 0,00</strong></div>
   </div>
   <div class="quick-grid">
     <button class="quick-btn" onclick="showPage('purchase');newPurchase()"><span>🟡</span>Nieuwe inkoop<br><small>Start een nieuwe aankoop</small></button>
@@ -616,7 +616,7 @@ button:disabled{
     <div class="dash-card"><small>Aantal inkopen</small><strong id="profitCount">0</strong></div>
     <div class="dash-card"><small>Totaal ingekocht</small><strong id="profitPurchase">€ 0,00</strong></div>
     <div class="dash-card"><small>Verwachte verkoop</small><strong id="profitResale">€ 0,00</strong></div>
-    <div class="dash-card gold"><small>Totale bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Verwachte bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
   </div>
   <div class="dashboard-section"><h3>Winst per dag — laatste 14 dagen</h3><div id="profitChart" class="profit-chart"></div></div>
   <div class="dashboard-section"><h3>Winst per werknemer</h3><div id="profitEmployees"></div></div>
@@ -774,7 +774,7 @@ button:disabled{
     <div>
 
       <label>
-        Verwachte verkoopprijs (€) — automatisch = metaalwaarde
+        Verwachte verkoopprijs (€)
       </label>
 
       <input
@@ -782,8 +782,7 @@ button:disabled{
         type="number"
         step="0.01"
         min="0"
-        readonly
-        placeholder="Automatisch berekend"
+        oninput="calculate()"
       >
 
     </div>
@@ -1619,196 +1618,28 @@ function renderDashboard(){
   const arr=purchases.filter(p=>{const d=new Date(p.date);d.setHours(0,0,0,0);return d.getTime()===today.getTime()});
   const sum=k=>arr.reduce((a,p)=>a+(Number(p[k])||0),0);
   if(!document.getElementById('dashCount'))return;
-  dashCount.textContent=arr.length;
-  dashPurchase.textContent=euro(sum('total'));
-  dashResale.textContent=euro(sum('marketValue'));
-  dashProfit.textContent=euro(sum('profit'));
+  dashCount.textContent=arr.length;dashPurchase.textContent=euro(sum('total'));dashResale.textContent=euro(sum('resalePrice'));dashProfit.textContent=euro(sum('profit'));
   dashRecent.innerHTML=arr.slice(0,10).map(p=>`<div class="history"><b>${esc(p.customer?.firstName||'')} ${esc(p.customer?.lastName||'')}</b> <span class="badge">${esc(p.id)}</span><br><small>${new Date(p.date).toLocaleString('nl-BE')}</small><div><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div></div>`).join('')||'<div class="note">Vandaag nog geen inkopen.</div>';
 }
-function canDeleteCustomers(){
-  return currentMember?.role === "owner";
-}
-
 function renderCustomersPage(){
   const q=(document.getElementById('customerSearchPage')?.value||'').toLowerCase().trim();
   const arr=customers.filter(c=>[c.first_name,c.last_name,c.phone,c.id_number,c.city,c.postal_code].join(' ').toLowerCase().includes(q));
-  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')">
-  <b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b>
-  <small>${esc(c.phone||'Geen telefoon')}</small>
-  <small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small>
-  <small>${esc(c.id_number||'Geen ID-nummer')}</small>
-  ${canDeleteCustomers() ? `<button class="danger" style="margin-top:10px;width:100%" onclick="event.stopPropagation();deleteCustomer('${c.id}')">🗑️ Klant verwijderen</button>` : ''}
-</div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
+  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')"><b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b><small>${esc(c.phone||'Geen telefoon')}</small><small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small><small>${esc(c.id_number||'Geen ID-nummer')}</small></div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
 }
-async function deleteCustomer(id){
-  if(currentMember?.role !== "owner"){
-    alert("Alleen het hoofd/de eigenaar kan klanten verwijderen.");
-    return;
-  }
-
-  const c=customers.find(x=>x.id===id);
-  if(!c){ alert("Klant niet gevonden."); return; }
-
-  const name=((c.first_name||"")+" "+(c.last_name||"")).trim();
-
-  if(!confirm(
-    "Klant \""+name+"\" definitief verwijderen?\n\n"+
-    "De gekoppelde aankoopgeschiedenis en aankoopstukken worden ook verwijderd."
-  )) return;
-
-  if(!sb || !currentBusinessId){
-    alert("Je bent niet correct ingelogd op Supabase.");
-    return;
-  }
-
-  try{
-    // Eerst de gekoppelde aankopen zoeken.
-    const {data: linked, error: findError}=await sb
-      .from("purchases")
-      .select("id")
-      .eq("business_id",currentBusinessId)
-      .eq("customer_id",id);
-
-    if(findError) throw findError;
-
-    const purchaseIds=(linked||[]).map(x=>x.id);
-
-    // Eerst aankoopstukken verwijderen, daarna aankopen, daarna de klant.
-    if(purchaseIds.length){
-      const {error:itemError}=await sb
-        .from("purchase_items")
-        .delete()
-        .eq("business_id",currentBusinessId)
-        .in("purchase_id",purchaseIds);
-
-      if(itemError) throw itemError;
-
-      const {error:purchaseError}=await sb
-        .from("purchases")
-        .delete()
-        .eq("business_id",currentBusinessId)
-        .in("id",purchaseIds);
-
-      if(purchaseError) throw purchaseError;
-    }
-
-    const {error:customerError}=await sb
-      .from("customers")
-      .delete()
-      .eq("business_id",currentBusinessId)
-      .eq("id",id);
-
-    if(customerError) throw customerError;
-
-    customers=customers.filter(x=>x.id!==id);
-    purchases=purchases.filter(p=>{
-      const customerId=p.customer_id || null;
-      return customerId !== id;
-    });
-
-    localStorage.setItem(
-      "goudmarsjan_purchases",
-      JSON.stringify(purchases)
-    );
-
-    document.getElementById("customerDetailPage").innerHTML="";
-    renderCustomersPage();
-    renderHistory();
-    renderDashboard();
-    renderProfitPage();
-
-    alert("Klant en gekoppelde aankopen zijn verwijderd.");
-
-  }catch(e){
-    console.error("deleteCustomer:",e);
-
-    const msg=e?.message || String(e);
-
-    if(/permission denied|row-level security|rls/i.test(msg)){
-      alert(
-        "Klant verwijderen wordt door Supabase geblokkeerd.\n\n"+
-        "De HTML-knop werkt, maar de ingelogde gebruiker heeft in Supabase "+
-        "nog geen DELETE-rechten op customers/purchases/purchase_items."
-      );
-    }else{
-      alert("Klant verwijderen mislukt.\n\n"+msg);
-    }
-  }
-}
-
 function showCustomerDetail(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
   const name=((c.first_name||'')+' '+(c.last_name||'')).trim();
-  const related=purchases.filter(p =>
-    p.customer_id === c.id ||
-    (!p.customer_id &&
-      (((p.customer?.firstName||'')+' '+(p.customer?.lastName||'')).trim()===name))
-  );
-  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><div class="row"><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button>${canDeleteCustomers() ? `<button class="danger" onclick="deleteCustomer('${c.id}')">🗑️ Klant verwijderen</button>` : ''}</div></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
+  const related=purchases.filter(p=>(((p.customer?.firstName||'')+' '+(p.customer?.lastName||'')).trim()===name));
+  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
   document.getElementById('customerDetailPage').scrollIntoView({behavior:'smooth'});
 }
 function renderProfitPage(){
+  const total=k=>purchases.reduce((a,p)=>a+(Number(p[k])||0),0);
   if(!document.getElementById('profitCount'))return;
-
-  const purchaseValue=purchases.reduce((a,p)=>a+(Number(p.total)||0),0);
-  const resaleValue=purchases.reduce((a,p)=>a+(Number(p.marketValue ?? p.resalePrice)||0),0);
-
-  // De winst is altijd de ruimte tussen de originele metaalwaarde en de inkoopprijs.
-  const profitValue=purchases.reduce((a,p)=>{
-    const market=Number(p.marketValue ?? p.resalePrice)||0;
-    const total=Number(p.total)||0;
-    return a + (market-total);
-  },0);
-
-  profitCount.textContent=purchases.length;
-  profitPurchase.textContent=euro(purchaseValue);
-  profitResale.textContent=euro(resaleValue);
-  profitTotal.textContent=euro(profitValue);
-
-  const days=[],now=new Date();
-  for(let i=13;i>=0;i--){
-    const d=new Date(now);
-    d.setHours(0,0,0,0);
-    d.setDate(d.getDate()-i);
-    const key=d.toISOString().slice(0,10);
-
-    const profit=purchases
-      .filter(p=>new Date(p.date).toISOString().slice(0,10)===key)
-      .reduce((a,p)=>{
-        const market=Number(p.marketValue ?? p.resalePrice)||0;
-        const total=Number(p.total)||0;
-        return a+(market-total);
-      },0);
-
-    days.push({d,profit});
-  }
-
-  const max=Math.max(1,...days.map(x=>Math.max(0,x.profit)));
-
-  profitChart.innerHTML=days.map(x=>`
-    <div class="profit-bar-wrap">
-      <div class="profit-bar-value">${euro(x.profit)}</div>
-      <div class="profit-bar" style="height:${Math.max(3,Math.max(0,x.profit)/max*190)}px"></div>
-      <div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div>
-    </div>
-  `).join('');
-
-  const employeeMap={};
-  purchases.forEach(p=>{
-    const name=p.employeeName || 'Hoofd / eigenaar';
-    const market=Number(p.marketValue ?? p.resalePrice)||0;
-    const total=Number(p.total)||0;
-    employeeMap[name]=(employeeMap[name]||0)+(market-total);
-  });
-
-  profitEmployees.innerHTML=Object.keys(employeeMap).length
-    ? Object.entries(employeeMap).map(([name,value])=>`
-        <div class="member-row">
-          <b>${esc(name)}</b>
-          <strong>${euro(value)}</strong>
-        </div>
-      `).join('')
-    : '<div class="note">Nog geen winstgegevens.</div>';
+  profitCount.textContent=purchases.length;profitPurchase.textContent=euro(total('total'));profitResale.textContent=euro(total('resalePrice'));profitTotal.textContent=euro(total('profit'));
+  const days=[],now=new Date();for(let i=13;i>=0;i--){const d=new Date(now);d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);const profit=purchases.filter(p=>new Date(p.date).toISOString().slice(0,10)===key).reduce((a,p)=>a+(Number(p.profit)||0),0);days.push({d,profit})}const max=Math.max(1,...days.map(x=>x.profit));
+  profitChart.innerHTML=days.map(x=>`<div class="profit-bar-wrap"><div class="profit-bar-value">${euro(x.profit)}</div><div class="profit-bar" style="height:${Math.max(3,x.profit/max*190)}px"></div><div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div></div>`).join('');
+  profitEmployees.innerHTML='<div class="note">Per werknemer wordt verder gekoppeld zodra de medewerkernaam aan de aankoop wordt opgeslagen.</div>';
 }
 
 /* =========================================================
@@ -1821,27 +1652,11 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
   "sb_publishable_mj_YFZgUnC3DR9lzDgWlYA_CUUozF43";
 
-let sb = null;
-
-try{
-  if(!window.supabase || typeof window.supabase.createClient !== "function"){
-    throw new Error("Supabase JavaScript library kon niet geladen worden.");
-  }
-
-  sb = window.supabase.createClient(
+const sb =
+  window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY,
-    {
-      auth:{
-        persistSession:true,
-        autoRefreshToken:true,
-        detectSessionInUrl:false
-      }
-    }
+    SUPABASE_KEY
   );
-}catch(err){
-  console.error("Supabase initialisatie mislukt:", err);
-}
 
 
 /* =========================================================
@@ -1902,8 +1717,6 @@ let purchases =
 let currentUser = null;
 let currentMember = null;
 let currentBusinessId = null;
-let memberCache = [];
-let accessCheckInProgress = false;
 
 
 /* =========================================================
@@ -2811,13 +2624,14 @@ function calculate(){
       : "—";
 
 
-  // Verwachte verkoop = volledige metaalwaarde.
-  // Verwachte bruto winst = metaalwaarde - inkoopprijs.
-  let resale = market;
-  let profit = market - offer;
+  let resale =
+    num("resalePrice");
 
 
-  if($("resalePrice")) $("resalePrice").value = market ? market.toFixed(2) : "";
+  let profit =
+    resale - offer;
+
+
   $("resaleDisplay")
     .textContent =
     euro(resale);
@@ -2978,8 +2792,8 @@ function data(){
     );
 
 
-  // De verwachte verkoop is gekoppeld aan de originele metaalwaarde.
-  let resale = market;
+  let resale =
+    num("resalePrice");
 
 
   return {
@@ -2997,9 +2811,6 @@ function data(){
 
     customer:
       customer(),
-
-    customer_id:
-      null,
 
     paymentMethod:
       $("paymentMethod").value,
@@ -3024,17 +2835,8 @@ function data(){
     resalePrice:
       resale,
 
-    // Winst = ruimte t.o.v. metaalwaarde.
     profit:
-      market - total,
-
-    createdBy:
-      currentUser?.id || null,
-
-    employeeName:
-      currentMember?.display_name ||
-      currentUser?.email ||
-      "",
+      resale - total,
 
     note:
       $("purchaseNote")
@@ -3159,10 +2961,8 @@ async function savePurchase(){
 
   try{
 
-    const saved = await savePurchaseCloud(p);
+    await savePurchaseCloud(p);
 
-    if(saved?.customerId) p.customer_id = saved.customerId;
-    if(saved?.purchaseId) p.cloudPurchaseId = saved.purchaseId;
 
     purchases.unshift(p);
 
@@ -3466,13 +3266,11 @@ function receipt(p){
 
   let addr =
     [
-      c.street &&
-      c.houseNumber
+      c.street && c.houseNumber
         ? c.street+" "+c.houseNumber
         : c.street,
 
-      c.postalCode &&
-      c.city
+      c.postalCode && c.city
         ? c.postalCode+" "+c.city
         : c.city
 
@@ -3481,10 +3279,23 @@ function receipt(p){
     .join(", ");
 
 
+  let payment =
+    String(p.paymentMethod || "")
+      .trim();
+
+
+  let paymentLabel =
+    payment === "cash"
+      ? "Contant"
+      : payment === "overschrijving"
+        ? "Bankoverschrijving"
+        : payment || "Niet ingevuld";
+
+
   let rows =
     (p.items || [])
       .map(
-        it => {
+        (it,index) => {
 
           let metal =
             it.metal ||
@@ -3500,11 +3311,18 @@ function receipt(p){
             );
 
 
+          let gross =
+            Number(it.weight) || 0;
+
+
+          let deduction =
+            Number(it.nonGold) || 0;
+
+
           let net =
             Math.max(
               0,
-              (it.weight || 0) -
-              (it.nonGold || 0)
+              gross - deduction
             );
 
 
@@ -3558,27 +3376,40 @@ function receipt(p){
               : metal === "zilver"
                 ? "Zilver "+f+"‰"
                 : "Verzilverd";
-          /*
-             Op de klantenbon worden alleen
-             type, metaal/zuiverheid en het
-             aankoopbedrag getoond.
-          */
 
 
           return `
 
 <tr>
 
-<td>
-${esc(it.type)}
+<td class="nr">
+${index + 1}
 </td>
 
 <td>
-${label}
+<strong>${esc(it.type || "Goederen")}</strong>
+<div class="muted">Omschrijving: edelmetaal / juweel</div>
 </td>
 
 <td>
-${euro(offer)}
+${esc(label)}
+<div class="muted">${esc(metal)}</div>
+</td>
+
+<td class="num">
+${gross.toFixed(2)} g
+</td>
+
+<td class="num">
+${deduction.toFixed(2)} g
+</td>
+
+<td class="num">
+<strong>${net.toFixed(2)} g</strong>
+</td>
+
+<td class="money">
+<strong>${euro(offer)}</strong>
 </td>
 
 </tr>
@@ -3590,229 +3421,532 @@ ${euro(offer)}
       .join("");
 
 
+  let paymentNote =
+    payment === "cash"
+      ? `
+<div class="warning">
+<strong>LET OP BIJ CONTANTE BETALING</strong>
+<br>
+Bij aankoop van edele metalen van een consument gelden wettelijke beperkingen voor contante betalingen. Dit aankoopdocument vermeldt het effectief gekozen betaalmiddel.
+</div>
+`
+      : "";
+
+
+  let idLabel =
+    c.idChecked === "ja"
+      ? "Gecontroleerd"
+      : c.idChecked === "nee"
+        ? "Niet gecontroleerd"
+        : "Niet geregistreerd";
+
+
   return `
 
 <!doctype html>
 
-<html>
+<html lang="nl">
 
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <title>
-${esc(p.id)}
+Aankoopdocument ${esc(p.id)}
 </title>
-
 
 <style>
 
-body{
-  font-family:Arial;
-  max-width:850px;
-  margin:auto;
-  padding:30px;
+@page{
+  size:A4;
+  margin:12mm;
 }
 
-h1{
+*{
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  color:#171717;
+  background:#fff;
+  margin:0;
+  font-size:11px;
+  line-height:1.4;
+}
+
+.page{
+  width:100%;
+  max-width:850px;
+  margin:0 auto;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:25px;
+  padding-bottom:15px;
+  border-bottom:3px solid #111;
+}
+
+.brand h1{
+  margin:0;
+  font-size:27px;
   letter-spacing:2px;
+  line-height:1;
+}
+
+.brand .gold{
+  color:#b18a2e;
+  font-weight:bold;
+  letter-spacing:1.8px;
+  margin-top:6px;
+}
+
+.doc-title{
+  text-align:right;
+}
+
+.doc-title h2{
+  margin:0;
+  font-size:17px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+}
+
+.doc-title .number{
+  margin-top:5px;
+  font-weight:bold;
+  font-size:13px;
+}
+
+.meta-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:14px;
+}
+
+.box{
+  border:1px solid #cfcfcf;
+  border-radius:6px;
+  padding:11px 12px;
+  break-inside:avoid;
+}
+
+.box-title{
+  font-size:10px;
+  font-weight:bold;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  color:#777;
+  margin-bottom:6px;
+}
+
+.box strong{
+  font-size:12px;
+}
+
+.line{
+  margin:2px 0;
+}
+
+.label{
+  display:inline-block;
+  min-width:118px;
+  color:#666;
+}
+
+.section-title{
+  margin:17px 0 7px;
+  padding-bottom:5px;
+  border-bottom:2px solid #111;
+  font-size:13px;
+  font-weight:bold;
+  text-transform:uppercase;
+  letter-spacing:.6px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:25px;
+  table-layout:fixed;
 }
 
-th,
-td{
-  padding:9px;
-  border-bottom:1px solid #ddd;
+th{
+  background:#111;
+  color:#fff;
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.3px;
+  padding:7px 5px;
   text-align:left;
 }
 
-.total{
-  font-size:24px;
-  font-weight:bold;
-  margin-top:25px;
+td{
+  padding:7px 5px;
+  border-bottom:1px solid #d9d9d9;
+  vertical-align:top;
 }
 
-.small{
-  font-size:12px;
+.nr{
+  width:4%;
+  text-align:center;
+}
+
+.num{
+  text-align:right;
+  white-space:nowrap;
+}
+
+.money{
+  text-align:right;
+  white-space:nowrap;
+}
+
+.muted{
+  color:#777;
+  font-size:9px;
+  margin-top:2px;
+}
+
+.item-total{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:9px;
+}
+
+.item-total .total-box{
+  width:270px;
+  border:2px solid #111;
+  padding:10px 12px;
+}
+
+.item-total .total-label{
+  font-size:11px;
   color:#666;
+}
+
+.item-total .total-value{
+  font-size:22px;
+  font-weight:bold;
+  margin-top:2px;
+}
+
+.payment-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.payment-main{
+  border:1px solid #cfcfcf;
+  border-radius:6px;
+  padding:10px 12px;
+}
+
+.payment-main .amount{
+  font-size:18px;
+  font-weight:bold;
+  margin-top:4px;
+}
+
+.warning{
+  margin-top:9px;
+  padding:9px 11px;
+  border:1px solid #d5a800;
+  background:#fff9df;
+  border-radius:6px;
+  font-size:9px;
+}
+
+.declarations{
+  border:1px solid #cfcfcf;
+  border-radius:6px;
+  padding:11px 13px;
+  break-inside:avoid;
+}
+
+.declarations p{
+  margin:5px 0;
+}
+
+.tick{
+  display:inline-block;
+  width:14px;
+  height:14px;
+  border:1px solid #555;
+  margin-right:6px;
+  vertical-align:-3px;
+  text-align:center;
+  line-height:12px;
+  font-size:10px;
+}
+
+.signature-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:25px;
+  margin-top:10px;
+  break-inside:avoid;
+}
+
+.signature{
+  min-height:100px;
+  border:1px solid #cfcfcf;
+  border-radius:6px;
+  padding:11px 12px;
+}
+
+.signature h4{
+  margin:0 0 34px;
+  font-size:11px;
+  text-transform:uppercase;
+}
+
+.signature-line{
+  border-top:1px solid #222;
+  padding-top:5px;
+  margin-top:28px;
+  font-size:9px;
+  color:#666;
+}
+
+.footer-box{
+  margin-top:14px;
+  padding-top:9px;
+  border-top:1px solid #aaa;
+  font-size:8.5px;
+  color:#555;
+  break-inside:avoid;
+}
+
+.footer-box p{
+  margin:3px 0;
+}
+
+.footer-brand{
+  margin-top:8px;
+  text-align:center;
+  font-weight:bold;
+  letter-spacing:1px;
+  color:#222;
+}
+
+.keep{
+  break-inside:avoid;
+}
+
+@media print{
+  body{
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  .page{
+    max-width:none;
+  }
 }
 
 </style>
 
 </head>
 
-
 <body>
 
+<div class="page">
 
-<h1>
-DE GOUDMARSJAN
-</h1>
+  <div class="header">
 
+    <div class="brand">
+      <h1>DE GOUDMARSJAN</h1>
+      <div class="gold">EDELMETALEN</div>
+    </div>
 
-<h3>
-EDELMETALEN — AANKOOPBON
-</h3>
+    <div class="doc-title">
+      <h2>Aankoopdocument</h2>
+      <div class="number">Nr. ${esc(p.id)}</div>
+    </div>
 
-
-<p>
-
-<b>
-Referentie:
-</b>
-
-${esc(p.id)}
-
-<br>
-
-<b>
-Datum:
-</b>
-
-${new Date(
-  p.date
-)
-.toLocaleString("nl-BE")}
-
-</p>
+  </div>
 
 
-<p>
+  <div class="meta-grid">
 
-<b>
-Klant:
-</b>
+    <div class="box">
+      <div class="box-title">Transactie</div>
+      <div class="line"><span class="label">Documentnummer:</span><strong>${esc(p.id)}</strong></div>
+      <div class="line"><span class="label">Datum en tijd:</span>${new Date(p.date).toLocaleString("nl-BE")}</div>
+      <div class="line"><span class="label">Type:</span>Aankoop edele metalen / goederen</div>
+    </div>
 
-${esc(c.firstName || "")}
-${esc(c.lastName || "")}
+    <div class="box">
+      <div class="box-title">Koper</div>
+      <div class="line"><strong>DE GOUDMARSJAN</strong></div>
+      <div class="line">EDELMETALEN — opkoper van edele metalen</div>
+      <div class="line">Document opgesteld door de aankoper</div>
+    </div>
 
-<br>
-
-<b>
-Geboortedatum:
-</b>
-
-${esc(c.birthDate || "")}
-
-<br>
-
-<b>
-Telefoon:
-</b>
-
-${esc(c.phone || "")}
-
-<br>
-
-<b>
-Adres:
-</b>
-
-${esc(addr)}
-
-<br>
-
-<b>
-IBAN:
-</b>
-
-${esc(c.iban || "")}
-
-<br>
-
-<b>
-ID-document:
-</b>
-
-${esc(c.idType || "—")}
-${c.idNumber ? " — " + esc(c.idNumber) : ""}
-
-</p>
+  </div>
 
 
-<table>
+  <div class="section-title">1. Gegevens verkoper</div>
 
-<tr>
+  <div class="box">
 
-<th>
-Type
-</th>
+    <div class="line"><span class="label">Voornaam:</span><strong>${esc(c.firstName || "")}</strong></div>
+    <div class="line"><span class="label">Achternaam:</span><strong>${esc(c.lastName || "")}</strong></div>
+    <div class="line"><span class="label">Geboortedatum:</span>${esc(c.birthDate || "")}</div>
+    <div class="line"><span class="label">Adres:</span>${esc(addr || "")}</div>
+    <div class="line"><span class="label">Telefoon:</span>${esc(c.phone || "")}</div>
+    <div class="line"><span class="label">IBAN:</span>${esc(c.iban || "")}</div>
 
-<th>
-Metaal/zuiverheid
-</th>
-
-<th>
-Inkoop
-</th>
-
-</tr>
-
-${rows}
-
-</table>
+  </div>
 
 
-<div class="total">
+  <div class="section-title">2. Identificatie</div>
 
-TOTAAL:
-${euro(p.total)}
+  <div class="box">
+    <div class="line"><span class="label">Identiteitscontrole:</span><strong>${esc(idLabel)}</strong></div>
+    <div class="line"><span class="label">ID-document:</span>${esc(c.idType || "Niet ingevuld")}</div>
+    <div class="line"><span class="label">Documentnummer:</span>${esc(c.idNumber || "Niet ingevuld")}</div>
+    <div class="muted">De identificatiegegevens worden geregistreerd en bewaard overeenkomstig de toepasselijke wettelijke verplichtingen.</div>
+  </div>
+
+
+  <div class="section-title">3. Aangekochte goederen</div>
+
+  <table>
+
+    <thead>
+      <tr>
+        <th style="width:4%">Nr.</th>
+        <th style="width:23%">Omschrijving</th>
+        <th style="width:16%">Metaal / gehalte</th>
+        <th style="width:12%">Bruto</th>
+        <th style="width:12%">Niet-edel</th>
+        <th style="width:13%">Netto</th>
+        <th style="width:20%">Aankoopprijs</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      ${rows}
+    </tbody>
+
+  </table>
+
+
+  <div class="item-total">
+    <div class="total-box">
+      <div class="total-label">TOTAAL AANKOOPBEDRAG</div>
+      <div class="total-value">${euro(p.total)}</div>
+    </div>
+  </div>
+
+
+  <div class="section-title">4. Test en vaststelling</div>
+
+  <div class="box">
+    <div class="line"><span class="label">Omschrijving:</span>De hierboven vermelde goederen werden door DE GOUDMARSJAN gecontroleerd en gewaardeerd voor aankoop.</div>
+    <div class="line"><span class="label">Gehalte:</span>Het op dit document vermelde gehalte is het bij de aankoop vastgestelde / gehanteerde gehalte.</div>
+    <div class="line"><span class="label">Weging:</span>De vermelde gewichten zijn de bij de aankoop geregistreerde gewichten.</div>
+    <div class="muted">Eventuele specifieke testmethode of bijkomende opmerkingen kunnen worden opgenomen in de transactieadministratie.</div>
+  </div>
+
+
+  <div class="section-title">5. Verklaringen verkoper</div>
+
+  <div class="declarations">
+    <p><span class="tick">✓</span>Ik verklaar dat ik de rechtmatige eigenaar ben van de aangeboden goederen, of dat ik gemachtigd ben deze te verkopen.</p>
+    <p><span class="tick">✓</span>Ik verklaar dat ik meerderjarig en handelingsbekwaam ben.</p>
+    <p><span class="tick">✓</span>Ik verklaar dat ik voor eigen rekening handel, tenzij anders aan DE GOUDMARSJAN meegedeeld.</p>
+    <p><span class="tick">✓</span>Ik verklaar dat de aangeboden goederen niet afkomstig zijn van diefstal, fraude of andere illegale handelingen.</p>
+    <p><span class="tick">✓</span>Ik verklaar dat de verkoop vrijwillig gebeurt.</p>
+    <p><span class="tick">✓</span>Ik bevestig dat de gegevens, goederen, gewichten, gehaltes en aankoopprijs op dit document correct zijn weergegeven.</p>
+    <p><span class="tick">✓</span>Ik aanvaard de verkoop van de hierboven beschreven goederen aan DE GOUDMARSJAN tegen het vermelde totaalbedrag.</p>
+  </div>
+
+
+  <div class="section-title">6. Betaling</div>
+
+  <div class="payment-grid">
+
+    <div class="payment-main">
+      <div class="box-title">Betalingswijze</div>
+      <strong>${esc(paymentLabel)}</strong>
+      <div class="line" style="margin-top:7px"><span class="label">Betaald / te betalen:</span></div>
+      <div class="amount">${euro(p.total)}</div>
+    </div>
+
+    <div class="payment-main">
+      <div class="box-title">Betalingsgegevens</div>
+      <div class="line"><span class="label">IBAN verkoper:</span>${esc(c.iban || "")}</div>
+      <div class="line"><span class="label">Betalingsdatum:</span>${new Date(p.date).toLocaleDateString("nl-BE")}</div>
+      <div class="line"><span class="label">Documentreferentie:</span>${esc(p.id)}</div>
+    </div>
+
+  </div>
+
+  ${paymentNote}
+
+
+  ${
+    p.reference
+      ? `
+  <div class="section-title">7. Referentie en opmerkingen</div>
+  <div class="box">
+    <div class="line"><span class="label">Interne referentie:</span>${esc(p.reference)}</div>
+    ${p.note ? `<div class="line"><span class="label">Opmerking:</span>${esc(p.note)}</div>` : ""}
+  </div>
+  `
+      : p.note
+        ? `
+  <div class="section-title">7. Opmerkingen</div>
+  <div class="box">
+    <div class="line">${esc(p.note)}</div>
+  </div>
+  `
+        : ""
+  }
+
+
+  <div class="section-title">8. Ondertekening</div>
+
+  <div class="signature-grid">
+
+    <div class="signature">
+      <h4>Verkoper</h4>
+      <div>Naam: ${esc((c.firstName || "")+" "+(c.lastName || ""))}</div>
+      <div class="signature-line">Handtekening verkoper</div>
+      <div>Datum: ____________________</div>
+    </div>
+
+    <div class="signature">
+      <h4>Koper / aankoper</h4>
+      <div>DE GOUDMARSJAN</div>
+      <div class="signature-line">Handtekening aankoper</div>
+      <div>Datum: ____________________</div>
+    </div>
+
+  </div>
+
+
+  <div class="footer-box">
+
+    <p><strong>Bewijs van aankoop:</strong> Dit document bevestigt de beschreven verkooptransactie, de overeengekomen aankoopprijs en de vermelde betalingswijze.</p>
+
+    <p><strong>Exemplaar verkoper:</strong> De verkoper ontvangt een exemplaar van dit aankoopdocument. DE GOUDMARSJAN bewaart een exemplaar voor de administratie.</p>
+
+    <p><strong>Gegevens:</strong> Identificatie- en transactiegegevens worden verwerkt en bewaard overeenkomstig de toepasselijke wettelijke verplichtingen.</p>
+
+    <div class="footer-brand">DE GOUDMARSJAN — EDELMETALEN</div>
+
+  </div>
 
 </div>
-
-
-<p>
-
-Betalingswijze:
-${esc(
-  p.paymentMethod || ""
-)}
-
-</p>
-
-
-${
-p.reference
-  ? `
-<p>
-Interne referentie:
-${esc(p.reference)}
-</p>
-`
-  : ""
-}
-
-
-${
-p.note
-  ? `
-<p>
-<b>
-Opmerking:
-</b>
-
-${esc(p.note)}
-
-</p>
-`
-  : ""
-}
-
-
-<hr>
-
-
-<p class="small">
-
-DE GOUDMARSJAN — EDELMETALEN
-
-</p>
-
 
 </body>
 
@@ -3821,7 +3955,6 @@ DE GOUDMARSJAN — EDELMETALEN
 `;
 
 }
-
 
 function openPrint(p){
 
@@ -4211,73 +4344,55 @@ function exportCSV(){
 
 async function login(){
 
-  const email = $("loginEmail").value.trim();
-  const password = $("loginPassword").value;
-  const errorBox = $("authError");
+  let email =
+    $("loginEmail")
+      .value
+      .trim();
 
-  errorBox.textContent = "";
 
-  if(!email || !password){
-    errorBox.textContent = "Vul e-mail en wachtwoord in.";
+  let password =
+    $("loginPassword")
+      .value;
+
+
+  $("authError")
+    .textContent = "";
+
+
+  if(
+    !email ||
+    !password
+  ){
+
+    $("authError")
+      .textContent =
+      "Vul e-mail en wachtwoord in.";
+
     return;
-  }
-
-  if(!sb){
-    errorBox.textContent = "De verbinding met Supabase kon niet worden gestart. Vernieuw de pagina.";
-    return;
-  }
-
-  const button = document.querySelector('#authLock button[onclick="login()"]');
-
-  if(button){
-    button.disabled = true;
-    button.textContent = "INLOGGEN...";
-  }
-
-  try{
-
-    const { data, error } =
-      await sb.auth.signInWithPassword({
-        email,
-        password
-      });
-
-    if(error){
-      console.error("Supabase login error:", error);
-
-      let message = error.message || "Inloggen mislukt.";
-
-      if(error.message?.toLowerCase().includes("invalid login credentials")){
-        message = "E-mailadres of wachtwoord is niet correct.";
-      }
-
-      errorBox.textContent = message;
-      return;
-    }
-
-    if(!data?.user){
-      errorBox.textContent = "Supabase heeft geen gebruiker teruggegeven.";
-      return;
-    }
-
-    await onLoggedIn(data.user, true);
-
-  }catch(err){
-
-    console.error("Login exception:", err);
-
-    errorBox.textContent =
-      err?.message ||
-      "Er ging iets mis tijdens het inloggen. Controleer je internetverbinding en Supabase-configuratie.";
-
-  }finally{
-
-    if(button){
-      button.disabled = false;
-      button.textContent = "INLOGGEN";
-    }
 
   }
+
+
+  let {
+    error
+  } =
+    await sb.auth.signInWithPassword({
+
+      email,
+
+      password
+
+    });
+
+
+  if(error){
+
+    $("authError")
+      .textContent =
+      error.message;
+
+  }
+
 }
 
 
@@ -4389,249 +4504,212 @@ function applyRolePermissions(){
    AUTH INIT
 ========================================================= */
 
-async function getActiveMembership(user){
-
-  if(!user?.id) return { member:null, error:null };
-
-  // Werknemer: uitsluitend toegang met een actieve membership.
-  const { data: memberships, error: memberError } = await sb
-    .from("business_members")
-    .select("business_id,user_id,role,active,display_name,created_at")
-    .eq("user_id", user.id)
-    .eq("active", true)
-    .order("created_at", { ascending:true })
-    .limit(1);
-
-  if(memberError){
-    return { member:null, error:memberError };
-  }
-
-  if(memberships?.[0]){
-    return { member:memberships[0], error:null };
-  }
-
-  // Eigenaar kan ook toegang krijgen via businesses.owner_id.
-  const { data: owned, error: ownerError } = await sb
-    .from("businesses")
-    .select("id,owner_id")
-    .eq("owner_id", user.id)
-    .limit(1);
-
-  if(!ownerError && owned?.[0]){
-    return {
-      member:{
-        business_id:owned[0].id,
-        user_id:user.id,
-        role:"owner",
-        active:true,
-        display_name:user.user_metadata?.display_name || user.email
-      },
-      error:null
-    };
-  }
-
-  return { member:null, error:null };
-}
-
-async function verifyCurrentAccess(showError=true){
-
-  if(accessCheckInProgress) return false;
-  accessCheckInProgress = true;
-
-  try{
-    const { data:{ user }, error:userError } = await sb.auth.getUser();
-
-    if(userError || !user){
-      onLoggedOut();
-      return false;
-    }
-
-    const { member, error } = await getActiveMembership(user);
-
-    if(error || !member || member.active !== true){
-      currentUser = null;
-      currentMember = null;
-      currentBusinessId = null;
-      customers = [];
-      purchases = [];
-      localStorage.removeItem("goudmarsjan_purchases");
-      await sb.auth.signOut();
-      onLoggedOut();
-      if(showError){
-        $("authError").textContent = error
-          ? "Toegang kon niet gecontroleerd worden. Controleer de Supabase RLS-regels."
-          : "Dit account heeft momenteel geen actieve toegang tot DE GOUDMARSJAN.";
-      }
-      return false;
-    }
-
-    currentUser = user;
-    currentMember = member;
-    currentBusinessId = member.business_id;
-    return true;
-  } finally {
-    accessCheckInProgress = false;
-  }
-}
-
 async function initAuth(){
 
-  if(!sb){
-    onLoggedOut();
-    $("authError").textContent =
-      "Supabase kon niet worden geladen. Vernieuw de pagina.";
-    return;
-  }
-
-  try{
-
-    const {
-      data,
-      error
-    } = await sb.auth.getSession();
-
-    if(error){
-      console.error("Supabase session error:", error);
-      onLoggedOut();
-      $("authError").textContent =
-        "De bestaande login-sessie kon niet worden gecontroleerd.";
-    }else if(data?.session?.user){
-      await onLoggedIn(data.session.user);
-    }else{
-      onLoggedOut();
+  const {
+    data:{
+      session
     }
+  } =
+    await sb.auth.getSession();
 
-  }catch(err){
 
-    console.error("Auth initialisatie mislukt:", err);
-    onLoggedOut();
+  if(session){
 
-    if($("authError")){
-      $("authError").textContent =
-        err?.message ||
-        "De login kon niet worden geïnitialiseerd.";
-    }
+    await onLoggedIn(
+      session.user
+    );
 
   }
 
-  sb.auth.onAuthStateChange((event, session) => {
 
-    if(event === "SIGNED_OUT" || !session){
-      onLoggedOut();
-      return;
+  sb.auth.onAuthStateChange(
+    async(
+      _event,
+      session
+    ) => {
+
+      if(session){
+
+        await onLoggedIn(
+          session.user
+        );
+
+      }
+
+      else{
+
+        onLoggedOut();
+
+      }
+
     }
-
-    if(
-      event === "SIGNED_IN" ||
-      event === "INITIAL_SESSION" ||
-      event === "TOKEN_REFRESHED" ||
-      event === "USER_UPDATED"
-    ){
-
-      setTimeout(() => {
-        onLoggedIn(session.user);
-      }, 0);
-
-    }
-
-  });
+  );
 
 }
 
-async function onLoggedIn(user, fromLogin=false){
 
-  if(!user?.id) return;
+/* =========================================================
+   LOGGED IN
+========================================================= */
 
-  const allowed = await verifyUserAccess(user, fromLogin);
-  if(!allowed) return;
+async function onLoggedIn(
+  user
+){
 
-  $("authLock").classList.add("hidden");
+  currentUser =
+    user;
 
-  const displayName = currentMember.display_name || user.email;
-  const roleName = currentMember.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
 
-  $("currentUserName").textContent = displayName;
-  $("currentUserRole").textContent = roleName;
-  $("sideUserName").textContent = displayName;
-  $("sideUserRole").textContent = roleName;
-  $("topUserName").textContent = displayName;
-  $("topUserRole").textContent = roleName;
+  let {
+    data:member,
+    error
+  } =
+    await sb
+      .from("business_members")
+      .select(
+        "business_id,user_id,role,active,display_name"
+      )
+      .eq(
+        "user_id",
+        user.id
+      )
+      .eq(
+        "active",
+        true
+      )
+      .maybeSingle();
 
-  applyRolePermissions();
-  loadSettings();
-  await loadCloudData();
 
-  if(currentMember.role === "owner") await loadMembers();
+  if(
+    error ||
+    !member
+  ){
 
-  if(!items.length) addItem();
+    onLoggedOut();
 
-  renderHistory();
-  renderDashboard();
-  calculate();
-}
 
-async function verifyUserAccess(user, fromLogin=false){
+    $("authError")
+      .textContent =
+      "Dit account heeft geen actieve toegang tot DE GOUDMARSJAN.";
 
-  if(!user?.id) return false;
-
-  const { member, error } = await getActiveMembership(user);
-
-  if(error || !member || member.active !== true){
-
-    console.error("DE GOUDMARSJAN toegang geweigerd:", error || "Geen actieve membership.");
 
     await sb.auth.signOut();
-    onLoggedOut();
 
-    $("authError").textContent = error
-      ? (
-          "Inloggen lukt, maar de toegang tot je DE GOUDMARSJAN-account kan niet worden gecontroleerd. " +
-          "Controleer de Supabase RLS-policy op business_members. " +
-          (error.message ? "Fout: " + error.message : "")
-        )
-      : "Dit account heeft momenteel geen actieve toegang tot DE GOUDMARSJAN.";
 
-    return false;
+    return;
+
   }
 
-  currentUser = user;
-  currentMember = member;
-  currentBusinessId = member.business_id;
-  return true;
+
+  currentMember =
+    member;
+
+
+  currentBusinessId =
+    member.business_id;
+
+
+  $("authLock")
+    .classList
+    .add("hidden");
+
+
+  $("currentUserName")
+    .textContent =
+    member.display_name ||
+    user.email;
+
+
+  $("currentUserRole")
+    .textContent =
+    member.role === "owner"
+      ? "Hoofd / eigenaar"
+      : "Werknemer";
+
+
+  $("sideUserName").textContent = member.display_name || user.email;
+  $("sideUserRole").textContent = member.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
+  $("topUserName").textContent = member.display_name || user.email;
+  $("topUserRole").textContent = member.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
+
+  applyRolePermissions();
+
+
+  loadSettings();
+
+
+  await loadCloudData();
+
+
+  if(
+    member.role === "owner"
+  ){
+
+    await loadMembers();
+
+  }
+
+
+  if(
+    !items.length
+  ){
+
+    addItem();
+
+  }
+
+
+  renderHistory();
+
+  calculate();
+
 }
+
+
+/* =========================================================
+   LOGGED OUT
+========================================================= */
 
 function onLoggedOut(){
 
   customers = [];
-  purchases = [];
-  memberCache = [];
-
   if($("adminNav")) $("adminNav").style.display = "none";
   $("sideUserName").textContent = "Niet ingelogd";
   $("sideUserRole").textContent = "—";
   $("topUserName").textContent = "Niet ingelogd";
   $("topUserRole").textContent = "—";
-  $("currentUserName").textContent = "Niet ingelogd";
-  $("currentUserRole").textContent = "—";
 
-  currentUser = null;
-  currentMember = null;
-  currentBusinessId = null;
+  currentUser =
+    null;
 
-  $("authLock").classList.remove("hidden");
-  $("ownerPanel").style.display = "none";
+  currentMember =
+    null;
+
+  currentBusinessId =
+    null;
+
+
+  $("authLock")
+    .classList
+    .remove("hidden");
+
+
+  $("ownerPanel")
+    .style.display =
+    "none";
+
+
+  $("currentUserName")
+    .textContent =
+    "Niet ingelogd";
+
+
+  $("currentUserRole")
+    .textContent =
+    "—";
+
 }
-
-// Controleer ook opnieuw wanneer de gebruiker terugkeert naar de pagina.
-window.addEventListener("focus", () => {
-  if(currentUser) verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); }); });
-});
-
-document.addEventListener("visibilitychange", () => {
-  if(document.visibilityState === "visible" && currentUser){
-    verifyCurrentAccess(false).then(ok => { if(ok) loadCloudData().then(() => { renderDashboard(); renderHistory(); }); });
-  }
-});
 
 
 /* =========================================================
@@ -4667,10 +4745,6 @@ async function loadMembers(){
         }
       );
 
-
-  if(!error){
-    memberCache = data || [];
-  }
 
   if(error){
 
@@ -5222,9 +5296,6 @@ async function loadCloudData(){
               ) || {}
             ),
 
-          customer_id:
-            x.customer_id || null,
-
           paymentMethod:
             x.payment_method ||
             "overschrijving",
@@ -5254,20 +5325,15 @@ async function loadCloudData(){
               x.total
             ) || 0,
 
-          // Oude records kunnen een foutieve resale/profit bevatten.
-          // Herbereken altijd vanuit de originele metaalwaarde.
           resalePrice:
-            Number(x.market_value) || Number(x.resale_price) || 0,
+            Number(
+              x.resale_price
+            ) || 0,
 
           profit:
-            (Number(x.market_value) || 0) - (Number(x.total) || 0),
-
-          createdBy:
-            x.created_by || null,
-
-          employeeName:
-            memberCache.find(m => m.user_id === x.created_by)?.display_name ||
-            "",
+            Number(
+              x.profit
+            ) || 0,
 
           note:
             x.note || "",
@@ -5447,7 +5513,7 @@ async function savePurchaseCloud(p){
           c.id,
 
         created_by:
-          p.createdBy || currentUser.id,
+          currentUser.id,
 
         reference:
           p.id,
@@ -5468,12 +5534,10 @@ async function savePurchaseCloud(p){
           p.total,
 
         resale_price:
-          p.marketValue,
+          p.resalePrice,
 
-        // Bewaar de winst ook in de database zodat het dashboard,
-        // de historie en latere rapporten dezelfde waarde gebruiken.
         profit:
-          Number(p.marketValue || 0) - Number(p.total || 0),
+          p.profit,
 
         note:
           p.note
@@ -5564,17 +5628,33 @@ async function savePurchaseCloud(p){
         .from("purchase_items")
         .insert(rows);
 
+
     if(ie){
-      await sb.from("purchases").delete().eq("id",row.id);
-      await sb.from("customers").delete().eq("id",c.id);
+
+      await sb
+        .from("purchases")
+        .delete()
+        .eq(
+          "id",
+          row.id
+        );
+
+
+      await sb
+        .from("customers")
+        .delete()
+        .eq(
+          "id",
+          c.id
+        );
+
+
       throw ie;
+
     }
+
   }
 
-  return {
-    customerId:c.id,
-    purchaseId:row.id
-  };
 }
 
 
@@ -5747,319 +5827,14 @@ calculate();
 
 moveOriginalCards();
 showPage('dashboard');
-initAuth().catch(err=>{
-  console.error("initAuth() mislukt:", err);
-  onLoggedOut();
-  if($("authError")) $("authError").textContent =
-    err?.message || "Login kon niet worden gestart.";
-});
+initAuth();
 
 setInterval(async()=>{
-  if(!currentUser) return;
-  const ok = await verifyCurrentAccess(false);
-  if(ok){
-    await loadCloudData();
-    renderDashboard();
-    renderHistory();
-  }
-},15000);
+  if(!currentUser || !currentBusinessId)return;
+  const {data:member}=await sb.from('business_members').select('active').eq('business_id',currentBusinessId).eq('user_id',currentUser.id).maybeSingle();
+  if(!member || member.active!==true){await sb.auth.signOut();}
+},60000);
 
-</script>
-
-
-<!-- =========================================================
-     GOUDMARSJAN DEFINITIEVE DATABASE-FIX
-     Dit blok overschrijft uitsluitend de cloudfuncties die
-     verantwoordelijk zijn voor opslaan, verwijderen en winst.
-     De rest van het bestaande programma blijft behouden.
-========================================================= -->
-<script>
-(function(){
-  "use strict";
-
-  window.GOUDMARSJAN_DB_FIX = "2026-10-06-v2";
-
-  function gmNumber(v){
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  /* =========================================================
-     DEFINITIEVE OPSLAG VAN EEN INKOOP
-     - klant
-     - aankoop
-     - alle aankoopstukken
-     - originele metaalwaarde
-     - inkoopprijs
-     - winst/ruimte
-  ========================================================= */
-  window.savePurchaseCloud = async function(p){
-    if(!sb) throw new Error("Supabase is niet geïnitialiseerd.");
-    if(!currentUser || !currentBusinessId) throw new Error("Geen actieve Supabase-sessie.");
-
-    let customerId = null;
-    let purchaseId = null;
-
-    try{
-      const customerPayload = {
-        business_id: currentBusinessId,
-        first_name: p.customer?.firstName || "",
-        last_name: p.customer?.lastName || "",
-        birth_date: p.customer?.birthDate || null,
-        phone: p.customer?.phone || "",
-        iban: p.customer?.iban || "",
-        id_checked: p.customer?.idChecked === "ja",
-        id_type: p.customer?.idType || "",
-        id_number: p.customer?.idNumber || "",
-        street: p.customer?.street || "",
-        house_number: p.customer?.houseNumber || "",
-        postal_code: p.customer?.postalCode || "",
-        city: p.customer?.city || "",
-        note: p.customer?.note || ""
-      };
-
-      const {data:customer,error:customerError} = await sb
-        .from("customers")
-        .insert(customerPayload)
-        .select("id")
-        .single();
-
-      if(customerError) throw customerError;
-      customerId = customer.id;
-
-      const marketValue = gmNumber(p.marketValue);
-      const purchaseValue = gmNumber(p.total);
-      const profit = marketValue - purchaseValue;
-
-      const purchasePayload = {
-        business_id: currentBusinessId,
-        customer_id: customerId,
-        created_by: p.createdBy || currentUser.id,
-        reference: p.id,
-        payment_method: p.paymentMethod || "overschrijving",
-        gold_price: gmNumber(p.goldPrice),
-        silver_price: gmNumber(p.silverPrice),
-        market_value: marketValue,
-        total: purchaseValue,
-        resale_price: marketValue,
-        profit: profit,
-        note: p.note || ""
-      };
-
-      const {data:purchase,error:purchaseError} = await sb
-        .from("purchases")
-        .insert(purchasePayload)
-        .select("id")
-        .single();
-
-      if(purchaseError) throw purchaseError;
-      purchaseId = purchase.id;
-
-      const rows = (p.items || []).map(it=>{
-        const x = calc(it);
-        return {
-          purchase_id: purchaseId,
-          business_id: currentBusinessId,
-          item_type: it.type || "Juweel",
-          metal: it.metal || "goud",
-          fineness: it.metal === "verzilverd" ? 0 : gmNumber(it.fineness || it.karat),
-          weight: gmNumber(it.weight),
-          non_gold: gmNumber(it.nonGold),
-          net_weight: gmNumber(x.net),
-          metal_value: gmNumber(x.market),
-          purchase_price: gmNumber(x.offer),
-          description: it.description || ""
-        };
-      });
-
-      if(rows.length){
-        const {error:itemError} = await sb
-          .from("purchase_items")
-          .insert(rows);
-
-        if(itemError) throw itemError;
-      }
-
-      return {customerId, purchaseId};
-
-    }catch(error){
-      /* Rollback zodat er nooit een halve aankoop achterblijft. */
-      try{
-        if(purchaseId) await sb.from("purchase_items").delete().eq("purchase_id",purchaseId);
-      }catch(_e){}
-      try{
-        if(purchaseId) await sb.from("purchases").delete().eq("id",purchaseId);
-      }catch(_e){}
-      try{
-        if(customerId) await sb.from("customers").delete().eq("id",customerId);
-      }catch(_e){}
-      throw error;
-    }
-  };
-
-  /* =========================================================
-     KLANT DEFINITIEF VERWIJDEREN
-     Alleen owner. Eerst items, dan purchases, dan customer.
-  ========================================================= */
-  window.deleteCustomer = async function(id){
-    if(currentMember?.role !== "owner"){
-      alert("Alleen het hoofd/de eigenaar kan klanten verwijderen.");
-      return;
-    }
-
-    const c = (customers || []).find(x=>x.id===id);
-    if(!c){
-      alert("Klant niet gevonden.");
-      return;
-    }
-
-    const name = ((c.first_name || "")+" "+(c.last_name || "")).trim();
-
-    if(!confirm(
-      "Klant \""+name+"\" definitief verwijderen?\n\n"+
-      "De gekoppelde aankoopgeschiedenis en aankoopstukken worden ook verwijderd."
-    )) return;
-
-    try{
-      const {data:linked,error:findError} = await sb
-        .from("purchases")
-        .select("id")
-        .eq("business_id",currentBusinessId)
-        .eq("customer_id",id);
-
-      if(findError) throw findError;
-
-      const purchaseIds = (linked || []).map(x=>x.id);
-
-      if(purchaseIds.length){
-        const {error:itemError} = await sb
-          .from("purchase_items")
-          .delete()
-          .eq("business_id",currentBusinessId)
-          .in("purchase_id",purchaseIds);
-        if(itemError) throw itemError;
-
-        const {error:purchaseError} = await sb
-          .from("purchases")
-          .delete()
-          .eq("business_id",currentBusinessId)
-          .in("id",purchaseIds);
-        if(purchaseError) throw purchaseError;
-      }
-
-      const {error:customerError} = await sb
-        .from("customers")
-        .delete()
-        .eq("business_id",currentBusinessId)
-        .eq("id",id);
-      if(customerError) throw customerError;
-
-      customers = (customers || []).filter(x=>x.id!==id);
-      purchases = (purchases || []).filter(p=>p.customer_id!==id);
-
-      localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));
-
-      const detail=document.getElementById("customerDetailPage");
-      if(detail) detail.innerHTML="";
-
-      renderCustomersPage();
-      renderHistory();
-      renderDashboard();
-      renderProfitPage();
-
-      alert("Klant en gekoppelde aankopen zijn definitief verwijderd.");
-
-    }catch(error){
-      console.error("deleteCustomer",error);
-      alert("Klant verwijderen mislukt.\n\n"+(error?.message || error));
-    }
-  };
-
-  /* =========================================================
-     WINST: ALTIJD ORIGINELE METAALWAARDE - INKOOPPRIJS
-     Geen resale-prijs of andere waarde gebruiken.
-  ========================================================= */
-  window.renderProfitPage = function(){
-    if(!document.getElementById("profitCount")) return;
-
-    const purchaseValue = (purchases || []).reduce((sum,p)=>sum+gmNumber(p.total),0);
-    const marketValue = (purchases || []).reduce((sum,p)=>sum+gmNumber(p.marketValue),0);
-    const profitValue = (purchases || []).reduce((sum,p)=>sum+(gmNumber(p.marketValue)-gmNumber(p.total)),0);
-
-    profitCount.textContent = purchases.length;
-    profitPurchase.textContent = euro(purchaseValue);
-    profitResale.textContent = euro(marketValue);
-    profitTotal.textContent = euro(profitValue);
-
-    const days=[];
-    const now=new Date();
-    for(let i=13;i>=0;i--){
-      const d=new Date(now);
-      d.setHours(0,0,0,0);
-      d.setDate(d.getDate()-i);
-      const key=d.toISOString().slice(0,10);
-      const value=(purchases || [])
-        .filter(p=>new Date(p.date).toISOString().slice(0,10)===key)
-        .reduce((sum,p)=>sum+(gmNumber(p.marketValue)-gmNumber(p.total)),0);
-      days.push({d,profit:value});
-    }
-
-    const max=Math.max(1,...days.map(x=>Math.max(0,x.profit)));
-    const chart=document.getElementById("profitChart");
-    if(chart){
-      chart.innerHTML=days.map(x=>`
-        <div class="profit-bar-wrap">
-          <div class="profit-bar-value">${euro(x.profit)}</div>
-          <div class="profit-bar" style="height:${Math.max(3,Math.max(0,x.profit)/max*190)}px"></div>
-          <div class="profit-bar-label">${x.d.toLocaleDateString("nl-BE",{day:"2-digit",month:"2-digit"})}</div>
-        </div>
-      `).join("");
-    }
-
-    const employeeMap={};
-    (purchases || []).forEach(p=>{
-      const name=p.employeeName || "Hoofd / eigenaar";
-      employeeMap[name]=(employeeMap[name]||0)+(gmNumber(p.marketValue)-gmNumber(p.total));
-    });
-
-    const employeeBox=document.getElementById("profitEmployees");
-    if(employeeBox){
-      employeeBox.innerHTML=Object.keys(employeeMap).length
-        ? Object.entries(employeeMap).map(([name,value])=>`
-            <div class="member-row"><b>${esc(name)}</b><strong>${euro(value)}</strong></div>
-          `).join("")
-        : '<div class="note">Nog geen winstgegevens.</div>';
-    }
-  };
-
-  /* =========================================================
-     NA CLOUD-SAVE OOK DE LOKALE WEERGAVE VERNIEUWEN
-  ========================================================= */
-  window.savePurchase = async function(){
-    if(!valid()) return;
-
-    const p=data();
-
-    try{
-      const saved=await window.savePurchaseCloud(p);
-      if(saved?.customerId) p.customer_id=saved.customerId;
-      if(saved?.purchaseId) p.cloudPurchaseId=saved.purchaseId;
-
-      purchases.unshift(p);
-      localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));
-
-      await loadCloudData();
-      renderHistory();
-      renderDashboard();
-      renderProfitPage();
-
-      alert("Inkoop opgeslagen in Supabase!\n\n"+p.id);
-    }catch(error){
-      console.error("savePurchase",error);
-      alert("De aankoop kon niet naar Supabase worden opgeslagen.\n\n"+(error?.message || error));
-    }
-  };
-})();
 </script>
 
 
