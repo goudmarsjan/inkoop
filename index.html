@@ -508,6 +508,14 @@ button:disabled{
   }
 }
 </style>
+<style>
+.signature-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;padding:18px;overflow:auto}
+.signature-modal{max-width:900px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 20px 70px #0008;overflow:hidden}
+.signature-head{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:16px 20px;background:#111;color:#fff}
+.signature-head strong{display:block;font-size:18px;letter-spacing:.5px}.signature-head span{display:block;margin-top:4px;color:#d9bd62;font-size:13px}
+.signature-stage{padding:18px 20px}.signature-review{border:1px solid #ddd;border-radius:10px;padding:14px;background:#fafafa}
+.signature-review h3{margin:0 0 10px}.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:13px}.review-box{border:1px solid #ddd;border-radius:9px;padding:10px;background:#fff}.review-items{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}.review-items th,.review-items td{padding:7px;border-bottom:1px solid #ddd;text-align:left}.review-total{font-size:21px;font-weight:800;text-align:right;margin-top:12px}.signature-canvas{display:block;width:100%;height:260px;border:2px dashed #999;border-radius:10px;background:#fff;touch-action:none;cursor:crosshair}.signature-consent{margin-bottom:12px;font-size:14px}.signature-consent p{margin:5px 0;color:#555;font-size:12px}.signature-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}.signed-ok{padding:12px;border-radius:9px;background:#dff3e9;color:#17683f;font-weight:700}.final-preview{border:1px solid #ccc;border-radius:8px;max-height:430px;overflow:auto;margin-top:12px;background:#eee}.final-preview iframe{display:block;width:100%;height:700px;border:0;background:#fff}.flow-next{display:flex;justify-content:flex-end;margin-top:14px}.flow-note{font-size:11px;color:#666;margin-top:10px}.signature-modal .small{font-size:12px;color:#666}@media(max-width:650px){.review-grid{grid-template-columns:1fr}.signature-stage{padding:14px}.signature-canvas{height:220px}.signature-actions button{flex:1}}
+</style>
 </head>
 
 <body>
@@ -565,6 +573,46 @@ button:disabled{
 
 </div>
 
+
+<!-- =========================================================
+     AANKOOP / TABLET HANDTEKENING FLOW
+========================================================= -->
+<div id="signatureFlow" class="signature-overlay" style="display:none">
+  <div class="signature-modal">
+    <div class="signature-head">
+      <div>
+        <strong id="signatureStepTitle">1. AANKOOP CONTROLEREN</strong>
+        <span id="signatureStepText">Controleer eerst alle gegevens.</span>
+      </div>
+      <button class="light" type="button" onclick="closeSignatureFlow()">✕</button>
+    </div>
+
+    <div id="signatureReview" class="signature-stage"></div>
+
+    <div id="signaturePadStage" class="signature-stage" style="display:none">
+      <div class="signature-consent">
+        <b>Handtekening verkoper</b>
+        <p>Ik bevestig dat de gegevens, de aangeboden goederen en het overeengekomen aankoopbedrag op dit aankoopdocument correct zijn.</p>
+      </div>
+      <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+      <div class="signature-actions">
+        <button class="light" type="button" onclick="clearSignature()">↺ OPNIEUW</button>
+        <button class="primary" type="button" onclick="confirmSignature()">✓ HANDTEKENING BEVESTIGEN</button>
+      </div>
+    </div>
+
+    <div id="signatureFinalStage" class="signature-stage" style="display:none">
+      <div class="signed-ok">✓ Aankoop bevestigd en ondertekend</div>
+      <p class="small">Het definitieve aankoopdocument is klaar. Je kunt het nu bekijken en afdrukken.</p>
+      <div id="signatureFinalPreview" class="final-preview"></div>
+      <div class="signature-actions">
+        <button class="light" type="button" onclick="closeSignatureFlow()">SLUITEN</button>
+        <button class="dark" type="button" onclick="printPendingFinal()">🖨️ DEFINITIEF DOCUMENT AFDRUKKEN</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <div class="app-shell">
 <aside class="sidebar noprint">
@@ -3202,6 +3250,8 @@ async function clearHistory(){
 
 function newPurchase(){
 
+  pendingPurchase = null;
+
   if(
     !confirm(
       "Nieuwe inkoop starten? Niet-opgeslagen gegevens gaan verloren."
@@ -3266,11 +3316,13 @@ function receipt(p){
 
   let addr =
     [
-      c.street && c.houseNumber
+      c.street &&
+      c.houseNumber
         ? c.street+" "+c.houseNumber
         : c.street,
 
-      c.postalCode && c.city
+      c.postalCode &&
+      c.city
         ? c.postalCode+" "+c.city
         : c.city
 
@@ -3279,23 +3331,10 @@ function receipt(p){
     .join(", ");
 
 
-  let payment =
-    String(p.paymentMethod || "")
-      .trim();
-
-
-  let paymentLabel =
-    payment === "cash"
-      ? "Contant"
-      : payment === "overschrijving"
-        ? "Bankoverschrijving"
-        : payment || "Niet ingevuld";
-
-
   let rows =
     (p.items || [])
       .map(
-        (it,index) => {
+        it => {
 
           let metal =
             it.metal ||
@@ -3311,18 +3350,11 @@ function receipt(p){
             );
 
 
-          let gross =
-            Number(it.weight) || 0;
-
-
-          let deduction =
-            Number(it.nonGold) || 0;
-
-
           let net =
             Math.max(
               0,
-              gross - deduction
+              (it.weight || 0) -
+              (it.nonGold || 0)
             );
 
 
@@ -3378,38 +3410,37 @@ function receipt(p){
                 : "Verzilverd";
 
 
+          /*
+             BELANGRIJK:
+
+             Hier wordt GEEN marketValue
+             naar de klant gestuurd.
+
+             Alleen:
+             Type
+             Metaal/zuiverheid
+             Netto gram
+             Inkoop
+          */
+
           return `
 
 <tr>
 
-<td class="nr">
-${index + 1}
+<td>
+${esc(it.type)}
 </td>
 
 <td>
-<strong>${esc(it.type || "Goederen")}</strong>
-<div class="muted">Omschrijving: edelmetaal / juweel</div>
+${label}
 </td>
 
 <td>
-${esc(label)}
-<div class="muted">${esc(metal)}</div>
+${net.toFixed(2)} g
 </td>
 
-<td class="num">
-${gross.toFixed(2)} g
-</td>
-
-<td class="num">
-${deduction.toFixed(2)} g
-</td>
-
-<td class="num">
-<strong>${net.toFixed(2)} g</strong>
-</td>
-
-<td class="money">
-<strong>${euro(offer)}</strong>
+<td>
+${euro(offer)}
 </td>
 
 </tr>
@@ -3421,533 +3452,109 @@ ${deduction.toFixed(2)} g
       .join("");
 
 
-  let paymentNote =
-    payment === "cash"
-      ? `
-<div class="warning">
-<strong>LET OP BIJ CONTANTE BETALING</strong>
-<br>
-Bij aankoop van edele metalen van een consument gelden wettelijke beperkingen voor contante betalingen. Dit aankoopdocument vermeldt het effectief gekozen betaalmiddel.
-</div>
-`
-      : "";
-
-
-  let idLabel =
-    c.idChecked === "ja"
-      ? "Gecontroleerd"
-      : c.idChecked === "nee"
-        ? "Niet gecontroleerd"
-        : "Niet geregistreerd";
-
-
   return `
 
 <!doctype html>
 
-<html lang="nl">
+<html>
 
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <title>
-Aankoopdocument ${esc(p.id)}
+${esc(p.id)}
 </title>
+
 
 <style>
 
-@page{
-  size:A4;
-  margin:12mm;
-}
+body{font-family:Arial,sans-serif;max-width:820px;margin:auto;padding:18px;font-size:10px;line-height:1.25;color:#111}
+@page{size:A4;margin:8mm}
+@media print{body{padding:0;font-size:9px}.no-print{display:none}}
 
-*{
-  box-sizing:border-box;
-}
-
-body{
-  font-family:Arial,Helvetica,sans-serif;
-  color:#171717;
-  background:#fff;
-  margin:0;
-  font-size:11px;
-  line-height:1.4;
-}
-
-.page{
-  width:100%;
-  max-width:850px;
-  margin:0 auto;
-}
-
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:25px;
-  padding-bottom:15px;
-  border-bottom:3px solid #111;
-}
-
-.brand h1{
-  margin:0;
-  font-size:27px;
-  letter-spacing:2px;
-  line-height:1;
-}
-
-.brand .gold{
-  color:#b18a2e;
-  font-weight:bold;
-  letter-spacing:1.8px;
-  margin-top:6px;
-}
-
-.doc-title{
-  text-align:right;
-}
-
-.doc-title h2{
-  margin:0;
-  font-size:17px;
-  text-transform:uppercase;
-  letter-spacing:.8px;
-}
-
-.doc-title .number{
-  margin-top:5px;
-  font-weight:bold;
-  font-size:13px;
-}
-
-.meta-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:14px;
-}
-
-.box{
-  border:1px solid #cfcfcf;
-  border-radius:6px;
-  padding:11px 12px;
-  break-inside:avoid;
-}
-
-.box-title{
-  font-size:10px;
-  font-weight:bold;
-  text-transform:uppercase;
-  letter-spacing:.8px;
-  color:#777;
-  margin-bottom:6px;
-}
-
-.box strong{
-  font-size:12px;
-}
-
-.line{
-  margin:2px 0;
-}
-
-.label{
-  display:inline-block;
-  min-width:118px;
-  color:#666;
-}
-
-.section-title{
-  margin:17px 0 7px;
-  padding-bottom:5px;
-  border-bottom:2px solid #111;
-  font-size:13px;
-  font-weight:bold;
-  text-transform:uppercase;
-  letter-spacing:.6px;
-}
+h1{letter-spacing:2px;font-size:22px;margin:0 0 2px}
+h3{margin:0 0 8px;font-size:13px}
+.section{border:1px solid #ccc;border-radius:5px;padding:7px;margin:7px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 15px}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:8px}
+.sigbox{height:70px;border:1px solid #bbb;padding:5px}
+.sigbox img{max-width:100%;height:55px;object-fit:contain;display:block;margin:auto}
+.checks{font-size:9px}.muted{color:#666;font-size:8px}
 
 table{
   width:100%;
   border-collapse:collapse;
-  table-layout:fixed;
+  margin-top:25px;
 }
 
-th{
-  background:#111;
-  color:#fff;
-  font-size:9px;
-  text-transform:uppercase;
-  letter-spacing:.3px;
-  padding:7px 5px;
+th,
+td{
+  padding:9px;
+  border-bottom:1px solid #ddd;
   text-align:left;
 }
 
-td{
-  padding:7px 5px;
-  border-bottom:1px solid #d9d9d9;
-  vertical-align:top;
+.total{
+  font-size:24px;
+  font-weight:bold;
+  margin-top:25px;
 }
 
-.nr{
-  width:4%;
-  text-align:center;
-}
-
-.num{
-  text-align:right;
-  white-space:nowrap;
-}
-
-.money{
-  text-align:right;
-  white-space:nowrap;
-}
-
-.muted{
-  color:#777;
-  font-size:9px;
-  margin-top:2px;
-}
-
-.item-total{
-  display:flex;
-  justify-content:flex-end;
-  margin-top:9px;
-}
-
-.item-total .total-box{
-  width:270px;
-  border:2px solid #111;
-  padding:10px 12px;
-}
-
-.item-total .total-label{
-  font-size:11px;
+.small{
+  font-size:12px;
   color:#666;
-}
-
-.item-total .total-value{
-  font-size:22px;
-  font-weight:bold;
-  margin-top:2px;
-}
-
-.payment-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-
-.payment-main{
-  border:1px solid #cfcfcf;
-  border-radius:6px;
-  padding:10px 12px;
-}
-
-.payment-main .amount{
-  font-size:18px;
-  font-weight:bold;
-  margin-top:4px;
-}
-
-.warning{
-  margin-top:9px;
-  padding:9px 11px;
-  border:1px solid #d5a800;
-  background:#fff9df;
-  border-radius:6px;
-  font-size:9px;
-}
-
-.declarations{
-  border:1px solid #cfcfcf;
-  border-radius:6px;
-  padding:11px 13px;
-  break-inside:avoid;
-}
-
-.declarations p{
-  margin:5px 0;
-}
-
-.tick{
-  display:inline-block;
-  width:14px;
-  height:14px;
-  border:1px solid #555;
-  margin-right:6px;
-  vertical-align:-3px;
-  text-align:center;
-  line-height:12px;
-  font-size:10px;
-}
-
-.signature-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:25px;
-  margin-top:10px;
-  break-inside:avoid;
-}
-
-.signature{
-  min-height:100px;
-  border:1px solid #cfcfcf;
-  border-radius:6px;
-  padding:11px 12px;
-}
-
-.signature h4{
-  margin:0 0 34px;
-  font-size:11px;
-  text-transform:uppercase;
-}
-
-.signature-line{
-  border-top:1px solid #222;
-  padding-top:5px;
-  margin-top:28px;
-  font-size:9px;
-  color:#666;
-}
-
-.footer-box{
-  margin-top:14px;
-  padding-top:9px;
-  border-top:1px solid #aaa;
-  font-size:8.5px;
-  color:#555;
-  break-inside:avoid;
-}
-
-.footer-box p{
-  margin:3px 0;
-}
-
-.footer-brand{
-  margin-top:8px;
-  text-align:center;
-  font-weight:bold;
-  letter-spacing:1px;
-  color:#222;
-}
-
-.keep{
-  break-inside:avoid;
-}
-
-@media print{
-  body{
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-  }
-
-  .page{
-    max-width:none;
-  }
 }
 
 </style>
 
 </head>
 
+
 <body>
+<h1>DE GOUDMARSJAN</h1>
+<h3>EDELMETALEN — AANKOOPDOCUMENT</h3>
 
-<div class="page">
-
-  <div class="header">
-
-    <div class="brand">
-      <h1>DE GOUDMARSJAN</h1>
-      <div class="gold">EDELMETALEN</div>
-    </div>
-
-    <div class="doc-title">
-      <h2>Aankoopdocument</h2>
-      <div class="number">Nr. ${esc(p.id)}</div>
-    </div>
-
-  </div>
-
-
-  <div class="meta-grid">
-
-    <div class="box">
-      <div class="box-title">Transactie</div>
-      <div class="line"><span class="label">Documentnummer:</span><strong>${esc(p.id)}</strong></div>
-      <div class="line"><span class="label">Datum en tijd:</span>${new Date(p.date).toLocaleString("nl-BE")}</div>
-      <div class="line"><span class="label">Type:</span>Aankoop edele metalen / goederen</div>
-    </div>
-
-    <div class="box">
-      <div class="box-title">Koper</div>
-      <div class="line"><strong>DE GOUDMARSJAN</strong></div>
-      <div class="line">EDELMETALEN — opkoper van edele metalen</div>
-      <div class="line">Document opgesteld door de aankoper</div>
-    </div>
-
-  </div>
-
-
-  <div class="section-title">1. Gegevens verkoper</div>
-
-  <div class="box">
-
-    <div class="line"><span class="label">Voornaam:</span><strong>${esc(c.firstName || "")}</strong></div>
-    <div class="line"><span class="label">Achternaam:</span><strong>${esc(c.lastName || "")}</strong></div>
-    <div class="line"><span class="label">Geboortedatum:</span>${esc(c.birthDate || "")}</div>
-    <div class="line"><span class="label">Adres:</span>${esc(addr || "")}</div>
-    <div class="line"><span class="label">Telefoon:</span>${esc(c.phone || "")}</div>
-    <div class="line"><span class="label">IBAN:</span>${esc(c.iban || "")}</div>
-
-  </div>
-
-
-  <div class="section-title">2. Identificatie</div>
-
-  <div class="box">
-    <div class="line"><span class="label">Identiteitscontrole:</span><strong>${esc(idLabel)}</strong></div>
-    <div class="line"><span class="label">ID-document:</span>${esc(c.idType || "Niet ingevuld")}</div>
-    <div class="line"><span class="label">Documentnummer:</span>${esc(c.idNumber || "Niet ingevuld")}</div>
-    <div class="muted">De identificatiegegevens worden geregistreerd en bewaard overeenkomstig de toepasselijke wettelijke verplichtingen.</div>
-  </div>
-
-
-  <div class="section-title">3. Aangekochte goederen</div>
-
-  <table>
-
-    <thead>
-      <tr>
-        <th style="width:4%">Nr.</th>
-        <th style="width:23%">Omschrijving</th>
-        <th style="width:16%">Metaal / gehalte</th>
-        <th style="width:12%">Bruto</th>
-        <th style="width:12%">Niet-edel</th>
-        <th style="width:13%">Netto</th>
-        <th style="width:20%">Aankoopprijs</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      ${rows}
-    </tbody>
-
-  </table>
-
-
-  <div class="item-total">
-    <div class="total-box">
-      <div class="total-label">TOTAAL AANKOOPBEDRAG</div>
-      <div class="total-value">${euro(p.total)}</div>
-    </div>
-  </div>
-
-
-  <div class="section-title">4. Test en vaststelling</div>
-
-  <div class="box">
-    <div class="line"><span class="label">Omschrijving:</span>De hierboven vermelde goederen werden door DE GOUDMARSJAN gecontroleerd en gewaardeerd voor aankoop.</div>
-    <div class="line"><span class="label">Gehalte:</span>Het op dit document vermelde gehalte is het bij de aankoop vastgestelde / gehanteerde gehalte.</div>
-    <div class="line"><span class="label">Weging:</span>De vermelde gewichten zijn de bij de aankoop geregistreerde gewichten.</div>
-    <div class="muted">Eventuele specifieke testmethode of bijkomende opmerkingen kunnen worden opgenomen in de transactieadministratie.</div>
-  </div>
-
-
-  <div class="section-title">5. Verklaringen verkoper</div>
-
-  <div class="declarations">
-    <p><span class="tick">✓</span>Ik verklaar dat ik de rechtmatige eigenaar ben van de aangeboden goederen, of dat ik gemachtigd ben deze te verkopen.</p>
-    <p><span class="tick">✓</span>Ik verklaar dat ik meerderjarig en handelingsbekwaam ben.</p>
-    <p><span class="tick">✓</span>Ik verklaar dat ik voor eigen rekening handel, tenzij anders aan DE GOUDMARSJAN meegedeeld.</p>
-    <p><span class="tick">✓</span>Ik verklaar dat de aangeboden goederen niet afkomstig zijn van diefstal, fraude of andere illegale handelingen.</p>
-    <p><span class="tick">✓</span>Ik verklaar dat de verkoop vrijwillig gebeurt.</p>
-    <p><span class="tick">✓</span>Ik bevestig dat de gegevens, goederen, gewichten, gehaltes en aankoopprijs op dit document correct zijn weergegeven.</p>
-    <p><span class="tick">✓</span>Ik aanvaard de verkoop van de hierboven beschreven goederen aan DE GOUDMARSJAN tegen het vermelde totaalbedrag.</p>
-  </div>
-
-
-  <div class="section-title">6. Betaling</div>
-
-  <div class="payment-grid">
-
-    <div class="payment-main">
-      <div class="box-title">Betalingswijze</div>
-      <strong>${esc(paymentLabel)}</strong>
-      <div class="line" style="margin-top:7px"><span class="label">Betaald / te betalen:</span></div>
-      <div class="amount">${euro(p.total)}</div>
-    </div>
-
-    <div class="payment-main">
-      <div class="box-title">Betalingsgegevens</div>
-      <div class="line"><span class="label">IBAN verkoper:</span>${esc(c.iban || "")}</div>
-      <div class="line"><span class="label">Betalingsdatum:</span>${new Date(p.date).toLocaleDateString("nl-BE")}</div>
-      <div class="line"><span class="label">Documentreferentie:</span>${esc(p.id)}</div>
-    </div>
-
-  </div>
-
-  ${paymentNote}
-
-
-  ${
-    p.reference
-      ? `
-  <div class="section-title">7. Referentie en opmerkingen</div>
-  <div class="box">
-    <div class="line"><span class="label">Interne referentie:</span>${esc(p.reference)}</div>
-    ${p.note ? `<div class="line"><span class="label">Opmerking:</span>${esc(p.note)}</div>` : ""}
-  </div>
-  `
-      : p.note
-        ? `
-  <div class="section-title">7. Opmerkingen</div>
-  <div class="box">
-    <div class="line">${esc(p.note)}</div>
-  </div>
-  `
-        : ""
-  }
-
-
-  <div class="section-title">8. Ondertekening</div>
-
-  <div class="signature-grid">
-
-    <div class="signature">
-      <h4>Verkoper</h4>
-      <div>Naam: ${esc((c.firstName || "")+" "+(c.lastName || ""))}</div>
-      <div class="signature-line">Handtekening verkoper</div>
-      <div>Datum: ____________________</div>
-    </div>
-
-    <div class="signature">
-      <h4>Koper / aankoper</h4>
-      <div>DE GOUDMARSJAN</div>
-      <div class="signature-line">Handtekening aankoper</div>
-      <div>Datum: ____________________</div>
-    </div>
-
-  </div>
-
-
-  <div class="footer-box">
-
-    <p><strong>Bewijs van aankoop:</strong> Dit document bevestigt de beschreven verkooptransactie, de overeengekomen aankoopprijs en de vermelde betalingswijze.</p>
-
-    <p><strong>Exemplaar verkoper:</strong> De verkoper ontvangt een exemplaar van dit aankoopdocument. DE GOUDMARSJAN bewaart een exemplaar voor de administratie.</p>
-
-    <p><strong>Gegevens:</strong> Identificatie- en transactiegegevens worden verwerkt en bewaard overeenkomstig de toepasselijke wettelijke verplichtingen.</p>
-
-    <div class="footer-brand">DE GOUDMARSJAN — EDELMETALEN</div>
-
-  </div>
-
+<div class="section grid">
+<div><b>Document:</b> ${esc(p.id)}<br><b>Datum/tijd:</b> ${new Date(p.date).toLocaleString("nl-BE")}</div>
+<div><b>Betaling:</b> ${esc(p.paymentMethod||"")}<br><b>Totaal:</b> ${euro(p.total)}</div>
 </div>
 
+<div class="section grid">
+<div><b>VERKOPER</b><br>${esc(c.firstName||"")} ${esc(c.lastName||"")}<br>Geboortedatum: ${esc(c.birthDate||"")}<br>Tel.: ${esc(c.phone||"")}</div>
+<div><b>IDENTIFICATIE / ADRES</b><br>ID: ${esc(c.idType||"—")} ${c.idNumber ? "— "+esc(c.idNumber) : ""}<br>${esc(addr)}<br>IBAN: ${esc(c.iban||"")}</div>
+</div>
+
+<div class="section">
+<b>AANGEKOCHTE GOEDEREN</b>
+<table><tr><th>Type</th><th>Metaal / gehalte</th><th>Netto</th><th>Inkoop</th></tr>${rows}</table>
+<div class="total">TOTAAL: ${euro(p.total)}</div>
+</div>
+
+<div class="section grid">
+<div><b>TEST / VASTSTELLING</b><br>Gehalte en gewicht bepaald door controle/testing van de aangeboden goederen.</div>
+<div><b>BETALING</b><br>Wijze: ${esc(p.paymentMethod||"")}<br>Bedrag: ${euro(p.total)}</div>
+</div>
+
+<div class="section checks">
+<b>VERKLARING VERKOPER</b><br>
+☐ Ik verklaar rechtmatige eigenaar te zijn of gemachtigd te zijn om de goederen te verkopen. &nbsp; 
+☐ Ik handel vrijwillig. &nbsp; 
+☐ Ik verklaar meerderjarig en handelingsbekwaam te zijn. &nbsp; 
+☐ Ik verklaar dat de gegevens en de transactie correct zijn. &nbsp; 
+☐ Ik aanvaard de vermelde goederen en aankoopprijs.
+</div>
+
+${p.reference ? `<div class="section"><b>Referentie:</b> ${esc(p.reference)}</div>` : ""}
+${p.note ? `<div class="section"><b>Opmerking:</b> ${esc(p.note)}</div>` : ""}
+
+<div class="sig">
+<div class="sigbox"><b>VERKOPER — handtekening</b>${p.signature ? `<img src="${p.signature}" alt="Handtekening verkoper">` : ""}<br><span class="muted">Naam: ${esc(c.firstName||"")} ${esc(c.lastName||"")}</span></div>
+<div class="sigbox"><b>DE GOUDMARSJAN — handtekening</b><br><br><span class="muted">Naam: ______________________________</span></div>
+</div>
+
+<p class="muted">Dit document wordt opgemaakt voor de administratie van DE GOUDMARSJAN. De verkoper ontvangt een exemplaar. Identificatie- en transact gegevens worden bewaard overeenkomstig de toepasselijke wettelijke verplichtingen.</p>
+<p class="muted"><b>DE GOUDMARSJAN — EDELMETALEN</b></p>
 </body>
 
 </html>
@@ -3955,6 +3562,7 @@ td{
 `;
 
 }
+
 
 function openPrint(p){
 
@@ -3964,25 +3572,13 @@ function openPrint(p){
       "_blank"
     );
 
-
   if(!w){
-
-    alert(
-      "Sta pop-ups toe voor de aankoopbon."
-    );
-
+    alert("Sta pop-ups toe voor het definitieve aankoopdocument.");
     return;
-
   }
 
-
-  w.document.write(
-    receipt(p)
-  );
-
-
+  w.document.write(receipt(p));
   w.document.close();
-
 
   setTimeout(
     () => w.print(),
@@ -3991,27 +3587,192 @@ function openPrint(p){
 
 }
 
+let pendingPurchase = null;
+let signatureDrawing = false;
+let signatureHasInk = false;
+let signatureCtx = null;
 
 function printReceipt(){
 
-  if(valid())
-    openPrint(
-      data()
-    );
+  if(!valid())
+    return;
+
+  pendingPurchase = data();
+  openPurchaseReview(pendingPurchase);
 
 }
 
+function openPurchaseReview(p){
+
+  const flow = $("signatureFlow");
+  const review = $("signatureReview");
+  const pad = $("signaturePadStage");
+  const final = $("signatureFinalStage");
+
+  if(!flow || !review || !pad || !final) return;
+
+  $("signatureStepTitle").textContent = "1. AANKOOP CONTROLEREN";
+  $("signatureStepText").textContent = "Controleer eerst alle gegevens. Daarna kan de klant tekenen.";
+  review.style.display = "block";
+  pad.style.display = "none";
+  final.style.display = "none";
+
+  const c = p.customer || {};
+  const addr = [
+    c.street && c.houseNumber ? c.street+" "+c.houseNumber : c.street,
+    c.postalCode && c.city ? c.postalCode+" "+c.city : c.city
+  ].filter(Boolean).join(", ");
+
+  const rows = (p.items || []).map((it,i)=>{
+    const metal = it.metal || "goud";
+    const f = it.fineness || (metal === "goud" ? it.karat : 925);
+    const net = Math.max(0,(it.weight||0)-(it.nonGold||0));
+    const offer = metal === "verzilverd" ? (Number(it.manualOffer)||0) : (net*(purity[metal]?.[f]||0)*(metal === "zilver" ? (p.silverPrice||0):(p.goldPrice||0))*storedRate(metal,f)/100);
+    const label = metal === "goud" ? f+"K" : metal === "zilver" ? "Zilver "+f+"‰" : "Verzilverd";
+    return `<tr><td>${i+1}. ${esc(it.type||"Stuk")}</td><td>${esc(label)}</td><td>${net.toFixed(2)} g</td><td>${euro(offer)}</td></tr>`;
+  }).join("");
+
+  review.innerHTML = `
+    <div class="signature-review">
+      <h3>Controle aankoopdocument</h3>
+      <div class="review-grid">
+        <div class="review-box"><b>Document</b><br>${esc(p.id)}<br>${new Date(p.date).toLocaleString("nl-BE")}</div>
+        <div class="review-box"><b>Betaling</b><br>${esc(p.paymentMethod||"")}<br>${euro(p.total)}</div>
+        <div class="review-box"><b>Verkoper</b><br>${esc(c.firstName||"")} ${esc(c.lastName||"")}<br>Geboortedatum: ${esc(c.birthDate||"")}</div>
+        <div class="review-box"><b>Identificatie</b><br>${esc(c.idType||"—")} ${c.idNumber ? "— "+esc(c.idNumber) : ""}<br>${esc(addr)}</div>
+      </div>
+      <table class="review-items"><thead><tr><th>Omschrijving</th><th>Gehalte</th><th>Netto</th><th>Inkoop</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="review-total">TOTAAL: ${euro(p.total)}</div>
+      <div class="flow-note">Controleer vooral naam, geboortedatum, identificatie, goederen, gewichten, aankoopprijs en betalingswijze.</div>
+    </div>
+    <div class="flow-next"><button class="primary" type="button" onclick="goToSignaturePad()">NAAR HANDTEKENING →</button></div>
+  `;
+
+  flow.style.display = "block";
+  document.body.style.overflow = "hidden";
+}
+
+function goToSignaturePad(){
+
+  if(!pendingPurchase) return;
+  $("signatureStepTitle").textContent = "2. KLANT LAAT HANDTEKENEN";
+  $("signatureStepText").textContent = "Laat de verkoper rechtstreeks op de tablet tekenen.";
+  $("signatureReview").style.display = "none";
+  $("signaturePadStage").style.display = "block";
+  $("signatureFinalStage").style.display = "none";
+  setupSignatureCanvas();
+
+}
+
+function setupSignatureCanvas(){
+
+  const canvas = $("signatureCanvas");
+  if(!canvas) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const ratio = Math.max(1, window.devicePixelRatio || 1);
+  canvas.width = Math.round(rect.width * ratio);
+  canvas.height = Math.round(rect.height * ratio);
+  signatureCtx = canvas.getContext("2d");
+  signatureCtx.scale(ratio,ratio);
+  signatureCtx.lineWidth = 2.2;
+  signatureCtx.lineCap = "round";
+  signatureCtx.lineJoin = "round";
+  signatureCtx.strokeStyle = "#111";
+  signatureHasInk = false;
+
+  const point = e => {
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return {x:t.clientX-r.left,y:t.clientY-r.top};
+  };
+
+  canvas.onpointerdown = e => {
+    e.preventDefault();
+    signatureDrawing = true;
+    signatureHasInk = true;
+    const p = point(e);
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(p.x,p.y);
+    canvas.setPointerCapture?.(e.pointerId);
+  };
+
+  canvas.onpointermove = e => {
+    if(!signatureDrawing) return;
+    e.preventDefault();
+    const p = point(e);
+    signatureCtx.lineTo(p.x,p.y);
+    signatureCtx.stroke();
+  };
+
+  canvas.onpointerup = e => { signatureDrawing=false; canvas.releasePointerCapture?.(e.pointerId); };
+  canvas.onpointercancel = () => { signatureDrawing=false; };
+
+}
+
+function clearSignature(){
+  const canvas = $("signatureCanvas");
+  if(!canvas || !signatureCtx) return;
+  const r = canvas.getBoundingClientRect();
+  signatureCtx.clearRect(0,0,r.width,r.height);
+  signatureHasInk = false;
+}
+
+async function confirmSignature(){
+
+  if(!pendingPurchase) return;
+  if(!signatureHasInk){
+    alert("Laat de klant eerst een handtekening plaatsen.");
+    return;
+  }
+
+  const canvas = $("signatureCanvas");
+  pendingPurchase.signature = canvas.toDataURL("image/png");
+  pendingPurchase.signedAt = new Date().toISOString();
+
+  const btns = document.querySelectorAll("#signaturePadStage button");
+  btns.forEach(b=>b.disabled=true);
+
+  try{
+    await savePurchaseCloud(pendingPurchase);
+    purchases.unshift(pendingPurchase);
+    localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));
+    renderHistory();
+  }
+  catch(e){
+    btns.forEach(b=>b.disabled=false);
+    console.error(e);
+    alert("De aankoop kon niet naar Supabase worden opgeslagen. De handtekening is niet definitief verwerkt.\n\n"+(e.message||e));
+    return;
+  }
+
+  $("signatureStepTitle").textContent = "3. DEFINITIEF DOCUMENT";
+  $("signatureStepText").textContent = "De klant heeft getekend. Het definitieve document kan nu worden afgedrukt.";
+  $("signatureReview").style.display = "none";
+  $("signaturePadStage").style.display = "none";
+  $("signatureFinalStage").style.display = "block";
+  $("signatureFinalPreview").innerHTML = `<iframe title="Definitief aankoopdocument"></iframe>`;
+
+  const iframe = $("signatureFinalPreview").querySelector("iframe");
+  iframe.srcdoc = receipt(pendingPurchase);
+
+}
+
+function printPendingFinal(){
+  if(!pendingPurchase) return;
+  openPrint(pendingPurchase);
+}
+
+function closeSignatureFlow(){
+  $("signatureFlow").style.display = "none";
+  document.body.style.overflow = "";
+  pendingPurchase = null;
+}
 
 function printSaved(id){
 
-  let p =
-    purchases.find(
-      x => x.id === id
-    );
-
-
-  if(p)
-    openPrint(p);
+  let p = purchases.find(x => x.id === id);
+  if(p) openPrint(p);
 
 }
 
