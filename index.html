@@ -3419,7 +3419,6 @@ function receipt(p){
              Alleen:
              Type
              Metaal/zuiverheid
-             Netto gram
              Inkoop
           */
 
@@ -3433,10 +3432,6 @@ ${esc(it.type)}
 
 <td>
 ${label}
-</td>
-
-<td>
-${net.toFixed(2)} g
 </td>
 
 <td>
@@ -3527,12 +3522,12 @@ td{
 
 <div class="section">
 <b>AANGEKOCHTE GOEDEREN</b>
-<table><tr><th>Type</th><th>Metaal / gehalte</th><th>Netto</th><th>Inkoop</th></tr>${rows}</table>
+<table><tr><th>Type</th><th>Metaal / gehalte</th><th>Inkoop</th></tr>${rows}</table>
 <div class="total">TOTAAL: ${euro(p.total)}</div>
 </div>
 
 <div class="section grid">
-<div><b>TEST / VASTSTELLING</b><br>Gehalte en gewicht bepaald door controle/testing van de aangeboden goederen.</div>
+<div><b>TEST / VASTSTELLING</b><br>Gehalte bepaald door controle/testing van de aangeboden goederen.</div>
 <div><b>BETALING</b><br>Wijze: ${esc(p.paymentMethod||"")}<br>Bedrag: ${euro(p.total)}</div>
 </div>
 
