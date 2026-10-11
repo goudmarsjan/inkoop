@@ -1,37 +1,5644 @@
-const CACHE='goudmarsjan-v2';
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<meta name="app-build" content="2026-10-11-stability-fix">
 
-const ASSETS=[
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-self.addEventListener('install',e=>{
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c=>c.addAll(ASSETS))
-      .then(()=>self.skipWaiting())
+<title>DE GOUDMARSJAN — Inkoop</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Goudmarsjan">
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --g:#c7a84b;
+  --g2:#e0bd55;
+  --b:#111;
+  --bg:#f5f1e8;
+  --muted:#777;
+  --border:#d8d8d8;
+  --red:#a9001b;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:#171717;
+}
+
+header{
+  background:#111;
+  color:#fff;
+  padding:18px;
+  text-align:center;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+
+header h1{
+  margin:0;
+  font-size:27px;
+  letter-spacing:2px;
+}
+
+header p{
+  margin:5px 0 0;
+  color:var(--g2);
+  font-weight:bold;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:18px;
+}
+
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:16px;
+  box-shadow:0 3px 15px #00000012;
+}
+
+h2{
+  margin:0 0 14px;
+  font-size:20px;
+}
+
+h3{
+  font-size:16px;
+  margin:16px 0 9px;
+}
+
+label{
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin-bottom:5px;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:16px;
+  background:#fff;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled{
+  background:#eeeeee;
+  color:#666;
+  cursor:not-allowed;
+}
+
+textarea{
+  min-height:80px;
+}
+
+.g2,
+.g3,
+.g4{
+  display:grid;
+  gap:12px;
+}
+
+.g2{
+  grid-template-columns:1fr 1fr;
+}
+
+.g3{
+  grid-template-columns:repeat(3,1fr);
+}
+
+.g4{
+  grid-template-columns:repeat(4,1fr);
+}
+
+button{
+  border:0;
+  border-radius:8px;
+  padding:12px 15px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.primary{
+  background:var(--g);
+  color:#111;
+}
+
+.dark{
+  background:#111;
+  color:#fff;
+}
+
+.light{
+  background:#eee;
+}
+
+.danger{
+  background:#f7dfe3;
+  color:var(--red);
+}
+
+.green{
+  background:#dff3e9;
+  color:#17683f;
+}
+
+.full{
+  width:100%;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.row>*{
+  flex:1;
+}
+
+.settings{
+  background:#f7f7f7;
+  padding:14px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+.rates{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+
+.item{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  margin:12px 0;
+  background:#fcfcfc;
+}
+
+.itemhead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.itemgrid{
+  display:grid;
+  grid-template-columns:1fr .9fr .75fr .75fr .8fr .9fr .9fr;
+  gap:8px;
+  align-items:end;
+}
+
+.value{
+  background:#f1f1f1;
+  padding:12px;
+  border-radius:8px;
+  min-height:44px;
+}
+
+.mini,
+.note{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:14px;
+}
+
+.stat{
+  background:#f7f7f7;
+  border-radius:10px;
+  padding:13px;
+}
+
+.stat small{
+  display:block;
+  color:var(--muted);
+  margin-bottom:5px;
+}
+
+.stat strong{
+  font-size:19px;
+}
+
+.total{
+  background:#111;
+  color:#fff;
+  padding:18px;
+  border-radius:12px;
+  margin-top:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.total strong{
+  font-size:28px;
+  color:var(--g2);
+}
+
+.warning{
+  background:#fff0f0;
+  border:1px solid #e4a6ad;
+  color:#8b0018;
+  padding:12px;
+  border-radius:9px;
+  margin-top:12px;
+  font-weight:bold;
+}
+
+.ok{
+  background:#effaf4;
+  border:1px solid #b7dfc9;
+  color:#17683f;
+  padding:12px;
+  border-radius:9px;
+  margin-top:12px;
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.history{
+  border-bottom:1px solid #ddd;
+  padding:12px 0;
+}
+
+.badge{
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:99px;
+  background:#eee;
+  font-size:12px;
+  font-weight:bold;
+}
+
+
+/* APP REDESIGN */
+.app-shell{display:flex;min-height:100vh;background:var(--bg)}
+.sidebar{width:245px;background:#111;color:#fff;position:fixed;left:0;top:0;bottom:0;z-index:100;padding:18px 14px;display:flex;flex-direction:column;border-right:1px solid #2c2c2c}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 8px 20px;border-bottom:1px solid #2c2c2c;margin-bottom:14px}.brand img{width:52px;height:52px;object-fit:cover;border-radius:50%;background:#fff}.brand strong{font-size:14px;letter-spacing:1.3px;display:block}.brand span{font-size:10px;color:var(--g2);font-weight:700;letter-spacing:1px}
+.nav-title{font-size:10px;color:#777;text-transform:uppercase;letter-spacing:1.5px;padding:10px}.nav-btn{width:100%;text-align:left;background:transparent;color:#ddd;padding:12px;border-radius:9px;margin:2px 0;font-weight:700;font-size:14px}.nav-btn:hover{background:#222;color:#fff}.nav-btn.active{background:var(--g);color:#111}.nav-spacer{flex:1}.side-user{border-top:1px solid #2c2c2c;padding:14px 8px 4px;font-size:12px;color:#aaa}.side-user b{color:#fff;font-size:13px}.side-logout{margin-top:10px;width:100%;background:#242424;color:#fff}
+.app-main{margin-left:245px;width:calc(100% - 245px);min-height:100vh}.topbar{background:#111;color:#fff;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;border-bottom:1px solid #292929}.topbar-logo{display:flex;align-items:center;gap:12px}.topbar-logo img{width:42px;height:42px;border-radius:50%;object-fit:cover}.topbar h1{font-size:19px;margin:0;letter-spacing:1.5px}.topbar p{margin:2px 0 0;color:var(--g2);font-size:11px;font-weight:700}.topbar-user{text-align:right;font-size:13px}.topbar-user small{color:#999}.page-wrap{max-width:1280px;margin:auto;padding:24px}.app-page{display:none}.app-page.active{display:block}.page-title{margin-bottom:18px}.page-title h2{font-size:26px;margin:0 0 5px}.page-title p{margin:0;color:#777}.dashboard-grid,.profit-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.dash-card{background:#fff;border-radius:14px;padding:20px;border:1px solid #e6e1d7;box-shadow:0 3px 15px #0000000d}.dash-card.gold{background:#111;color:#fff;border-color:#111}.dash-card small{display:block;color:#777;margin-bottom:8px}.dash-card.gold small{color:#aaa}.dash-card strong{font-size:25px}.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}.quick-btn{min-height:110px;text-align:left;background:#fff;border:1px solid #e6e1d7;border-radius:14px;padding:20px;font-size:17px;box-shadow:0 3px 15px #0000000d}.quick-btn span{display:block;font-size:30px;margin-bottom:8px}.dashboard-section{background:#fff;border-radius:14px;padding:18px;box-shadow:0 3px 15px #0000000d;margin-bottom:18px}.customer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.customer-card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:15px;cursor:pointer}.customer-card:hover{border-color:var(--g)}.customer-card small{display:block;color:#777;margin-top:4px}.customer-detail{margin-top:16px}.profit-chart{display:flex;align-items:flex-end;gap:10px;height:260px;padding:20px;border:1px solid #eee;border-radius:12px;background:#fafafa;overflow-x:auto}.profit-bar-wrap{min-width:44px;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}.profit-bar{width:28px;border-radius:5px 5px 0 0;background:var(--g)}.profit-bar-label{font-size:10px;color:#777;margin-top:5px}.profit-bar-value{font-size:9px;margin-bottom:3px;white-space:nowrap}.mobile-menu{display:none}
+@media(max-width:950px){.sidebar{width:210px}.app-main{margin-left:210px;width:calc(100% - 210px)}.dashboard-grid,.profit-summary{grid-template-columns:1fr 1fr}.customer-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.sidebar{display:none}.app-main{margin-left:0;width:100%}.mobile-menu{display:block;background:#222;color:#fff;padding:8px 11px;border-radius:8px}.topbar{padding:12px 14px}.page-wrap{padding:12px}.dashboard-grid,.profit-summary,.quick-grid,.customer-grid{grid-template-columns:1fr}.container{padding:0}.topbar-user{display:none}}
+
+/* LOGIN */
+
+#authLock{
+  position:fixed;
+  inset:0;
+  background:#111;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+#authLock.hidden{
+  display:none;
+}
+
+.auth-box{
+  width:min(430px,100%);
+  background:#fff;
+  border-radius:18px;
+  padding:28px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+
+.auth-logo{
+  width:78px;
+  height:78px;
+  margin:0 auto 14px;
+  border-radius:18px;
+  background:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#e0bd55;
+  font-weight:900;
+  font-size:25px;
+  letter-spacing:2px;
+}
+
+.auth-box h2{
+  margin:0 0 8px;
+}
+
+.auth-box p{
+  color:#666;
+  font-size:14px;
+}
+
+.auth-box input{
+  margin:7px 0;
+}
+
+.auth-error{
+  color:#b00020;
+  font-weight:700;
+  min-height:20px;
+  font-size:13px;
+  margin-top:8px;
+}
+
+.userbar{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.userbar small{
+  color:var(--muted);
+}
+
+.member-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid #ddd;
+  flex-wrap:wrap;
+}
+
+.member-row:last-child{
+  border-bottom:0;
+}
+
+.member-info{
+  min-width:220px;
+}
+
+.member-info b{
+  display:block;
+}
+
+.member-info small{
+  color:var(--muted);
+}
+
+.owner-only-note{
+  background:#fff7dc;
+  border:1px solid #e7cb70;
+  padding:10px;
+  border-radius:8px;
+  font-size:13px;
+  margin-top:10px;
+}
+
+@media(max-width:850px){
+
+  .g4,
+  .g3{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .rates{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .summary{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .actions{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .itemgrid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:600px){
+
+  .container{
+    padding:10px;
+  }
+
+  .card{
+    padding:14px;
+  }
+
+  .g2,
+  .g3,
+  .g4{
+    grid-template-columns:1fr;
+  }
+
+  .summary,
+  .actions{
+    grid-template-columns:1fr;
+  }
+
+  .itemgrid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  header h1{
+    font-size:22px;
+  }
+}
+
+@media print{
+
+  header,
+  .noprint{
+    display:none!important;
+  }
+
+  body{
+    background:#fff;
+  }
+
+  .container{
+    max-width:none;
+    padding:0;
+  }
+
+  .card{
+    box-shadow:none;
+  }
+}
+</style>
+<style>
+.signature-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;padding:18px;overflow:auto}
+.signature-modal{max-width:900px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 20px 70px #0008;overflow:hidden}
+.signature-head{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:16px 20px;background:#111;color:#fff}
+.signature-head strong{display:block;font-size:18px;letter-spacing:.5px}.signature-head span{display:block;margin-top:4px;color:#d9bd62;font-size:13px}
+.signature-stage{padding:18px 20px}.signature-review{border:1px solid #ddd;border-radius:10px;padding:14px;background:#fafafa}
+.signature-review h3{margin:0 0 10px}.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:13px}.review-box{border:1px solid #ddd;border-radius:9px;padding:10px;background:#fff}.review-items{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}.review-items th,.review-items td{padding:7px;border-bottom:1px solid #ddd;text-align:left}.review-total{font-size:21px;font-weight:800;text-align:right;margin-top:12px}.signature-canvas{display:block;width:100%;height:260px;border:2px dashed #999;border-radius:10px;background:#fff;touch-action:none;cursor:crosshair}.signature-consent{margin-bottom:12px;font-size:14px}.signature-consent p{margin:5px 0;color:#555;font-size:12px}.signature-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}.signed-ok{padding:12px;border-radius:9px;background:#dff3e9;color:#17683f;font-weight:700}.final-preview{border:1px solid #ccc;border-radius:8px;max-height:430px;overflow:auto;margin-top:12px;background:#eee}.final-preview iframe{display:block;width:100%;height:700px;border:0;background:#fff}.flow-next{display:flex;justify-content:flex-end;margin-top:14px}.flow-note{font-size:11px;color:#666;margin-top:10px}.signature-modal .small{font-size:12px;color:#666}@media(max-width:650px){.review-grid{grid-template-columns:1fr}.signature-stage{padding:14px}.signature-canvas{height:220px}.signature-actions button{flex:1}}
+</style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     SUPABASE LOGIN
+========================================================= -->
+
+<div id="authLock">
+
+  <div class="auth-box">
+
+    <div class="auth-logo">
+      GM
+    </div>
+
+    <h2>DE GOUDMARSJAN</h2>
+
+    <p>
+      Log in met je eigen account.
+    </p>
+
+    <input
+      id="loginEmail"
+      type="email"
+      autocomplete="username"
+      placeholder="E-mailadres"
+    >
+
+    <input
+      id="loginPassword"
+      type="password"
+      autocomplete="current-password"
+      placeholder="Wachtwoord"
+      onkeydown="if(event.key==='Enter')login()"
+    >
+
+    <button
+      class="dark full"
+      onclick="login()"
+    >
+      INLOGGEN
+    </button>
+
+    <div
+      id="authError"
+      class="auth-error"
+    ></div>
+
+    <p>
+      Elke werknemer gebruikt een eigen account.
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     AANKOOP / TABLET HANDTEKENING FLOW
+========================================================= -->
+<div id="signatureFlow" class="signature-overlay" style="display:none">
+  <div class="signature-modal">
+    <div class="signature-head">
+      <div>
+        <strong id="signatureStepTitle">1. AANKOOP CONTROLEREN</strong>
+        <span id="signatureStepText">Controleer eerst alle gegevens.</span>
+      </div>
+      <button class="light" type="button" onclick="closeSignatureFlow()">✕</button>
+    </div>
+
+    <div id="signatureReview" class="signature-stage"></div>
+
+    <div id="signaturePadStage" class="signature-stage" style="display:none">
+      <div class="signature-consent">
+        <b>Handtekening verkoper</b>
+        <p>Ik bevestig dat de gegevens, de aangeboden goederen en het overeengekomen aankoopbedrag op dit aankoopdocument correct zijn.</p>
+      </div>
+      <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+      <div class="signature-actions">
+        <button class="light" type="button" onclick="clearSignature()">↺ OPNIEUW</button>
+        <button class="primary" type="button" onclick="confirmSignature()">✓ HANDTEKENING BEVESTIGEN</button>
+      </div>
+    </div>
+
+    <div id="signatureFinalStage" class="signature-stage" style="display:none">
+      <div class="signed-ok">✓ Aankoop bevestigd en ondertekend</div>
+      <p class="small">Het definitieve aankoopdocument is klaar. Je kunt het nu bekijken en afdrukken.</p>
+      <div id="signatureFinalPreview" class="final-preview"></div>
+      <div class="signature-actions">
+        <button class="light" type="button" onclick="closeSignatureFlow()">SLUITEN</button>
+        <button class="dark" type="button" onclick="printPendingFinal()">🖨️ DEFINITIEF DOCUMENT AFDRUKKEN</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="app-shell">
+<aside class="sidebar noprint">
+  <div class="brand"><img src="logo.png" alt="De Goudmarsjan"><div><strong>DE GOUDMARSJAN</strong><span>EDELMETALEN</span></div></div>
+  <div class="nav-title">Menu</div>
+  <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard')">🏠 Dashboard</button>
+  <button class="nav-btn" data-page="purchase" onclick="showPage('purchase')">🟡 Nieuwe inkoop</button>
+  <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
+  <button class="nav-btn" data-page="purchases" onclick="showPage('purchases')">📋 Inkopen</button>
+  <button class="nav-btn" data-page="profits" onclick="showPage('profits')">📈 Winsten</button>
+  <button id="adminNav" class="nav-btn" data-page="admin" onclick="showPage('admin')" style="display:none">⚙️ Beheer</button>
+  <div class="nav-spacer"></div>
+  <div class="side-user"><b id="sideUserName">Niet ingelogd</b><br><span id="sideUserRole">—</span></div>
+  <button class="side-logout" onclick="logout()">Uitloggen</button>
+</aside>
+<div class="app-main">
+<header class="topbar">
+  <div class="topbar-logo"><button class="mobile-menu" onclick="toggleMobileNav()">☰</button><img src="logo.png" alt="De Goudmarsjan"><div><h1>DE GOUDMARSJAN</h1><p>EDELMETALEN — INKOOP</p></div></div>
+  <div class="topbar-user"><b id="topUserName">Niet ingelogd</b><br><small id="topUserRole">—</small></div>
+</header>
+<div class="page-wrap">
+<div class="container">
+<section id="pageDashboard" class="app-page active">
+  <div class="page-title"><h2>Dashboard</h2><p>Overzicht van DE GOUDMARSJAN</p></div>
+  <div class="dashboard-grid">
+    <div class="dash-card"><small>Inkopen vandaag</small><strong id="dashCount">0</strong></div>
+    <div class="dash-card"><small>Totaal ingekocht vandaag</small><strong id="dashPurchase">€ 0,00</strong></div>
+    <div class="dash-card"><small>Verwachte verkoop vandaag</small><strong id="dashResale">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Verwachte winst vandaag</small><strong id="dashProfit">€ 0,00</strong></div>
+  </div>
+  <div class="quick-grid">
+    <button class="quick-btn" onclick="showPage('purchase');newPurchase()"><span>🟡</span>Nieuwe inkoop<br><small>Start een nieuwe aankoop</small></button>
+    <button class="quick-btn" onclick="showPage('customers')"><span>👥</span>Klanten<br><small>Bekijk klantendossiers</small></button>
+    <button class="quick-btn" onclick="showPage('purchases')"><span>📋</span>Inkopen<br><small>Bekijk alle aankopen</small></button>
+    <button class="quick-btn" onclick="showPage('profits')"><span>📈</span>Winsten<br><small>Bekijk je winstoverzicht</small></button>
+  </div>
+  <div class="dashboard-section"><h3>Recente inkopen vandaag</h3><div id="dashRecent"></div></div>
+</section>
+<section id="pagePurchase" class="app-page"></section>
+<section id="pageCustomers" class="app-page">
+  <div class="page-title"><h2>Klanten</h2><p>Alle klantendossiers van DE GOUDMARSJAN</p></div>
+  <input id="customerSearchPage" class="customer-search" placeholder="🔍 Zoek op naam, telefoon, ID-nummer..." oninput="renderCustomersPage()">
+  <div id="customerListPage" class="customer-grid"></div><div id="customerDetailPage" class="customer-detail"></div>
+</section>
+<section id="pagePurchases" class="app-page"></section>
+<section id="pageProfits" class="app-page">
+  <div class="page-title"><h2>Winsten</h2><p>Overzicht van de verwachte bruto winst</p></div>
+  <div class="profit-summary">
+    <div class="dash-card"><small>Aantal inkopen</small><strong id="profitCount">0</strong></div>
+    <div class="dash-card"><small>Totaal ingekocht</small><strong id="profitPurchase">€ 0,00</strong></div>
+    <div class="dash-card"><small>Verwachte verkoop</small><strong id="profitResale">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Verwachte bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
+  </div>
+  <div class="dashboard-section"><h3>Winst per dag — laatste 14 dagen</h3><div id="profitChart" class="profit-chart"></div></div>
+  <div class="dashboard-section"><h3>Winst per werknemer</h3><div id="profitEmployees"></div></div>
+</section>
+<section id="pageAdmin" class="app-page"></section>
+<!-- ORIGINAL CONTENT -->
+
+
+<!-- =========================================================
+     USER BAR
+========================================================= -->
+
+<div class="userbar noprint">
+
+  <div>
+
+    <b id="currentUserName">
+      Niet ingelogd
+    </b>
+
+    <br>
+
+    <small id="currentUserRole">
+      —
+    </small>
+
+  </div>
+
+  <button
+    class="light"
+    onclick="logout()"
+  >
+    Uitloggen
+  </button>
+
+</div>
+
+
+<!-- =========================================================
+     OWNER PANEL
+========================================================= -->
+
+<div
+  id="ownerPanel"
+  class="card noprint"
+  style="display:none"
+>
+
+  <h2>
+    👥 Werknemersbeheer
+  </h2>
+
+  <p class="note">
+    Alleen jij als hoofd/eigenaar ziet dit gedeelte.
+  </p>
+
+  <div class="g3">
+
+    <div>
+
+      <label>
+        E-mailadres werknemer
+      </label>
+
+      <input
+        id="employeeEmail"
+        type="email"
+        placeholder="werknemer@email.be"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Naam werknemer
+      </label>
+
+      <input
+        id="employeeName"
+        placeholder="Voornaam Achternaam"
+      >
+
+    </div>
+
+
+    <div style="display:flex;align-items:end">
+
+      <button
+        class="primary full"
+        onclick="addEmployee()"
+      >
+        ＋ WERKNEMER TOEVOEGEN
+      </button>
+
+    </div>
+
+  </div>
+
+  <div
+    id="membersList"
+    style="margin-top:14px"
+  ></div>
+
+</div>
+
+
+<!-- =========================================================
+     MARKTPRIJZEN
+========================================================= -->
+
+<div class="card">
+
+  <h2>
+    🟡 Marktprijzen & instellingen
+  </h2>
+
+  <div class="g4">
+
+    <div>
+
+      <label>
+        24K / 999 goudprijs per gram (€)
+      </label>
+
+      <input
+        id="goldPrice"
+        type="number"
+        step="0.01"
+        min="0"
+        oninput="calculate()"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        999 zilverprijs per gram (€)
+      </label>
+
+      <input
+        id="silverPrice"
+        type="number"
+        step="0.001"
+        min="0"
+        oninput="calculate()"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Verwachte verkoopprijs (€)
+      </label>
+
+      <input
+        id="resalePrice"
+        type="number"
+        step="0.01"
+        min="0"
+        oninput="calculate()"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Betalingswijze
+      </label>
+
+      <select
+        id="paymentMethod"
+        onchange="calculate()"
+      >
+
+        <option value="overschrijving">
+          Bankoverschrijving
+        </option>
+
+        <option value="cash">
+          Cash
+        </option>
+
+        <option value="anders">
+          Andere
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+
+  <!-- ALLEEN OWNER KAN PERCENTAGES OPENEN -->
+
+  <details
+    id="settingsDetails"
+    style="margin-top:15px"
+  >
+
+    <summary>
+      ⚙️ Mijn inkooppercentages
+    </summary>
+
+
+    <div class="settings">
+
+      <h3>
+        Goud
+      </h3>
+
+
+      <div class="rates">
+
+        <div>
+
+          <label>
+            9K %
+          </label>
+
+          <input
+            id="rate9"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            14K %
+          </label>
+
+          <input
+            id="rate14"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            18K %
+          </label>
+
+          <input
+            id="rate18"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            22K %
+          </label>
+
+          <input
+            id="rate22"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            24K %
+          </label>
+
+          <input
+            id="rate24"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+      </div>
+
+
+      <h3>
+        Zilver
+      </h3>
+
+
+      <div class="rates">
+
+        <div>
+
+          <label>
+            800 ‰ %
+          </label>
+
+          <input
+            id="srate800"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            835 ‰ %
+          </label>
+
+          <input
+            id="srate835"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            925 ‰ %
+          </label>
+
+          <input
+            id="srate925"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+
+        <div>
+
+          <label>
+            999 ‰ %
+          </label>
+
+          <input
+            id="srate999"
+            type="number"
+            min="0"
+            max="100"
+            step=".1"
+            oninput="saveSettings();calculate()"
+          >
+
+        </div>
+
+      </div>
+
+      <p class="note">
+        Het percentage bepaalt hoeveel van de berekende
+        metaalwaarde je als inkoopprijs aanbiedt.
+      </p>
+
+    </div>
+
+  </details>
+
+
+  <div
+    id="employeeSettingsNotice"
+    class="owner-only-note"
+    style="display:none"
+  >
+    🔒 De marktprijzen en inkooppercentages worden door het
+    hoofd beheerd. Je kunt deze instellingen niet wijzigen.
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     KLANT
+========================================================= -->
+
+<div class="card">
+
+  <h2>
+    👤 Klantgegevens
+  </h2>
+
+
+  <div class="g3">
+
+    <div>
+
+      <label>
+        Voornaam *
+      </label>
+
+      <input id="firstName">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Achternaam *
+      </label>
+
+      <input id="lastName">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Geboortedatum *
+      </label>
+
+      <input
+        id="birthDate"
+        type="date"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Telefoon
+      </label>
+
+      <input
+        id="phone"
+        type="tel"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        IBAN
+      </label>
+
+      <input
+        id="iban"
+        placeholder="BE00 0000 0000 0000"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
+        ID-document gecontroleerd?
+      </label>
+
+      <select id="idChecked">
+
+        <option value="ja">
+          Ja
+        </option>
+
+        <option value="nee">
+          Nee
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Type ID-document
+      </label>
+
+      <select id="idType">
+
+        <option value="">
+          — Kies —
+        </option>
+
+        <option>
+          Identiteitskaart
+        </option>
+
+        <option>
+          Paspoort
+        </option>
+
+        <option>
+          Verblijfskaart
+        </option>
+
+        <option>
+          Rijbewijs
+        </option>
+
+        <option>
+          Ander
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Documentnummer
+      </label>
+
+      <input id="idNumber">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Opmerking klant
+      </label>
+
+      <input id="customerNote">
+
+    </div>
+
+  </div>
+
+
+  <h3>
+    📍 Adres
+  </h3>
+
+
+  <div class="g4">
+
+    <div>
+
+      <label>
+        Straat
+      </label>
+
+      <input id="street">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Nr.
+      </label>
+
+      <input id="houseNumber">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Postcode
+      </label>
+
+      <input id="postalCode">
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Gemeente
+      </label>
+
+      <input id="city">
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     INKOOPSTUKKEN
+========================================================= -->
+
+<div class="card">
+
+  <h2>
+    💰 Inkoopstukken
+  </h2>
+
+
+  <div id="items"></div>
+
+
+  <button
+    class="primary full noprint"
+    onclick="addItem()"
+  >
+    ＋ STUK TOEVOEGEN
+  </button>
+
+
+  <div class="summary">
+
+    <div class="stat">
+
+      <small>
+        Metaalwaarde
+      </small>
+
+      <strong id="marketTotal">
+        € 0,00
+      </strong>
+
+    </div>
+
+
+    <div class="stat">
+
+      <small>
+        Gem. inkooppercentage
+      </small>
+
+      <strong id="rateTotal">
+        —
+      </strong>
+
+    </div>
+
+
+    <div class="stat">
+
+      <small>
+        Inkoopprijs
+      </small>
+
+      <strong id="purchaseTotal">
+        € 0,00
+      </strong>
+
+    </div>
+
+
+    <div class="stat">
+
+      <small>
+        Ruimte t.o.v. metaalwaarde
+      </small>
+
+      <strong id="discountTotal">
+        € 0,00
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <div id="cashWarning"></div>
+
+
+  <div class="total">
+
+    <span>
+      TOTALE INKOOP
+    </span>
+
+    <strong id="total">
+      € 0,00
+    </strong>
+
+  </div>
+
+
+  <div
+    class="settings"
+    style="margin-top:12px"
+  >
+
+    <b>
+      📈 Verwachte bruto winst
+    </b>
+
+
+    <div
+      class="g3"
+      style="margin-top:10px"
+    >
+
+      <div>
+
+        <span class="mini">
+          Verkoopprijs
+        </span>
+
+        <div
+          class="value"
+          id="resaleDisplay"
+        >
+          € 0,00
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <span class="mini">
+          Bruto winst
+        </span>
+
+        <div
+          class="value"
+          id="profitDisplay"
+        >
+          € 0,00
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <span class="mini">
+          Marge op verkoopprijs
+        </span>
+
+        <div
+          class="value"
+          id="marginDisplay"
+        >
+          —
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     EXTRA
+========================================================= -->
+
+<div class="card">
+
+  <h2>
+    📝 Extra
+  </h2>
+
+
+  <div class="g2">
+
+    <div>
+
+      <label>
+        Opmerking aankoop
+      </label>
+
+      <textarea
+        id="purchaseNote"
+        placeholder="Bijv. stenen verwijderd, beschadiging, bijzondere afspraak..."
+      ></textarea>
+
+    </div>
+
+
+    <div>
+
+      <label>
+        Intern referentienummer
+      </label>
+
+      <input id="reference">
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     OPSLAAN
+========================================================= -->
+
+<div class="card noprint">
+
+  <h2>
+    🧾 Aankoop
+  </h2>
+
+
+  <div class="actions">
+
+    <button
+      class="dark"
+      onclick="savePurchase()"
+    >
+      💾 OPSLAAN
+    </button>
+
+
+    <button
+      class="primary"
+      onclick="printReceipt()"
+    >
+      🧾 BON MAKEN
+    </button>
+
+
+    <button
+      class="green"
+      onclick="newPurchase()"
+    >
+      ＋ NIEUWE INKOOP
+    </button>
+
+
+    <button
+      class="light"
+      onclick="exportBackup()"
+    >
+      ⬇️ BACK-UP
+    </button>
+
+  </div>
+
+
+  <div
+    class="row"
+    style="margin-top:10px"
+  >
+
+    <button
+      class="light"
+      onclick="document.getElementById('backupFile').click()"
+    >
+      ⬆️ BACK-UP TERUGZETTEN
+    </button>
+
+
+    <button
+      class="light"
+      onclick="exportCSV()"
+    >
+      📊 HISTORIE ALS CSV
+    </button>
+
+
+    <button
+      class="danger"
+      onclick="clearHistory()"
+    >
+      🗑️ ALLE HISTORIE WISSEN
+    </button>
+
+
+    <input
+      id="backupFile"
+      type="file"
+      accept=".json"
+      style="display:none"
+      onchange="importBackup(event)"
+    >
+
+  </div>
+
+
+  <p class="note">
+    Aankopen en klantgegevens worden aan je beveiligde
+    Supabase-bedrijfsaccount gekoppeld.
+  </p>
+
+</div>
+
+
+<!-- =========================================================
+     HISTORIE
+========================================================= -->
+
+<div class="card noprint">
+
+  <h2>
+    📋 Vorige inkopen
+  </h2>
+
+
+  <input
+    id="historySearch"
+    placeholder="Zoek op naam, nummer of datum..."
+    oninput="renderHistory()"
+  >
+
+
+  <div
+    id="history"
+    style="margin-top:10px"
+  >
+    Nog geen inkopen opgeslagen.
+  </div>
+
+</div>
+
+</div>
+<!-- END ORIGINAL CONTENT -->
+</div>
+</div>
+</div>
+</div>
+
+<script>
+
+/* APP NAVIGATIE */
+function showPage(page){
+  document.querySelectorAll('.app-page').forEach(p=>p.classList.remove('active'));
+  const target=document.getElementById('page'+page.charAt(0).toUpperCase()+page.slice(1));
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+  if(page==='dashboard') renderDashboard();
+  if(page==='customers') renderCustomersPage();
+  if(page==='purchases') renderHistory();
+  if(page==='profits') renderProfitPage();
+  if(page==='admin' && currentMember?.role==='owner') loadMembers();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleMobileNav(){const s=document.querySelector('.sidebar');if(!s)return;s.style.display=s.style.display==='flex'?'none':'flex'}
+function moveOriginalCards(){
+  const c=document.querySelector('.container');
+  const purchase=document.getElementById('pagePurchase'), historyPage=document.getElementById('pagePurchases'), adminPage=document.getElementById('pageAdmin');
+  const owner=document.getElementById('ownerPanel');
+  const cards=[...c.querySelectorAll(':scope > .card')];
+  const market=cards.find(x=>x.querySelector('#goldPrice'));
+  const customer=cards.find(x=>x.querySelector('#firstName'));
+  const itemsCard=cards.find(x=>x.querySelector('#items'));
+  const extra=cards.find(x=>x.querySelector('#purchaseNote'));
+  const actions=cards.find(x=>x.querySelector('#backupFile'));
+  const history=cards.find(x=>x.querySelector('#history'));
+  [market,customer,itemsCard,extra,actions].forEach(x=>{if(x)purchase.appendChild(x)});
+  if(history)historyPage.appendChild(history);
+  if(owner)adminPage.appendChild(owner);
+  const userbar=c.querySelector(':scope > .userbar');if(userbar)userbar.style.display='none';
+}
+function renderDashboard(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const arr=purchases.filter(p=>{const d=new Date(p.date);d.setHours(0,0,0,0);return d.getTime()===today.getTime()});
+  const sum=k=>arr.reduce((a,p)=>a+(Number(p[k])||0),0);
+  if(!document.getElementById('dashCount'))return;
+  dashCount.textContent=arr.length;dashPurchase.textContent=euro(sum('total'));dashResale.textContent=euro(sum('resalePrice'));dashProfit.textContent=euro(sum('profit'));
+  dashRecent.innerHTML=arr.slice(0,10).map(p=>`<div class="history"><b>${esc(p.customer?.firstName||'')} ${esc(p.customer?.lastName||'')}</b> <span class="badge">${esc(p.id)}</span><br><small>${new Date(p.date).toLocaleString('nl-BE')}</small><div><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div></div>`).join('')||'<div class="note">Vandaag nog geen inkopen.</div>';
+}
+function renderCustomersPage(){
+  const q=(document.getElementById('customerSearchPage')?.value||'').toLowerCase().trim();
+  const arr=customers.filter(c=>[c.first_name,c.last_name,c.phone,c.id_number,c.city,c.postal_code].join(' ').toLowerCase().includes(q));
+  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')"><b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b><small>${esc(c.phone||'Geen telefoon')}</small><small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small><small>${esc(c.id_number||'Geen ID-nummer')}</small></div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
+}
+function showCustomerDetail(id){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  const name=((c.first_name||'')+' '+(c.last_name||'')).trim();
+  const related=purchases.filter(p=>(((p.customer?.firstName||'')+' '+(p.customer?.lastName||'')).trim()===name));
+  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
+  document.getElementById('customerDetailPage').scrollIntoView({behavior:'smooth'});
+}
+function renderProfitPage(){
+  const total=k=>purchases.reduce((a,p)=>a+(Number(p[k])||0),0);
+  if(!document.getElementById('profitCount'))return;
+  profitCount.textContent=purchases.length;profitPurchase.textContent=euro(total('total'));profitResale.textContent=euro(total('resalePrice'));profitTotal.textContent=euro(total('profit'));
+  const days=[],now=new Date();for(let i=13;i>=0;i--){const d=new Date(now);d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);const profit=purchases.filter(p=>new Date(p.date).toISOString().slice(0,10)===key).reduce((a,p)=>a+(Number(p.profit)||0),0);days.push({d,profit})}const max=Math.max(1,...days.map(x=>x.profit));
+  profitChart.innerHTML=days.map(x=>`<div class="profit-bar-wrap"><div class="profit-bar-value">${euro(x.profit)}</div><div class="profit-bar" style="height:${Math.max(3,x.profit/max*190)}px"></div><div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div></div>`).join('');
+  profitEmployees.innerHTML='<div class="note">Per werknemer wordt verder gekoppeld zodra de medewerkernaam aan de aankoop wordt opgeslagen.</div>';
+}
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+const SUPABASE_URL =
+  "https://mjfyarwabbtdezctrxfp.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_mj_YFZgUnC3DR9lzDgWlYA_CUUozF43";
+
+const sb =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
   );
-});
 
-self.addEventListener('activate',e=>{
-  e.waitUntil(self.clients.claim());
-});
 
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET') return;
+/* =========================================================
+   INSTELLINGEN
+========================================================= */
 
-  e.respondWith(
-    caches.match(e.request)
-      .then(cached=>cached||fetch(e.request)
-        .then(r=>{
-          const copy=r.clone();
-          caches.open(CACHE).then(c=>c.put(e.request,copy));
-          return r;
-        })
-        .catch(()=>cached)
+const purity = {
+
+  goud:{
+    9:.375,
+    14:.585,
+    18:.75,
+    22:.916,
+    24:1
+  },
+
+  zilver:{
+    800:.8,
+    835:.835,
+    925:.925,
+    999:1
+  }
+
+};
+
+
+const defaults = {
+
+  goldPrice:105,
+  silverPrice:1.5,
+
+  rate9:65,
+  rate14:70,
+  rate18:75,
+  rate22:80,
+  rate24:90,
+
+  srate800:65,
+  srate835:65,
+  srate925:70,
+  srate999:75
+
+};
+
+
+let items = [];
+
+let customers = [];
+
+let purchases =
+  JSON.parse(
+    localStorage.getItem(
+      "goudmarsjan_purchases"
+    ) || "[]"
+  );
+
+
+let currentUser = null;
+let currentMember = null;
+let currentBusinessId = null;
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+const $ =
+  id => document.getElementById(id);
+
+
+const euro =
+  value =>
+    new Intl.NumberFormat(
+      "nl-BE",
+      {
+        style:"currency",
+        currency:"EUR"
+      }
+    ).format(
+      Number(value) || 0
+    );
+
+
+const num =
+  id =>
+    parseFloat(
+      $(id)?.value
+    ) || 0;
+
+
+const esc =
+  s =>
+    String(s ?? "")
+      .replace(
+        /[&<>"']/g,
+        m => ({
+          "&":"&amp;",
+          "<":"&lt;",
+          ">":"&gt;",
+          '"':"&quot;",
+          "'":"&#039;"
+        }[m])
+      );
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+function loadSettings(){
+
+  let st =
+    JSON.parse(
+      localStorage.getItem(
+        "goudmarsjan_settings"
+      ) || "{}"
+    );
+
+
+  Object.keys(defaults)
+    .forEach(key => {
+
+      let el = $(key);
+
+      if(el){
+        el.value =
+          st[key] ??
+          defaults[key];
+      }
+
+    });
+
+}
+
+
+function saveSettingsLocal(){
+
+  let st = {};
+
+  Object.keys(defaults)
+    .forEach(key => {
+
+      let el = $(key);
+
+      if(el){
+        st[key] = num(key);
+      }
+
+    });
+
+
+  localStorage.setItem(
+    "goudmarsjan_settings",
+    JSON.stringify(st)
+  );
+
+}
+
+
+function saveSettings(){
+
+  /* werknemers kunnen deze functie
+     niet gebruiken omdat hun velden
+     disabled zijn */
+
+  if(
+    currentMember &&
+    currentMember.role !== "owner"
+  ){
+    return;
+  }
+
+
+  saveSettingsLocal();
+
+
+  if(currentBusinessId){
+
+    saveCloudSettings()
+      .catch(
+        e =>
+          console.warn(
+            "Cloud settings:",
+            e
+          )
+      );
+
+  }
+
+}
+
+
+function getRate(
+  metal,
+  fineness
+){
+
+  let id =
+    (
+      metal === "zilver"
+        ? "srate"
+        : "rate"
+    ) + fineness;
+
+
+  const field = $(id);
+  const value = field && field.value.trim() !== "" ? Number(field.value) : Number(defaults[id]);
+  return Number.isFinite(value) && value >= 0 ? value : Number(defaults[id]) || 0;
+
+}
+
+
+function storedRate(
+  metal,
+  fineness
+){
+
+  let st =
+    JSON.parse(
+      localStorage.getItem(
+        "goudmarsjan_settings"
+      ) || "{}"
+    );
+
+
+  let key =
+    (
+      metal === "zilver"
+        ? "srate"
+        : "rate"
+    ) + fineness;
+
+
+  return Number(
+    st[key]
+  ) || defaults[key];
+
+}
+
+
+/* =========================================================
+   ITEMS
+========================================================= */
+
+function addItem(){
+
+  items.push({
+
+    metal:"goud",
+
+    type:"Juweel",
+
+    description:"",
+
+    fineness:18,
+
+    karat:18,
+
+    weight:0,
+
+    nonGold:0,
+
+    manualOffer:0
+
+  });
+
+
+  renderItems();
+
+  calculate();
+
+}
+
+
+function removeItem(i){
+
+  items.splice(i,1);
+
+  renderItems();
+
+  calculate();
+
+}
+
+
+function updateItem(
+  i,
+  key,
+  value
+){
+
+  if(
+    key === "weight" ||
+    key === "nonGold" ||
+    key === "manualOffer"
+  ){
+
+    items[i][key] =
+      parseFloat(value) || 0;
+
+  }
+
+  else if(
+    key === "fineness"
+  ){
+
+    items[i].fineness =
+      parseInt(value) || 0;
+
+
+    if(
+      items[i].metal === "goud"
+    ){
+
+      items[i].karat =
+        items[i].fineness;
+
+    }
+
+  }
+
+  else{
+
+    items[i][key] = value;
+
+    // Gehalte hoort bij het gekozen metaal; 18K mag nooit als zilvergehalte blijven staan.
+    if(key === "metal"){
+      if(value === "goud"){
+        const allowed = [9,14,18,22,24];
+        if(!allowed.includes(Number(items[i].fineness))) items[i].fineness = 18;
+        items[i].karat = Number(items[i].fineness) || 18;
+      } else if(value === "zilver"){
+        const allowed = [800,835,925,999];
+        if(!allowed.includes(Number(items[i].fineness))) items[i].fineness = 925;
+        items[i].karat = Number(items[i].fineness) || 925;
+      } else {
+        items[i].fineness = 0;
+      }
+    }
+
+  }
+
+
+  /*
+    BELANGRIJK:
+
+    Hier wordt NIET opnieuw
+    renderItems() uitgevoerd.
+
+    Daardoor blijft het
+    toetsenbord open wanneer
+    je bijvoorbeeld 12.50
+    gram ingeeft.
+  */
+
+  calculate();
+
+}
+
+
+function calc(it){
+
+  let metal =
+    it.metal || "goud";
+
+
+  /* VERZILVERD */
+
+  if(
+    metal === "verzilverd"
+  ){
+
+    let net =
+      Math.max(
+        0,
+        (it.weight || 0) -
+        (it.nonGold || 0)
+      );
+
+
+    let offer =
+      parseFloat(
+        it.manualOffer
+      ) || 0;
+
+
+    return {
+
+      metal,
+
+      fineness:0,
+
+      net,
+
+      pure:0,
+
+      market:0,
+
+      offer,
+
+      rate:0,
+
+      price:0
+
+    };
+
+  }
+
+
+  /* GOUD / ZILVER */
+
+  const allowedFineness = metal === "zilver" ? [800,835,925,999] : [9,14,18,22,24];
+  let fineness = Number(it.fineness || it.karat || (metal === "zilver" ? 925 : 18));
+  if(!allowedFineness.includes(fineness)) fineness = metal === "zilver" ? 925 : 18;
+
+
+  let net =
+    Math.max(
+      0,
+      (it.weight || 0) -
+      (it.nonGold || 0)
+    );
+
+
+  let pure =
+    net *
+    (
+      purity[metal]?.[fineness] ||
+      0
+    );
+
+
+  let price =
+    num(
+      metal === "zilver"
+        ? "silverPrice"
+        : "goldPrice"
+    );
+
+
+  let market =
+    pure * price;
+
+
+  let rate =
+    getRate(
+      metal,
+      fineness
+    ) / 100;
+
+
+  return {
+
+    metal,
+
+    fineness,
+
+    net,
+
+    pure,
+
+    market,
+
+    offer:
+      market * rate,
+
+    rate:
+      rate * 100,
+
+    price
+
+  };
+
+}
+
+
+/* =========================================================
+   RENDER ITEMS
+========================================================= */
+
+function renderItems(){
+
+  let container =
+    $("items");
+
+
+  if(!items.length){
+
+    container.innerHTML =
+      '<div style="text-align:center;color:#777;padding:15px">Nog geen stukken toegevoegd.</div>';
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    items.map(
+      (it,i) => {
+
+        let x =
+          calc(it);
+
+
+        let metal =
+          it.metal || "goud";
+
+
+        let fineness =
+          x.fineness;
+
+
+        let purityOptions =
+          metal === "goud"
+            ? [9,14,18,22,24]
+            : metal === "zilver"
+              ? [800,835,925,999]
+              : [];
+
+
+        let purityLabel =
+          metal === "goud"
+            ? "Karaat"
+            : metal === "zilver"
+              ? "Zuiverheid"
+              : "—";
+
+
+        return `
+
+<div class="item">
+
+<div class="itemhead">
+
+<b>
+Stuk ${i+1}
+</b>
+
+<button
+class="danger"
+onclick="removeItem(${i})"
+>
+✕ VERWIJDER
+</button>
+
+</div>
+
+
+<div class="itemgrid">
+
+
+<div>
+
+<label>
+Metaal
+</label>
+
+<select
+onchange="
+updateItem(${i},'metal',this.value);
+renderItems();
+calculate()
+"
+>
+
+<option
+value="goud"
+${metal==="goud"?"selected":""}
+>
+🟡 Goud
+</option>
+
+<option
+value="zilver"
+${metal==="zilver"?"selected":""}
+>
+⚪ Zilver
+</option>
+
+<option
+value="verzilverd"
+${metal==="verzilverd"?"selected":""}
+>
+⚪ Verzilverd
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label>
+${purityLabel}
+</label>
+
+
+${
+metal === "verzilverd"
+
+? `
+<div class="value">
+Geen zilvergehalte berekend
+</div>
+`
+
+: `
+
+<select
+onchange="
+updateItem(${i},'fineness',this.value);
+renderItems();
+calculate()
+"
+>
+
+${purityOptions.map(
+v =>
+`
+
+<option
+value="${v}"
+${fineness===v?"selected":""}
+>
+
+${
+metal==="goud"
+  ? v+"K"
+  : v+"‰"
+}
+
+</option>
+
+`
+).join("")}
+
+</select>
+
+`
+
+}
+
+</div>
+
+
+<div>
+
+<label>
+Bruto gram
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.weight || ""}"
+oninput="
+updateItem(
+${i},
+'weight',
+this.value
+)
+"
+>
+
+</div>
+
+
+<div>
+
+<label>
+${
+metal==="goud"
+  ? "Niet-goud"
+  : "Niet-metaal"
+}
+gram
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.nonGold || ""}"
+oninput="
+updateItem(
+${i},
+'nonGold',
+this.value
+)
+"
+>
+
+</div>
+
+
+<div>
+
+<label>
+Netto ${metal}
+</label>
+
+<div
+class="value"
+id="net_${i}"
+>
+${x.net.toFixed(2)} g
+</div>
+
+</div>
+
+
+<div>
+
+<label>
+Metaalwaarde
+</label>
+
+<div
+class="value"
+id="market_${i}"
+>
+${euro(x.market)}
+</div>
+
+</div>
+
+
+${
+metal === "verzilverd"
+
+? `
+
+<div>
+
+<label>
+Inkoopprijs verzilverd (€)
+</label>
+
+<input
+type="number"
+min="0"
+step=".01"
+value="${it.manualOffer || ""}"
+oninput="
+updateItem(
+${i},
+'manualOffer',
+this.value
+)
+"
+>
+
+</div>
+
+`
+
+: ""
+
+}
+
+
+<div>
+
+<label>
+Inkoop
+</label>
+
+<div
+class="value"
+id="offer_${i}"
+>
+<b>
+${euro(x.offer)}
+</b>
+</div>
+
+</div>
+
+
+</div>
+
+
+<div style="margin-top:8px">
+
+<label>
+Omschrijving
+</label>
+
+<input
+value="${esc(it.description)}"
+oninput="
+updateItem(
+${i},
+'description',
+this.value
+)
+"
+placeholder="Bijv. gouden ring / zilveren ketting"
+>
+
+</div>
+
+
+<div
+class="mini"
+id="mini_${i}"
+style="margin-top:8px"
+>
+
+${
+metal==="verzilverd"
+  ? "Verzilverd"
+  : metal==="goud"
+    ? x.fineness+"K"
+    : "Zilver "+x.fineness+"‰"
+}
+
+ · Metaalwaarde:
+${euro(x.market)}
+
+ ·
+${x.rate.toFixed(1)}%
+
+ · Ruimte:
+${euro(x.market-x.offer)}
+
+</div>
+
+
+</div>
+
+`;
+
+      }
+    ).join("");
+
+}
+
+
+/* =========================================================
+   UPDATE ITEM DISPLAY
+========================================================= */
+
+function updateItemDisplay(){
+
+  items.forEach(
+    (it,i) => {
+
+      let x =
+        calc(it);
+
+
+      if($("net_"+i)){
+        $("net_"+i)
+          .textContent =
+          x.net.toFixed(2)+" g";
+      }
+
+
+      if($("market_"+i)){
+        $("market_"+i)
+          .textContent =
+          euro(x.market);
+      }
+
+
+      if($("offer_"+i)){
+        $("offer_"+i)
+          .innerHTML =
+          "<b>"+
+          euro(x.offer)+
+          "</b>";
+      }
+
+
+      if($("mini_"+i)){
+
+        $("mini_"+i)
+          .textContent =
+
+          (
+            it.metal === "verzilverd"
+
+              ? "Verzilverd"
+
+              : it.metal === "goud"
+
+                ? x.fineness+"K"
+
+                : "Zilver "+x.fineness+"‰"
+
+          )
+
+          +" · Metaalwaarde: "
+          + euro(x.market)
+
+          +" · "
+          + x.rate.toFixed(1)
+          +"%"
+
+          +" · Ruimte: "
+          + euro(
+              x.market -
+              x.offer
+            );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   BEREKENING
+========================================================= */
+
+function calculate(){
+
+  saveSettingsLocal();
+
+
+  let market = 0;
+
+  let offer = 0;
+
+
+  items.forEach(
+    it => {
+
+      let x =
+        calc(it);
+
+      market +=
+        x.market;
+
+      offer +=
+        x.offer;
+
+    }
+  );
+
+
+  $("marketTotal")
+    .textContent =
+    euro(market);
+
+
+  $("purchaseTotal")
+    .textContent =
+    euro(offer);
+
+
+  $("total")
+    .textContent =
+    euro(offer);
+
+
+  $("discountTotal")
+    .textContent =
+    euro(
+      market - offer
+    );
+
+
+  $("rateTotal")
+    .textContent =
+    market
+      ? (
+          offer /
+          market *
+          100
+        ).toFixed(1)+"%"
+      : "—";
+
+
+  let resale =
+    num("resalePrice");
+
+
+  let profit =
+    resale - offer;
+
+
+  $("resaleDisplay")
+    .textContent =
+    euro(resale);
+
+
+  $("profitDisplay")
+    .textContent =
+    euro(profit);
+
+
+  $("marginDisplay")
+    .textContent =
+    resale
+      ? (
+          profit /
+          resale *
+          100
+        ).toFixed(1)+"%"
+      : "—";
+
+
+  let method =
+    $("paymentMethod").value;
+
+
+  if(
+    method === "cash" &&
+    offer > 500
+  ){
+
+    $("cashWarning").innerHTML =
+
+      `<div class="warning">
+      ⚠️ CASH ${euro(offer)}
+      — boven €500.
+      Kies een andere betalingswijze.
+      </div>`;
+
+  }
+
+  else if(
+    method === "cash"
+  ){
+
+    $("cashWarning").innerHTML =
+
+      `<div class="ok">
+      ✓ Cash ${euro(offer)}
+      — onder €500.
+      </div>`;
+
+  }
+
+  else{
+
+    $("cashWarning")
+      .innerHTML = "";
+
+  }
+
+
+  updateItemDisplay();
+
+}
+
+
+/* =========================================================
+   KLANT
+========================================================= */
+
+function customer(){
+
+  return {
+
+    firstName:
+      $("firstName")
+        .value
+        .trim(),
+
+    lastName:
+      $("lastName")
+        .value
+        .trim(),
+
+    birthDate:
+      $("birthDate").value,
+
+    phone:
+      $("phone")
+        .value
+        .trim(),
+
+    iban:
+      $("iban")
+        .value
+        .trim(),
+
+    idChecked:
+      $("idChecked").value,
+
+    idType:
+      $("idType").value,
+
+    idNumber:
+      $("idNumber")
+        .value
+        .trim(),
+
+    street:
+      $("street")
+        .value
+        .trim(),
+
+    houseNumber:
+      $("houseNumber")
+        .value
+        .trim(),
+
+    postalCode:
+      $("postalCode")
+        .value
+        .trim(),
+
+    city:
+      $("city")
+        .value
+        .trim(),
+
+    note:
+      $("customerNote")
+        .value
+        .trim()
+
+  };
+
+}
+
+
+/* =========================================================
+   DATA
+========================================================= */
+
+function data(){
+
+  let market =
+    items.reduce(
+      (sum,it) =>
+        sum + calc(it).market,
+      0
+    );
+
+
+  let total =
+    items.reduce(
+      (sum,it) =>
+        sum + calc(it).offer,
+      0
+    );
+
+
+  let resale =
+    num("resalePrice");
+
+
+  return {
+
+    id:
+      "GM-" +
+      new Date().getFullYear() +
+      "-" +
+      String(
+        Date.now()
+      ).slice(-6),
+
+    date:
+      new Date().toISOString(),
+
+    customer:
+      customer(),
+
+    paymentMethod:
+      $("paymentMethod").value,
+
+    items:
+      JSON.parse(
+        JSON.stringify(items)
+      ),
+
+    goldPrice:
+      num("goldPrice"),
+
+    silverPrice:
+      num("silverPrice"),
+
+    marketValue:
+      market,
+
+    total:
+      total,
+
+    resalePrice:
+      resale,
+
+    profit:
+      resale - total,
+
+    note:
+      $("purchaseNote")
+        .value
+        .trim(),
+
+    reference:
+      $("reference")
+        .value
+        .trim()
+
+  };
+
+}
+
+
+/* =========================================================
+   VALIDATIE
+========================================================= */
+
+function valid(){
+
+  let c =
+    customer();
+
+
+  if(
+    !c.firstName ||
+    !c.lastName ||
+    !c.birthDate
+  ){
+
+    alert(
+      "Vul voornaam, achternaam en geboortedatum in."
+    );
+
+    return false;
+
+  }
+
+
+  if(
+    c.idChecked !== "ja"
+  ){
+
+    alert(
+      "Controleer het ID-document."
+    );
+
+    return false;
+
+  }
+
+
+  if(
+    !items.length
+  ){
+
+    alert(
+      "Voeg minstens één stuk toe."
+    );
+
+    return false;
+
+  }
+
+
+  let total =
+    items.reduce(
+      (sum,it) =>
+        sum + calc(it).offer,
+      0
+    );
+
+
+  if(
+    $("paymentMethod").value === "cash" &&
+    total > 500
+  ){
+
+    alert(
+      "Cash boven €500 kan hier niet worden opgeslagen."
+    );
+
+    return false;
+
+  }
+
+
+  if(
+    !currentUser ||
+    !currentBusinessId
+  ){
+
+    alert(
+      "Log eerst in."
+    );
+
+    return false;
+
+  }
+
+
+  return true;
+
+}
+
+
+/* =========================================================
+   OPSLAAN
+========================================================= */
+
+let purchaseSaveInProgress = false;
+
+async function savePurchase(){
+
+  if(purchaseSaveInProgress) return;
+  if(!valid()) return;
+  purchaseSaveInProgress = true;
+
+  let p = data();
+
+
+  try{
+
+    await savePurchaseCloud(p);
+
+
+    purchases.unshift(p);
+
+
+    localStorage.setItem(
+      "goudmarsjan_purchases",
+      JSON.stringify(purchases)
+    );
+
+
+    renderHistory();
+
+
+    alert(
+      "Inkoop opgeslagen in de cloud!\n\n"+
+      p.id
+    );
+
+  }
+
+  catch(e){
+    console.error(e);
+    alert(
+      "De aankoop kon niet naar Supabase worden opgeslagen.\n\n"+
+      (e.message || e)
+    );
+  } finally {
+    purchaseSaveInProgress = false;
+  }
+
+}
+
+
+/* =========================================================
+   HISTORIE
+========================================================= */
+
+function renderHistory(){
+
+  let q =
+    (
+      $("historySearch")
+        ?.value ||
+      ""
+    ).toLowerCase();
+
+
+  let arr =
+    purchases
+      .filter(
+        p =>
+          [
+            p.id,
+            p.date,
+            p.customer?.firstName,
+            p.customer?.lastName,
+            p.reference
+          ]
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
       )
+      .slice(0,50);
+
+
+  $("history")
+    .innerHTML =
+
+    arr.length
+
+      ? arr.map(
+          p => `
+
+<div class="history">
+
+<b>
+${esc(p.id)}
+</b>
+
+<span class="badge">
+${esc(p.paymentMethod || "")}
+</span>
+
+<br>
+
+${esc(p.customer?.firstName || "")}
+${esc(p.customer?.lastName || "")}
+
+<br>
+
+<small>
+${new Date(p.date)
+  .toLocaleString("nl-BE")}
+</small>
+
+<div>
+<b>
+${euro(p.total)}
+</b>
+</div>
+
+<div
+class="row"
+style="margin-top:8px"
+>
+
+<button
+class="light"
+onclick="printSaved('${p.id}')"
+>
+🧾 BON
+</button>
+
+<button
+class="danger"
+onclick="deletePurchase('${p.id}')"
+>
+🗑️ VERWIJDER
+</button>
+
+</div>
+
+</div>
+
+`
+        ).join("")
+
+      :
+
+      '<div style="text-align:center;color:#777;padding:15px">Geen inkopen gevonden.</div>';
+
+}
+
+
+/* =========================================================
+   DELETE PURCHASE
+========================================================= */
+
+async function deletePurchase(id){
+
+  if(
+    !confirm(
+      "Deze aankoop verwijderen?"
+    )
+  )
+    return;
+
+
+  try{
+
+    await deletePurchaseCloud(id);
+
+  }
+
+  catch(e){
+
+    alert(
+      "Kon de cloud-aankoop niet verwijderen:\n"+
+      (e.message || e)
+    );
+
+    return;
+
+  }
+
+
+  purchases =
+    purchases.filter(
+      p => p.id !== id
+    );
+
+
+  localStorage.setItem(
+    "goudmarsjan_purchases",
+    JSON.stringify(purchases)
   );
-});
+
+
+  renderHistory();
+
+}
+
+
+/* =========================================================
+   CLEAR HISTORY
+========================================================= */
+
+async function clearHistory(){
+
+  if(
+    !confirm(
+      "ALLE opgeslagen inkopen verwijderen?"
+    )
+  )
+    return;
+
+
+  for(
+    const p of [...purchases]
+  ){
+
+    try{
+
+      await deletePurchaseCloud(
+        p.id
+      );
+
+    }
+
+    catch(e){
+
+      console.error(e);
+
+    }
+
+  }
+
+
+  purchases = [];
+
+
+  localStorage.removeItem(
+    "goudmarsjan_purchases"
+  );
+
+
+  renderHistory();
+
+}
+
+
+/* =========================================================
+   NIEUWE INKOOP
+========================================================= */
+
+function newPurchase(){
+
+  pendingPurchase = null;
+
+  if(
+    !confirm(
+      "Nieuwe inkoop starten? Niet-opgeslagen gegevens gaan verloren."
+    )
+  )
+    return;
+
+
+  [
+    "firstName",
+    "lastName",
+    "birthDate",
+    "phone",
+    "iban",
+    "idNumber",
+    "street",
+    "houseNumber",
+    "postalCode",
+    "city",
+    "customerNote",
+    "purchaseNote",
+    "reference",
+    "resalePrice"
+  ]
+  .forEach(
+    id =>
+      $(id).value = ""
+  );
+
+
+  $("idChecked")
+    .value = "ja";
+
+
+  $("idType")
+    .value = "";
+
+
+  $("paymentMethod")
+    .value =
+    "overschrijving";
+
+
+  items = [];
+
+
+  addItem();
+
+}
+
+
+/* =========================================================
+   BON
+   GEEN METAALWAARDE OP KLANTENBON
+========================================================= */
+
+function receipt(p){
+
+  let c =
+    p.customer || {};
+
+
+  let addr =
+    [
+      c.street &&
+      c.houseNumber
+        ? c.street+" "+c.houseNumber
+        : c.street,
+
+      c.postalCode &&
+      c.city
+        ? c.postalCode+" "+c.city
+        : c.city
+
+    ]
+    .filter(Boolean)
+    .join(", ");
+
+
+  let rows =
+    (p.items || [])
+      .map(
+        it => {
+
+          let metal =
+            it.metal ||
+            "goud";
+
+
+          let f =
+            it.fineness ||
+            (
+              metal === "goud"
+                ? it.karat
+                : 925
+            );
+
+
+          let net =
+            Math.max(
+              0,
+              (it.weight || 0) -
+              (it.nonGold || 0)
+            );
+
+
+          let offer;
+
+          if(Number.isFinite(Number(it.savedOffer)) && it.savedOffer !== undefined){
+            offer = Number(it.savedOffer) || 0;
+          } else if(
+            metal === "verzilverd"
+          ){
+
+            offer =
+              Number(
+                it.manualOffer
+              ) || 0;
+
+          }
+
+          else{
+
+            let market =
+              net *
+              (
+                purity[metal]?.[f] ||
+                0
+              ) *
+              (
+                metal === "zilver"
+                  ? (
+                      p.silverPrice || 0
+                    )
+                  : (
+                      p.goldPrice || 0
+                    )
+              );
+
+
+            offer =
+              market *
+              storedRate(
+                metal,
+                f
+              ) /
+              100;
+
+          }
+
+
+          let label =
+            metal === "goud"
+              ? f+"K"
+              : metal === "zilver"
+                ? "Zilver "+f+"‰"
+                : "Verzilverd";
+
+
+          /*
+             BELANGRIJK:
+
+             Hier wordt GEEN marketValue
+             naar de klant gestuurd.
+
+             Alleen:
+             Type
+             Metaal/zuiverheid
+             Inkoop
+          */
+
+          return `
+
+<tr>
+
+<td>
+${esc(it.type)}
+</td>
+
+<td>
+${label}
+</td>
+
+<td>
+${euro(offer)}
+</td>
+
+</tr>
+
+`;
+
+        }
+      )
+      .join("");
+
+
+  return `
+
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+${esc(p.id)}
+</title>
+
+
+<style>
+
+body{font-family:Arial,sans-serif;max-width:820px;margin:auto;padding:18px;font-size:10px;line-height:1.25;color:#111}
+@page{size:A4;margin:8mm}
+@media print{body{padding:0;font-size:9px}.no-print{display:none}}
+
+h1{letter-spacing:2px;font-size:22px;margin:0 0 2px}
+h3{margin:0 0 8px;font-size:13px}
+.section{border:1px solid #ccc;border-radius:5px;padding:7px;margin:7px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 15px}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:8px}
+.sigbox{height:70px;border:1px solid #bbb;padding:5px}
+.sigbox img{max-width:100%;height:55px;object-fit:contain;display:block;margin:auto}
+.checks{font-size:9px}.muted{color:#666;font-size:8px}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:25px;
+}
+
+th,
+td{
+  padding:9px;
+  border-bottom:1px solid #ddd;
+  text-align:left;
+}
+
+.total{
+  font-size:24px;
+  font-weight:bold;
+  margin-top:25px;
+}
+
+.small{
+  font-size:12px;
+  color:#666;
+}
+
+</style>
+
+</head>
+
+
+<body>
+<h1>DE GOUDMARSJAN</h1>
+<h3>EDELMETALEN — AANKOOPDOCUMENT</h3>
+
+<div class="section grid">
+<div><b>Document:</b> ${esc(p.id)}<br><b>Datum/tijd:</b> ${new Date(p.date).toLocaleString("nl-BE")}</div>
+<div><b>Betaling:</b> ${esc(p.paymentMethod||"")}<br><b>Totaal:</b> ${euro(p.total)}</div>
+</div>
+
+<div class="section grid">
+<div><b>VERKOPER</b><br>${esc(c.firstName||"")} ${esc(c.lastName||"")}<br>Geboortedatum: ${esc(c.birthDate||"")}<br>Tel.: ${esc(c.phone||"")}</div>
+<div><b>IDENTIFICATIE / ADRES</b><br>ID: ${esc(c.idType||"—")} ${c.idNumber ? "— "+esc(c.idNumber) : ""}<br>${esc(addr)}<br>IBAN: ${esc(c.iban||"")}</div>
+</div>
+
+<div class="section">
+<b>AANGEKOCHTE GOEDEREN</b>
+<table><tr><th>Type</th><th>Metaal / gehalte</th><th>Inkoop</th></tr>${rows}</table>
+<div class="total">TOTAAL: ${euro(p.total)}</div>
+</div>
+
+<div class="section grid">
+<div><b>TEST / VASTSTELLING</b><br>Gehalte bepaald door controle/testing van de aangeboden goederen.</div>
+<div><b>BETALING</b><br>Wijze: ${esc(p.paymentMethod||"")}<br>Bedrag: ${euro(p.total)}</div>
+</div>
+
+<div class="section checks">
+<b>VERKLARING VERKOPER</b><br>
+☐ Ik verklaar rechtmatige eigenaar te zijn of gemachtigd te zijn om de goederen te verkopen. &nbsp; 
+☐ Ik handel vrijwillig. &nbsp; 
+☐ Ik verklaar meerderjarig en handelingsbekwaam te zijn. &nbsp; 
+☐ Ik verklaar dat de gegevens en de transactie correct zijn. &nbsp; 
+☐ Ik aanvaard de vermelde goederen en aankoopprijs.
+</div>
+
+${p.reference ? `<div class="section"><b>Referentie:</b> ${esc(p.reference)}</div>` : ""}
+${p.note ? `<div class="section"><b>Opmerking:</b> ${esc(p.note)}</div>` : ""}
+
+<div class="sig">
+<div class="sigbox"><b>VERKOPER — handtekening</b>${p.signature ? `<img src="${p.signature}" alt="Handtekening verkoper">` : ""}<br><span class="muted">Naam: ${esc(c.firstName||"")} ${esc(c.lastName||"")}</span></div>
+<div class="sigbox"><b>DE GOUDMARSJAN — handtekening</b><br><br><span class="muted">Naam: ______________________________</span></div>
+</div>
+
+<p class="muted">Dit document wordt opgemaakt voor de administratie van DE GOUDMARSJAN. De verkoper ontvangt een exemplaar. Identificatie- en transact gegevens worden bewaard overeenkomstig de toepasselijke wettelijke verplichtingen.</p>
+<p class="muted"><b>DE GOUDMARSJAN — EDELMETALEN</b></p>
+</body>
+
+</html>
+
+`;
+
+}
+
+
+function openPrint(p){
+
+  let w =
+    window.open(
+      "",
+      "_blank"
+    );
+
+  if(!w){
+    alert("Sta pop-ups toe voor het definitieve aankoopdocument.");
+    return;
+  }
+
+  w.document.write(receipt(p));
+  w.document.close();
+
+  // Wacht tot de bon klaar is opgebouwd; vaste korte timeout is onbetrouwbaar op tablets.
+  const printWhenReady = () => {
+    try { w.focus(); w.print(); }
+    catch(err) { console.error("Afdrukken aankoopbon:", err); alert("De bon is geopend, maar afdrukken lukte niet. Gebruik Afdrukken in het geopende venster."); }
+  };
+  if(w.document.readyState === "complete") {
+    setTimeout(printWhenReady, 150);
+  } else {
+    w.addEventListener("load", () => setTimeout(printWhenReady, 150), {once:true});
+    setTimeout(printWhenReady, 1200);
+  }
+
+}
+
+let pendingPurchase = null;
+let signatureDrawing = false;
+let signatureHasInk = false;
+let signatureCtx = null;
+
+function printReceipt(){
+
+  if(!valid())
+    return;
+
+  pendingPurchase = data();
+  openPurchaseReview(pendingPurchase);
+
+}
+
+function openPurchaseReview(p){
+
+  const flow = $("signatureFlow");
+  const review = $("signatureReview");
+  const pad = $("signaturePadStage");
+  const final = $("signatureFinalStage");
+
+  if(!flow || !review || !pad || !final) return;
+
+  $("signatureStepTitle").textContent = "1. AANKOOP CONTROLEREN";
+  $("signatureStepText").textContent = "Controleer eerst alle gegevens. Daarna kan de klant tekenen.";
+  review.style.display = "block";
+  pad.style.display = "none";
+  final.style.display = "none";
+
+  const c = p.customer || {};
+  const addr = [
+    c.street && c.houseNumber ? c.street+" "+c.houseNumber : c.street,
+    c.postalCode && c.city ? c.postalCode+" "+c.city : c.city
+  ].filter(Boolean).join(", ");
+
+  const rows = (p.items || []).map((it,i)=>{
+    const metal = it.metal || "goud";
+    const f = it.fineness || (metal === "goud" ? it.karat : 925);
+    const net = Math.max(0,(it.weight||0)-(it.nonGold||0));
+    const offer = Number.isFinite(Number(it.savedOffer)) && it.savedOffer !== undefined ? (Number(it.savedOffer)||0) : (metal === "verzilverd" ? (Number(it.manualOffer)||0) : (net*(purity[metal]?.[f]||0)*(metal === "zilver" ? (p.silverPrice||0):(p.goldPrice||0))*storedRate(metal,f)/100));
+    const label = metal === "goud" ? f+"K" : metal === "zilver" ? "Zilver "+f+"‰" : "Verzilverd";
+    return `<tr><td>${i+1}. ${esc(it.type||"Stuk")}</td><td>${esc(label)}</td><td>${net.toFixed(2)} g</td><td>${euro(offer)}</td></tr>`;
+  }).join("");
+
+  review.innerHTML = `
+    <div class="signature-review">
+      <h3>Controle aankoopdocument</h3>
+      <div class="review-grid">
+        <div class="review-box"><b>Document</b><br>${esc(p.id)}<br>${new Date(p.date).toLocaleString("nl-BE")}</div>
+        <div class="review-box"><b>Betaling</b><br>${esc(p.paymentMethod||"")}<br>${euro(p.total)}</div>
+        <div class="review-box"><b>Verkoper</b><br>${esc(c.firstName||"")} ${esc(c.lastName||"")}<br>Geboortedatum: ${esc(c.birthDate||"")}</div>
+        <div class="review-box"><b>Identificatie</b><br>${esc(c.idType||"—")} ${c.idNumber ? "— "+esc(c.idNumber) : ""}<br>${esc(addr)}</div>
+      </div>
+      <table class="review-items"><thead><tr><th>Omschrijving</th><th>Gehalte</th><th>Netto</th><th>Inkoop</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="review-total">TOTAAL: ${euro(p.total)}</div>
+      <div class="flow-note">Controleer vooral naam, geboortedatum, identificatie, goederen, gewichten, aankoopprijs en betalingswijze.</div>
+    </div>
+    <div class="flow-next"><button class="primary" type="button" onclick="goToSignaturePad()">NAAR HANDTEKENING →</button></div>
+  `;
+
+  flow.style.display = "block";
+  document.body.style.overflow = "hidden";
+}
+
+function goToSignaturePad(){
+
+  if(!pendingPurchase) return;
+  $("signatureStepTitle").textContent = "2. KLANT LAAT HANDTEKENEN";
+  $("signatureStepText").textContent = "Laat de verkoper rechtstreeks op de tablet tekenen.";
+  $("signatureReview").style.display = "none";
+  $("signaturePadStage").style.display = "block";
+  $("signatureFinalStage").style.display = "none";
+  setupSignatureCanvas();
+
+}
+
+function setupSignatureCanvas(){
+
+  const canvas = $("signatureCanvas");
+  if(!canvas) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const ratio = Math.max(1, window.devicePixelRatio || 1);
+  canvas.width = Math.round(rect.width * ratio);
+  canvas.height = Math.round(rect.height * ratio);
+  signatureCtx = canvas.getContext("2d");
+  signatureCtx.scale(ratio,ratio);
+  signatureCtx.lineWidth = 2.2;
+  signatureCtx.lineCap = "round";
+  signatureCtx.lineJoin = "round";
+  signatureCtx.strokeStyle = "#111";
+  signatureHasInk = false;
+
+  const point = e => {
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return {x:t.clientX-r.left,y:t.clientY-r.top};
+  };
+
+  canvas.onpointerdown = e => {
+    e.preventDefault();
+    signatureDrawing = true;
+    signatureHasInk = true;
+    const p = point(e);
+    signatureCtx.beginPath();
+    signatureCtx.moveTo(p.x,p.y);
+    canvas.setPointerCapture?.(e.pointerId);
+  };
+
+  canvas.onpointermove = e => {
+    if(!signatureDrawing) return;
+    e.preventDefault();
+    const p = point(e);
+    signatureCtx.lineTo(p.x,p.y);
+    signatureCtx.stroke();
+  };
+
+  canvas.onpointerup = e => { signatureDrawing=false; canvas.releasePointerCapture?.(e.pointerId); };
+  canvas.onpointercancel = () => { signatureDrawing=false; };
+
+}
+
+function clearSignature(){
+  const canvas = $("signatureCanvas");
+  if(!canvas || !signatureCtx) return;
+  const r = canvas.getBoundingClientRect();
+  signatureCtx.clearRect(0,0,r.width,r.height);
+  signatureHasInk = false;
+}
+
+async function confirmSignature(){
+
+  if(!pendingPurchase) return;
+  if(!signatureHasInk){
+    alert("Laat de klant eerst een handtekening plaatsen.");
+    return;
+  }
+
+  const canvas = $("signatureCanvas");
+  pendingPurchase.signature = canvas.toDataURL("image/png");
+  pendingPurchase.signedAt = new Date().toISOString();
+
+  const btns = document.querySelectorAll("#signaturePadStage button");
+  btns.forEach(b=>b.disabled=true);
+
+  try{
+    await savePurchaseCloud(pendingPurchase);
+    purchases.unshift(pendingPurchase);
+    localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));
+    renderHistory();
+  }
+  catch(e){
+    btns.forEach(b=>b.disabled=false);
+    console.error(e);
+    alert("De aankoop kon niet naar Supabase worden opgeslagen. De handtekening is niet definitief verwerkt.\n\n"+(e.message||e));
+    return;
+  }
+
+  $("signatureStepTitle").textContent = "3. DEFINITIEF DOCUMENT";
+  $("signatureStepText").textContent = "De klant heeft getekend. Het definitieve document kan nu worden afgedrukt.";
+  $("signatureReview").style.display = "none";
+  $("signaturePadStage").style.display = "none";
+  $("signatureFinalStage").style.display = "block";
+  $("signatureFinalPreview").innerHTML = `<iframe title="Definitief aankoopdocument"></iframe>`;
+
+  const iframe = $("signatureFinalPreview").querySelector("iframe");
+  iframe.srcdoc = receipt(pendingPurchase);
+
+}
+
+function printPendingFinal(){
+  if(!pendingPurchase) return;
+  openPrint(pendingPurchase);
+}
+
+function closeSignatureFlow(){
+  $("signatureFlow").style.display = "none";
+  document.body.style.overflow = "";
+  pendingPurchase = null;
+}
+
+function printSaved(id){
+
+  let p = purchases.find(x => x.id === id);
+  if(p) openPrint(p);
+
+}
+
+
+/* =========================================================
+   BACKUP
+========================================================= */
+
+function download(
+  name,
+  data,
+  type
+){
+
+  let a =
+    document.createElement("a");
+
+
+  a.href =
+    URL.createObjectURL(
+      new Blob(
+        [data],
+        {type}
+      )
+    );
+
+
+  a.download =
+    name;
+
+
+  a.click();
+
+
+  setTimeout(
+    () =>
+      URL.revokeObjectURL(
+        a.href
+      ),
+    1000
+  );
+
+}
+
+
+function exportBackup(){
+
+  download(
+
+    "goudmarsjan-backup-"+
+    new Date()
+      .toISOString()
+      .slice(0,10)+
+    ".json",
+
+    JSON.stringify(
+      {
+        version:4,
+        exportedAt:
+          new Date().toISOString(),
+        settings:
+          JSON.parse(
+            localStorage.getItem(
+              "goudmarsjan_settings"
+            ) || "{}"
+          ),
+        purchases
+      },
+      null,
+      2
+    ),
+
+    "application/json"
+
+  );
+
+}
+
+
+function importBackup(e){
+
+  let f =
+    e.target.files[0];
+
+
+  if(!f)
+    return;
+
+
+  let r =
+    new FileReader();
+
+
+  r.onload =
+    () => {
+
+      try{
+
+        let d =
+          JSON.parse(
+            r.result
+          );
+
+
+        if(
+          !Array.isArray(
+            d.purchases
+          )
+        )
+          throw 0;
+
+
+        if(
+          !confirm(
+            "Bestaande lokale historie vervangen door deze back-up?"
+          )
+        )
+          return;
+
+
+        purchases =
+          d.purchases;
+
+
+        localStorage.setItem(
+          "goudmarsjan_purchases",
+          JSON.stringify(
+            purchases
+          )
+        );
+
+
+        if(d.settings){
+
+          localStorage.setItem(
+            "goudmarsjan_settings",
+            JSON.stringify(
+              d.settings
+            )
+          );
+
+        }
+
+
+        loadSettings();
+
+        renderHistory();
+
+        calculate();
+
+
+        alert(
+          "Back-up teruggezet.\n\n"+
+          "Let op: deze import zet de cloud niet automatisch terug."
+        );
+
+      }
+
+      catch(x){
+
+        alert(
+          "Ongeldig back-upbestand."
+        );
+
+      }
+
+    };
+
+
+  r.readAsText(f);
+
+
+  e.target.value = "";
+
+}
+
+
+/* =========================================================
+   CSV
+   INTERNE CSV MAG METAALWAARDE WEL BEVATTEN
+========================================================= */
+
+function exportCSV(){
+
+  let h = [
+
+    "ID",
+    "Datum",
+    "Voornaam",
+    "Achternaam",
+    "Geboortedatum",
+    "Telefoon",
+    "IBAN",
+    "Adres",
+    "Betaling",
+    "Metaalwaarde",
+    "Inkoop",
+    "Verkoopprijs",
+    "Bruto winst",
+    "Referentie",
+    "Stukken"
+
+  ];
+
+
+  let rows =
+    purchases.map(
+      p => {
+
+        let c =
+          p.customer || {};
+
+
+        let a =
+          [
+            c.street &&
+            c.houseNumber
+              ? c.street+" "+c.houseNumber
+              : c.street,
+
+            c.postalCode &&
+            c.city
+              ? c.postalCode+" "+c.city
+              : c.city
+
+          ]
+          .filter(Boolean)
+          .join(", ");
+
+
+        return [
+
+          p.id,
+
+          new Date(
+            p.date
+          ).toLocaleString(
+            "nl-BE"
+          ),
+
+          c.firstName,
+
+          c.lastName,
+
+          c.birthDate,
+
+          c.phone,
+
+          c.iban,
+
+          a,
+
+          p.paymentMethod,
+
+          p.marketValue,
+
+          p.total,
+
+          p.resalePrice,
+
+          p.profit,
+
+          p.reference,
+
+          (p.items || [])
+            .map(
+              it => {
+
+                let m =
+                  it.metal ||
+                  "goud";
+
+                let f =
+                  it.fineness ||
+                  (
+                    m === "goud"
+                      ? it.karat
+                      : ""
+                  );
+
+                return (
+                  m+
+                  " "+
+                  f+
+                  " "+
+                  (it.weight || 0)+
+                  "g"
+                );
+
+              }
+            )
+            .join(" | ")
+
+        ];
+
+      }
+    );
+
+
+  download(
+
+    "goudmarsjan-historie.csv",
+
+    "\ufeff"+
+    [h,...rows]
+      .map(
+        r =>
+          r.map(
+            v =>
+              `"${String(v ?? "")
+                .replace(
+                  /"/g,
+                  '""'
+                )}"`
+          )
+          .join(";")
+      )
+      .join("\n"),
+
+    "text/csv;charset=utf-8"
+
+  );
+
+}
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+async function login(){
+
+  let email =
+    $("loginEmail")
+      .value
+      .trim();
+
+
+  let password =
+    $("loginPassword")
+      .value;
+
+
+  $("authError")
+    .textContent = "";
+
+
+  if(
+    !email ||
+    !password
+  ){
+
+    $("authError")
+      .textContent =
+      "Vul e-mail en wachtwoord in.";
+
+    return;
+
+  }
+
+
+  let {
+    error
+  } =
+    await sb.auth.signInWithPassword({
+
+      email,
+
+      password
+
+    });
+
+
+  if(error){
+
+    $("authError")
+      .textContent =
+      error.message;
+
+  }
+
+}
+
+
+async function logout(){
+
+  await sb.auth.signOut();
+
+}
+
+
+/* =========================================================
+   ROLE PERMISSIONS
+========================================================= */
+
+function applyRolePermissions(){
+
+  let owner =
+    currentMember?.role === "owner";
+
+  if($("adminNav")) $("adminNav").style.display = owner ? "block" : "none";
+
+
+  /* Eigenaar ziet beheer */
+
+  $("ownerPanel")
+    .style.display =
+      owner
+        ? "block"
+        : "none";
+
+
+  /* Werknemer ziet geen
+     inkooppercentages */
+
+  $("settingsDetails")
+    .style.display =
+      owner
+        ? "block"
+        : "none";
+
+
+  $("employeeSettingsNotice")
+    .style.display =
+      owner
+        ? "none"
+        : "block";
+
+
+  /*
+    Marktprijzen zijn voor
+    werknemers alleen-lezen.
+
+    De werknemer kan ze wel
+    gebruiken voor berekeningen.
+  */
+
+  [
+    "goldPrice",
+    "silverPrice",
+    "resalePrice"
+  ]
+  .forEach(
+    id => {
+
+      if($(id)){
+
+        $(id).disabled =
+          !owner;
+
+      }
+
+    }
+  );
+
+
+  /*
+    Inkooppercentages:
+    alleen eigenaar.
+  */
+
+  [
+    "rate9",
+    "rate14",
+    "rate18",
+    "rate22",
+    "rate24",
+    "srate800",
+    "srate835",
+    "srate925",
+    "srate999"
+  ]
+  .forEach(
+    id => {
+
+      if($(id)){
+
+        $(id).disabled =
+          !owner;
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   AUTH INIT
+========================================================= */
+
+async function initAuth(){
+
+  const {
+    data:{
+      session
+    }
+  } =
+    await sb.auth.getSession();
+
+
+  if(session){
+
+    await onLoggedIn(
+      session.user
+    );
+
+  }
+
+
+  sb.auth.onAuthStateChange(
+    async(
+      _event,
+      session
+    ) => {
+
+      if(session){
+
+        await onLoggedIn(
+          session.user
+        );
+
+      }
+
+      else{
+
+        onLoggedOut();
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   LOGGED IN
+========================================================= */
+
+async function onLoggedIn(
+  user
+){
+
+  currentUser =
+    user;
+
+
+  let {
+    data:member,
+    error
+  } =
+    await sb
+      .from("business_members")
+      .select(
+        "business_id,user_id,role,active,display_name"
+      )
+      .eq(
+        "user_id",
+        user.id
+      )
+      .eq(
+        "active",
+        true
+      )
+      .maybeSingle();
+
+
+  if(
+    error ||
+    !member
+  ){
+
+    onLoggedOut();
+
+
+    $("authError")
+      .textContent =
+      "Dit account heeft geen actieve toegang tot DE GOUDMARSJAN.";
+
+
+    await sb.auth.signOut();
+
+
+    return;
+
+  }
+
+
+  currentMember =
+    member;
+
+
+  currentBusinessId =
+    member.business_id;
+
+
+  $("authLock")
+    .classList
+    .add("hidden");
+
+
+  $("currentUserName")
+    .textContent =
+    member.display_name ||
+    user.email;
+
+
+  $("currentUserRole")
+    .textContent =
+    member.role === "owner"
+      ? "Hoofd / eigenaar"
+      : "Werknemer";
+
+
+  $("sideUserName").textContent = member.display_name || user.email;
+  $("sideUserRole").textContent = member.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
+  $("topUserName").textContent = member.display_name || user.email;
+  $("topUserRole").textContent = member.role === "owner" ? "Hoofd / eigenaar" : "Werknemer";
+
+  applyRolePermissions();
+
+
+  loadSettings();
+
+
+  await loadCloudData();
+
+
+  if(
+    member.role === "owner"
+  ){
+
+    await loadMembers();
+
+  }
+
+
+  if(
+    !items.length
+  ){
+
+    addItem();
+
+  }
+
+
+  renderHistory();
+
+  calculate();
+
+}
+
+
+/* =========================================================
+   LOGGED OUT
+========================================================= */
+
+function onLoggedOut(){
+
+  customers = [];
+  if($("adminNav")) $("adminNav").style.display = "none";
+  $("sideUserName").textContent = "Niet ingelogd";
+  $("sideUserRole").textContent = "—";
+  $("topUserName").textContent = "Niet ingelogd";
+  $("topUserRole").textContent = "—";
+
+  currentUser =
+    null;
+
+  currentMember =
+    null;
+
+  currentBusinessId =
+    null;
+
+
+  $("authLock")
+    .classList
+    .remove("hidden");
+
+
+  $("ownerPanel")
+    .style.display =
+    "none";
+
+
+  $("currentUserName")
+    .textContent =
+    "Niet ingelogd";
+
+
+  $("currentUserRole")
+    .textContent =
+    "—";
+
+}
+
+
+/* =========================================================
+   MEMBERS
+========================================================= */
+
+async function loadMembers(){
+
+  if(
+    !currentBusinessId ||
+    currentMember?.role !== "owner"
+  )
+    return;
+
+
+  let {
+    data,
+    error
+  } =
+    await sb
+      .from("business_members")
+      .select(
+        "user_id,role,active,display_name,created_at"
+      )
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .order(
+        "created_at",
+        {
+          ascending:true
+        }
+      );
+
+
+  if(error){
+
+    $("membersList")
+      .innerHTML =
+      `
+      <div class="warning">
+      Werknemers konden niet geladen worden.
+      </div>
+      `;
+
+    return;
+
+  }
+
+
+  $("membersList")
+    .innerHTML =
+
+    (data || [])
+      .map(
+        m => {
+
+          if(
+            m.role === "owner"
+          ){
+
+            return `
+
+<div class="member-row">
+
+<div class="member-info">
+
+<b>
+${esc(
+  m.display_name ||
+  m.user_id
+)}
+</b>
+
+<small>
+Hoofd / eigenaar · Actief
+</small>
+
+</div>
+
+<span class="badge">
+HOOFD
+</span>
+
+</div>
+
+`;
+
+          }
+
+
+          return `
+
+<div class="member-row">
+
+<div class="member-info">
+
+<b>
+${esc(
+  m.display_name ||
+  m.user_id
+)}
+</b>
+
+<small>
+Werknemer ·
+${m.active
+  ? "Actief"
+  : "Gedeactiveerd"}
+</small>
+
+</div>
+
+
+<div class="row">
+
+<button
+class="${m.active
+  ? "danger"
+  : "green"}"
+onclick="
+toggleEmployee(
+'${m.user_id}',
+${m.active}
+)
+"
+>
+
+${
+  m.active
+    ? "DEACTIVEREN"
+    : "ACTIVEREN"
+}
+
+</button>
+
+
+<button
+class="danger"
+onclick="
+deleteEmployee(
+'${m.user_id}'
+)
+"
+>
+
+VERWIJDEREN
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+        }
+      )
+      .join("")
+
+      ||
+
+      `
+      <div class="note">
+      Nog geen werknemers.
+      </div>
+      `;
+
+}
+
+
+/* =========================================================
+   ADD EMPLOYEE
+========================================================= */
+
+async function addEmployee(){
+
+  if(
+    currentMember?.role !== "owner"
+  )
+    return;
+
+
+  let email =
+    $("employeeEmail")
+      .value
+      .trim();
+
+
+  let name =
+    $("employeeName")
+      .value
+      .trim();
+
+
+  if(!email){
+
+    alert(
+      "Vul het e-mailadres van de werknemer in."
+    );
+
+    return;
+
+  }
+
+
+  let res =
+    await sb.rpc(
+      "add_employee_by_email",
+      {
+        p_email:email,
+        p_display_name:
+          name || email
+      }
+    );
+
+
+  if(res.error){
+
+    /*
+      Sommige functies gebruiken
+      andere parameterbenamingen.
+    */
+
+    res =
+      await sb.rpc(
+        "add_employee_by_email",
+        {
+          email:email,
+          display_name:
+            name || email
+        }
+      );
+
+  }
+
+
+  if(res.error){
+
+    alert(
+      "Werknemer toevoegen mislukt.\n\n"+
+      res.error.message+
+      "\n\n"+
+      "Controleer of de werknemer al een Supabase-account heeft."
+    );
+
+    return;
+
+  }
+
+
+  $("employeeEmail")
+    .value = "";
+
+
+  $("employeeName")
+    .value = "";
+
+
+  await loadMembers();
+
+
+  alert(
+    "Werknemer toegevoegd."
+  );
+
+}
+
+
+/* =========================================================
+   ACTIVEREN / DEACTIVEREN
+========================================================= */
+
+async function toggleEmployee(
+  userId,
+  active
+){
+
+  if(
+    currentMember?.role !== "owner"
+  )
+    return;
+
+
+  if(
+    !confirm(
+      active
+        ? "Deze werknemer deactiveren?"
+        : "Deze werknemer opnieuw activeren?"
+    )
+  )
+    return;
+
+
+  let {
+    error
+  } =
+    await sb
+      .from("business_members")
+      .update({
+        active:
+          !active
+      })
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .eq(
+        "user_id",
+        userId
+      );
+
+
+  if(error){
+
+    alert(
+      "Wijzigen mislukt:\n"+
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  await loadMembers();
+
+}
+
+
+/* =========================================================
+   VERWIJDEREN WERKNEMER
+========================================================= */
+
+async function deleteEmployee(
+  userId
+){
+
+  if(
+    currentMember?.role !== "owner"
+  )
+    return;
+
+
+  if(
+    !confirm(
+      "Deze werknemer volledig uit DE GOUDMARSJAN verwijderen?\n\n"+
+      "Dit verwijdert de bedrijfs-toegang. Het Supabase-account zelf wordt niet verwijderd."
+    )
+  )
+    return;
+
+
+  let {
+    error
+  } =
+    await sb
+      .from("business_members")
+      .delete()
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .eq(
+        "user_id",
+        userId
+      )
+      .neq(
+        "role",
+        "owner"
+      );
+
+
+  if(error){
+
+    alert(
+      "Werknemer verwijderen mislukt:\n"+
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  await loadMembers();
+
+}
+
+
+/* =========================================================
+   CLOUD DATA
+========================================================= */
+
+async function loadCloudData(){
+
+  if(!currentBusinessId)
+    return;
+
+
+  try{
+
+    let [
+
+      purchasesResult,
+
+      customersResult,
+
+      itemsResult
+
+    ] =
+      await Promise.all([
+
+        sb
+          .from("purchases")
+          .select("*")
+          .eq(
+            "business_id",
+            currentBusinessId
+          )
+          .order(
+            "created_at",
+            {
+              ascending:false
+            }
+          )
+          .limit(500),
+
+
+        sb
+          .from("customers")
+          .select("*")
+          .eq(
+            "business_id",
+            currentBusinessId
+          ),
+
+
+        sb
+          .from("purchase_items")
+          .select("*")
+          .eq(
+            "business_id",
+            currentBusinessId
+          )
+
+      ]);
+
+
+    if(
+      purchasesResult.error ||
+      customersResult.error ||
+      itemsResult.error
+    ){
+
+      throw(
+        purchasesResult.error ||
+        customersResult.error ||
+        itemsResult.error
+      );
+
+    }
+
+
+    customers = customersResult.data || [];
+
+
+    let customerMap =
+      new Map(
+        (
+          customersResult.data ||
+          []
+        )
+        .map(
+          c => [
+            c.id,
+            c
+          ]
+        )
+      );
+
+
+    let itemMap =
+      new Map();
+
+
+    (
+      itemsResult.data ||
+      []
+    )
+    .forEach(
+      x => {
+
+        if(
+          !itemMap.has(
+            x.purchase_id
+          )
+        ){
+
+          itemMap.set(
+            x.purchase_id,
+            []
+          );
+
+        }
+
+
+        itemMap
+          .get(
+            x.purchase_id
+          )
+          .push({
+
+            metal:
+              x.metal ||
+              "goud",
+
+            type:
+              x.item_type ||
+              "Juweel",
+
+            description:
+              x.description ||
+              "",
+
+            fineness:
+              Number(x.fineness) || (x.metal === "zilver" ? 925 : x.metal === "verzilverd" ? 0 : 18),
+
+            karat:
+              Number(x.fineness) || (x.metal === "zilver" ? 925 : x.metal === "verzilverd" ? 0 : 18),
+
+            // Snapshot van de werkelijk opgeslagen aankoopprijs; niet opnieuw herberekenen met latere marktprijzen.
+            savedOffer:
+              Number(x.purchase_price) || 0,
+
+            weight:
+              Number(
+                x.weight
+              ) ||
+              0,
+
+            nonGold:
+              Number(
+                x.non_gold
+              ) ||
+              0,
+
+            manualOffer:
+              Number(
+                x.purchase_price
+              ) ||
+              0
+
+          });
+
+      }
+    );
+
+
+    purchases =
+      (
+        purchasesResult.data ||
+        []
+      )
+      .map(
+        x => ({
+
+          id:
+            x.reference ||
+            x.id,
+
+          date:
+            x.created_at ||
+            new Date()
+              .toISOString(),
+
+          customer:
+            mapCustomer(
+              customerMap.get(
+                x.customer_id
+              ) || {}
+            ),
+
+          paymentMethod:
+            x.payment_method ||
+            "overschrijving",
+
+          items:
+            itemMap.get(
+              x.id
+            ) || [],
+
+          goldPrice:
+            Number(
+              x.gold_price
+            ) || 0,
+
+          silverPrice:
+            Number(
+              x.silver_price
+            ) || 0,
+
+          marketValue:
+            Number(
+              x.market_value
+            ) || 0,
+
+          total:
+            Number(
+              x.total
+            ) || 0,
+
+          resalePrice:
+            Number(
+              x.resale_price
+            ) || 0,
+
+          profit:
+            Number(
+              x.profit
+            ) || 0,
+
+          note:
+            x.note || "",
+
+          reference:
+            x.reference ||
+            x.id
+
+        })
+      );
+
+
+    localStorage.setItem(
+      "goudmarsjan_purchases",
+      JSON.stringify(
+        purchases
+      )
+    );
+
+  }
+
+  catch(e){
+
+    console.error(e);
+
+
+    alert(
+      "Supabase-historie kon niet geladen worden.\n\n"+
+      (e.message || e)
+    );
+
+  }
+
+}
+
+
+function mapCustomer(c){
+
+  return {
+
+    firstName:
+      c.first_name ||
+      "",
+
+    lastName:
+      c.last_name ||
+      "",
+
+    birthDate:
+      c.birth_date ||
+      "",
+
+    phone:
+      c.phone ||
+      "",
+
+    iban:
+      c.iban ||
+      "",
+
+    idChecked:
+      c.id_checked === true ||
+      c.id_checked === "ja"
+        ? "ja"
+        : "nee",
+
+    idType:
+      c.id_type ||
+      "",
+
+    idNumber:
+      c.id_number ||
+      "",
+
+    street:
+      c.street ||
+      "",
+
+    houseNumber:
+      c.house_number ||
+      "",
+
+    postalCode:
+      c.postal_code ||
+      "",
+
+    city:
+      c.city ||
+      "",
+
+    note:
+      c.note ||
+      ""
+
+  };
+
+}
+
+
+/* =========================================================
+   CLOUD SAVE PURCHASE
+========================================================= */
+
+async function savePurchaseCloud(p){
+
+  let {
+    data:c,
+    error:ce
+  } =
+    await sb
+      .from("customers")
+      .insert({
+
+        business_id:
+          currentBusinessId,
+
+        first_name:
+          p.customer.firstName,
+
+        last_name:
+          p.customer.lastName,
+
+        birth_date:
+          p.customer.birthDate,
+
+        phone:
+          p.customer.phone,
+
+        iban:
+          p.customer.iban,
+
+        id_checked:
+          p.customer.idChecked === "ja",
+
+        id_type:
+          p.customer.idType,
+
+        id_number:
+          p.customer.idNumber,
+
+        street:
+          p.customer.street,
+
+        house_number:
+          p.customer.houseNumber,
+
+        postal_code:
+          p.customer.postalCode,
+
+        city:
+          p.customer.city,
+
+        note:
+          p.customer.note
+
+      })
+      .select("id")
+      .single();
+
+
+  if(ce)
+    throw ce;
+
+
+  let {
+    data:row,
+    error:pe
+  } =
+    await sb
+      .from("purchases")
+      .insert({
+
+        business_id:
+          currentBusinessId,
+
+        customer_id:
+          c.id,
+
+        created_by:
+          currentUser.id,
+
+        reference:
+          p.id,
+
+        payment_method:
+          p.paymentMethod,
+
+        gold_price:
+          p.goldPrice,
+
+        silver_price:
+          p.silverPrice,
+
+        market_value:
+          p.marketValue,
+
+        total:
+          p.total,
+
+        resale_price:
+          p.resalePrice,
+
+        profit:
+          p.profit,
+
+        note:
+          p.note
+
+      })
+      .select("id")
+      .single();
+
+
+  if(pe)
+    throw pe;
+
+
+  let rows =
+    p.items.map(
+      it => {
+
+        let x =
+          calc(it);
+
+
+        return {
+
+          purchase_id:
+            row.id,
+
+          business_id:
+            currentBusinessId,
+
+          item_type:
+            it.type ||
+            "Juweel",
+
+          metal:
+            it.metal ||
+            "goud",
+
+          fineness:
+            it.metal === "verzilverd"
+              ? 0
+              : (
+                  it.fineness ||
+                  it.karat ||
+                  0
+                ),
+
+          weight:
+            Number(
+              it.weight
+            ) || 0,
+
+          non_gold:
+            Number(
+              it.nonGold
+            ) || 0,
+
+          net_weight:
+            Number(
+              x.net
+            ) || 0,
+
+          metal_value:
+            Number(
+              x.market
+            ) || 0,
+
+          purchase_price:
+            Number(
+              x.offer
+            ) || 0,
+
+          description:
+            it.description ||
+            ""
+
+        };
+
+      }
+    );
+
+
+  if(rows.length){
+
+    let {
+      error:ie
+    } =
+      await sb
+        .from("purchase_items")
+        .insert(rows);
+
+
+    if(ie){
+
+      await sb
+        .from("purchases")
+        .delete()
+        .eq(
+          "id",
+          row.id
+        );
+
+
+      await sb
+        .from("customers")
+        .delete()
+        .eq(
+          "id",
+          c.id
+        );
+
+
+      throw ie;
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   CLOUD DELETE PURCHASE
+========================================================= */
+
+async function deletePurchaseCloud(
+  reference
+){
+
+  let {
+    data:p,
+    error
+  } =
+    await sb
+      .from("purchases")
+      .select(
+        "id,customer_id"
+      )
+      .eq(
+        "business_id",
+        currentBusinessId
+      )
+      .eq(
+        "reference",
+        reference
+      )
+      .maybeSingle();
+
+
+  if(error)
+    throw error;
+
+
+  if(!p)
+    return;
+
+
+  let {
+    error:ie
+  } =
+    await sb
+      .from("purchase_items")
+      .delete()
+      .eq(
+        "purchase_id",
+        p.id
+      );
+
+
+  if(ie)
+    throw ie;
+
+
+  let {
+    error:pe
+  } =
+    await sb
+      .from("purchases")
+      .delete()
+      .eq(
+        "id",
+        p.id
+      );
+
+
+  if(pe)
+    throw pe;
+
+
+  if(
+    p.customer_id
+  ){
+
+    await sb
+      .from("customers")
+      .delete()
+      .eq(
+        "id",
+        p.customer_id
+      );
+
+  }
+
+}
+
+
+/* =========================================================
+   CLOUD SETTINGS
+========================================================= */
+
+async function saveCloudSettings(){
+
+  if(!currentBusinessId)
+    return;
+
+
+  if(
+    currentMember?.role !== "owner"
+  )
+    return;
+
+
+  let st = {};
+
+
+  Object.keys(defaults)
+    .forEach(
+      k =>
+        st[k] =
+          num(k)
+    );
+
+
+  let {
+    error
+  } =
+    await sb
+      .from("settings")
+      .upsert(
+
+        {
+
+          business_id:
+            currentBusinessId,
+
+          gold_purchase_percent:
+            st.rate18,
+
+          silver_purchase_percent:
+            st.srate925,
+
+          app_settings:
+            st
+
+        },
+
+        {
+          onConflict:
+            "business_id"
+        }
+
+      );
+
+
+  if(error){
+
+    console.warn(
+      "Settings cloud sync:",
+      error.message
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+loadSettings();
+
+addItem();
+
+renderHistory();
+
+calculate();
+
+moveOriginalCards();
+showPage('dashboard');
+initAuth();
+
+setInterval(async()=>{
+  if(!currentUser || !currentBusinessId)return;
+  const {data:member}=await sb.from('business_members').select('active').eq('business_id',currentBusinessId).eq('user_id',currentUser.id).maybeSingle();
+  if(!member || member.active!==true){await sb.auth.signOut();}
+},60000);
+
+</script>
+
+
+<!-- =========================================================
+     SERVICE WORKER
+========================================================= -->
+
+<script>
+
+if(
+  "serviceWorker" in navigator
+){
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch(
+          () => {}
+        );
+
+    }
+  );
+
+}
+
+</script>
+
+
+</body>
+</html>
