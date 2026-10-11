@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#111111">
+<meta name="app-build" content="2026-10-11-stability-fix">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -664,7 +665,7 @@ button:disabled{
     <div class="dash-card"><small>Aantal inkopen</small><strong id="profitCount">0</strong></div>
     <div class="dash-card"><small>Totaal ingekocht</small><strong id="profitPurchase">€ 0,00</strong></div>
     <div class="dash-card"><small>Verwachte verkoop</small><strong id="profitResale">€ 0,00</strong></div>
-    <div class="dash-card gold"><small>Verwachte bruto winst</small><strong id="profitTotal">€ 0,00</strong></div>
+    <div class="dash-card gold"><small>Brutowinst (metaalwaarde − inkoop)</small><strong id="profitTotal">€ 0,00</strong></div>
   </div>
   <div class="dashboard-section"><h3>Winst per dag — laatste 14 dagen</h3><div id="profitChart" class="profit-chart"></div></div>
   <div class="dashboard-section"><h3>Winst per werknemer</h3><div id="profitEmployees"></div></div>
@@ -1147,6 +1148,22 @@ button:disabled{
     <div>
 
       <label>
+        E-mailadres klant
+      </label>
+
+      <input
+        id="customerEmail"
+        type="email"
+        placeholder="klant@email.be"
+        autocomplete="email"
+      >
+
+    </div>
+
+
+    <div>
+
+      <label>
         IBAN
       </label>
 
@@ -1292,6 +1309,11 @@ button:disabled{
 
   </div>
 
+  <div style="margin-top:14px">
+    <button type="button" class="light" onclick="emailPurchaseDraft()">✉️ E-mail aankoopgegevens</button>
+    <small class="note" style="display:block;margin-top:6px">Opent je e-mailprogramma met de aankoopgegevens ingevuld. Een PDF wordt niet automatisch meegestuurd.</small>
+  </div>
+
 </div>
 
 
@@ -1395,7 +1417,7 @@ button:disabled{
   >
 
     <b>
-      📈 Verwachte bruto winst
+      📈 Verwachte bruto winst (metaalwaarde − inkoopwaarde)
     </b>
 
 
@@ -1407,7 +1429,7 @@ button:disabled{
       <div>
 
         <span class="mini">
-          Verkoopprijs
+          Verwachte verkoopprijs
         </span>
 
         <div
@@ -1439,7 +1461,7 @@ button:disabled{
       <div>
 
         <span class="mini">
-          Marge op verkoopprijs
+          Winst t.o.v. metaalwaarde
         </span>
 
         <div
@@ -1661,13 +1683,17 @@ function moveOriginalCards(){
   if(owner)adminPage.appendChild(owner);
   const userbar=c.querySelector(':scope > .userbar');if(userbar)userbar.style.display='none';
 }
+function grossProfit(p){
+  // Altijd metaalwaarde minus aankoopbedrag; verkoopprijs speelt hier niet mee.
+  return (Number(p?.marketValue)||0) - (Number(p?.total)||0);
+}
 function renderDashboard(){
   const today=new Date();today.setHours(0,0,0,0);
   const arr=purchases.filter(p=>{const d=new Date(p.date);d.setHours(0,0,0,0);return d.getTime()===today.getTime()});
   const sum=k=>arr.reduce((a,p)=>a+(Number(p[k])||0),0);
   if(!document.getElementById('dashCount'))return;
-  dashCount.textContent=arr.length;dashPurchase.textContent=euro(sum('total'));dashResale.textContent=euro(sum('resalePrice'));dashProfit.textContent=euro(sum('profit'));
-  dashRecent.innerHTML=arr.slice(0,10).map(p=>`<div class="history"><b>${esc(p.customer?.firstName||'')} ${esc(p.customer?.lastName||'')}</b> <span class="badge">${esc(p.id)}</span><br><small>${new Date(p.date).toLocaleString('nl-BE')}</small><div><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div></div>`).join('')||'<div class="note">Vandaag nog geen inkopen.</div>';
+  dashCount.textContent=arr.length;dashPurchase.textContent=euro(sum('total'));dashResale.textContent=euro(sum('resalePrice'));dashProfit.textContent=euro(arr.reduce((a,p)=>a+grossProfit(p),0));
+  dashRecent.innerHTML=arr.slice(0,10).map(p=>`<div class="history"><b>${esc(p.customer?.firstName||'')} ${esc(p.customer?.lastName||'')}</b> <span class="badge">${esc(p.id)}</span><br><small>${new Date(p.date).toLocaleString('nl-BE')}</small><div><b>${euro(p.total)}</b> · winst ${euro(grossProfit(p))}</div></div>`).join('')||'<div class="note">Vandaag nog geen inkopen.</div>';
 }
 function renderCustomersPage(){
   const q=(document.getElementById('customerSearchPage')?.value||'').toLowerCase().trim();
@@ -1678,15 +1704,26 @@ function showCustomerDetail(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
   const name=((c.first_name||'')+' '+(c.last_name||'')).trim();
   const related=purchases.filter(p=>(((p.customer?.firstName||'')+' '+(p.customer?.lastName||'')).trim()===name));
-  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(p.profit)}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
+  document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(grossProfit(p))}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
   document.getElementById('customerDetailPage').scrollIntoView({behavior:'smooth'});
 }
 function renderProfitPage(){
-  const total=k=>purchases.reduce((a,p)=>a+(Number(p[k])||0),0);
   if(!document.getElementById('profitCount'))return;
-  profitCount.textContent=purchases.length;profitPurchase.textContent=euro(total('total'));profitResale.textContent=euro(total('resalePrice'));profitTotal.textContent=euro(total('profit'));
-  const days=[],now=new Date();for(let i=13;i>=0;i--){const d=new Date(now);d.setHours(0,0,0,0);d.setDate(d.getDate()-i);const key=d.toISOString().slice(0,10);const profit=purchases.filter(p=>new Date(p.date).toISOString().slice(0,10)===key).reduce((a,p)=>a+(Number(p.profit)||0),0);days.push({d,profit})}const max=Math.max(1,...days.map(x=>x.profit));
-  profitChart.innerHTML=days.map(x=>`<div class="profit-bar-wrap"><div class="profit-bar-value">${euro(x.profit)}</div><div class="profit-bar" style="height:${Math.max(3,x.profit/max*190)}px"></div><div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div></div>`).join('');
+  const total=k=>purchases.reduce((a,p)=>a+(Number(p[k])||0),0);
+  const grossTotal=purchases.reduce((a,p)=>a+grossProfit(p),0);
+  profitCount.textContent=purchases.length;
+  profitPurchase.textContent=euro(total('total'));
+  profitResale.textContent=euro(total('resalePrice'));
+  profitTotal.textContent=euro(grossTotal);
+  const days=[],now=new Date();
+  for(let i=13;i>=0;i--){
+    const d=new Date(now);d.setHours(0,0,0,0);d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const profit=purchases.filter(p=>new Date(p.date).toISOString().slice(0,10)===key).reduce((a,p)=>a+grossProfit(p),0);
+    days.push({d,profit});
+  }
+  const max=Math.max(1,...days.map(x=>Math.max(0,x.profit)));
+  profitChart.innerHTML=days.map(x=>`<div class="profit-bar-wrap"><div class="profit-bar-value">${euro(x.profit)}</div><div class="profit-bar" style="height:${Math.max(3,Math.max(0,x.profit)/max*190)}px"></div><div class="profit-bar-label">${x.d.toLocaleDateString('nl-BE',{day:'2-digit',month:'2-digit'})}</div></div>`).join('');
   profitEmployees.innerHTML='<div class="note">Per werknemer wordt verder gekoppeld zodra de medewerkernaam aan de aankoop wordt opgeslagen.</div>';
 }
 
@@ -1910,7 +1947,9 @@ function getRate(
     ) + fineness;
 
 
-  return num(id);
+  const field = $(id);
+  const value = field && field.value.trim() !== "" ? Number(field.value) : Number(defaults[id]);
+  return Number.isFinite(value) && value >= 0 ? value : Number(defaults[id]) || 0;
 
 }
 
@@ -2026,8 +2065,22 @@ function updateItem(
 
   else{
 
-    items[i][key] =
-      value;
+    items[i][key] = value;
+
+    // Gehalte hoort bij het gekozen metaal; 18K mag nooit als zilvergehalte blijven staan.
+    if(key === "metal"){
+      if(value === "goud"){
+        const allowed = [9,14,18,22,24];
+        if(!allowed.includes(Number(items[i].fineness))) items[i].fineness = 18;
+        items[i].karat = Number(items[i].fineness) || 18;
+      } else if(value === "zilver"){
+        const allowed = [800,835,925,999];
+        if(!allowed.includes(Number(items[i].fineness))) items[i].fineness = 925;
+        items[i].karat = Number(items[i].fineness) || 925;
+      } else {
+        items[i].fineness = 0;
+      }
+    }
 
   }
 
@@ -2100,13 +2153,9 @@ function calc(it){
 
   /* GOUD / ZILVER */
 
-  let fineness =
-    it.fineness ||
-    (
-      metal === "zilver"
-        ? 925
-        : it.karat
-    );
+  const allowedFineness = metal === "zilver" ? [800,835,925,999] : [9,14,18,22,24];
+  let fineness = Number(it.fineness || it.karat || (metal === "zilver" ? 925 : 18));
+  if(!allowedFineness.includes(fineness)) fineness = metal === "zilver" ? 925 : 18;
 
 
   let net =
@@ -2676,8 +2725,10 @@ function calculate(){
     num("resalePrice");
 
 
+  // Brutowinst volgens de afgesproken definitie:
+  // metaalwaarde min werkelijk inkoopbedrag.
   let profit =
-    resale - offer;
+    market - offer;
 
 
   $("resaleDisplay")
@@ -2769,6 +2820,11 @@ function customer(){
 
     phone:
       $("phone")
+        .value
+        .trim(),
+
+    email:
+      $("customerEmail")
         .value
         .trim(),
 
@@ -2884,7 +2940,7 @@ function data(){
       resale,
 
     profit:
-      resale - total,
+      market - total,
 
     note:
       $("purchaseNote")
@@ -2900,6 +2956,40 @@ function data(){
 
 }
 
+
+/* =========================================================
+   E-MAIL AANKOOPGEGEVENS
+   Opent de standaard e-mailapp; geen automatische PDF-bijlage.
+========================================================= */
+function emailPurchaseDraft(){
+  const c=customer();
+  if(!c.email){
+    alert("Vul eerst het e-mailadres van de klant in.");
+    $("customerEmail").focus();
+    return;
+  }
+  const p=data();
+  const lines=(p.items||[]).map((it,i)=>{
+    const x=calc(it);
+    return `${i+1}. ${it.type||"Juweel"} — ${it.metal||"goud"} — inkoop: ${euro(x.offer)}`;
+  });
+  const subject=`Aankoopbon De Goudmarsjan ${p.id}`;
+  const body=[
+    `Beste ${c.firstName} ${c.lastName},`,
+    "",
+    "Hierbij de gegevens van uw aankoop bij De Goudmarsjan.",
+    "",
+    `Referentie: ${p.id}`,
+    `Datum: ${new Date(p.date).toLocaleString("nl-BE")}`,
+    ...lines,
+    "",
+    `Totaal aankoopbedrag: ${euro(p.total)}`,
+    "",
+    "Met vriendelijke groeten,",
+    "De Goudmarsjan — Edelmetalen"
+  ].join("\n");
+  window.location.href=`mailto:${encodeURIComponent(c.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
 
 /* =========================================================
    VALIDATIE
@@ -2997,14 +3087,15 @@ function valid(){
    OPSLAAN
 ========================================================= */
 
+let purchaseSaveInProgress = false;
+
 async function savePurchase(){
 
-  if(!valid())
-    return;
+  if(purchaseSaveInProgress) return;
+  if(!valid()) return;
+  purchaseSaveInProgress = true;
 
-
-  let p =
-    data();
+  let p = data();
 
 
   try{
@@ -3032,15 +3123,13 @@ async function savePurchase(){
   }
 
   catch(e){
-
     console.error(e);
-
-
     alert(
       "De aankoop kon niet naar Supabase worden opgeslagen.\n\n"+
       (e.message || e)
     );
-
+  } finally {
+    purchaseSaveInProgress = false;
   }
 
 }
@@ -3360,8 +3449,9 @@ function receipt(p){
 
           let offer;
 
-
-          if(
+          if(Number.isFinite(Number(it.savedOffer)) && it.savedOffer !== undefined){
+            offer = Number(it.savedOffer) || 0;
+          } else if(
             metal === "verzilverd"
           ){
 
@@ -3575,10 +3665,17 @@ function openPrint(p){
   w.document.write(receipt(p));
   w.document.close();
 
-  setTimeout(
-    () => w.print(),
-    300
-  );
+  // Wacht tot de bon klaar is opgebouwd; vaste korte timeout is onbetrouwbaar op tablets.
+  const printWhenReady = () => {
+    try { w.focus(); w.print(); }
+    catch(err) { console.error("Afdrukken aankoopbon:", err); alert("De bon is geopend, maar afdrukken lukte niet. Gebruik Afdrukken in het geopende venster."); }
+  };
+  if(w.document.readyState === "complete") {
+    setTimeout(printWhenReady, 150);
+  } else {
+    w.addEventListener("load", () => setTimeout(printWhenReady, 150), {once:true});
+    setTimeout(printWhenReady, 1200);
+  }
 
 }
 
@@ -3622,7 +3719,7 @@ function openPurchaseReview(p){
     const metal = it.metal || "goud";
     const f = it.fineness || (metal === "goud" ? it.karat : 925);
     const net = Math.max(0,(it.weight||0)-(it.nonGold||0));
-    const offer = metal === "verzilverd" ? (Number(it.manualOffer)||0) : (net*(purity[metal]?.[f]||0)*(metal === "zilver" ? (p.silverPrice||0):(p.goldPrice||0))*storedRate(metal,f)/100);
+    const offer = Number.isFinite(Number(it.savedOffer)) && it.savedOffer !== undefined ? (Number(it.savedOffer)||0) : (metal === "verzilverd" ? (Number(it.manualOffer)||0) : (net*(purity[metal]?.[f]||0)*(metal === "zilver" ? (p.silverPrice||0):(p.goldPrice||0))*storedRate(metal,f)/100));
     const label = metal === "goud" ? f+"K" : metal === "zilver" ? "Zilver "+f+"‰" : "Verzilverd";
     return `<tr><td>${i+1}. ${esc(it.type||"Stuk")}</td><td>${esc(label)}</td><td>${net.toFixed(2)} g</td><td>${euro(offer)}</td></tr>`;
   }).join("");
@@ -4993,16 +5090,14 @@ async function loadCloudData(){
               "",
 
             fineness:
-              Number(
-                x.fineness
-              ) ||
-              18,
+              Number(x.fineness) || (x.metal === "zilver" ? 925 : x.metal === "verzilverd" ? 0 : 18),
 
             karat:
-              Number(
-                x.fineness
-              ) ||
-              18,
+              Number(x.fineness) || (x.metal === "zilver" ? 925 : x.metal === "verzilverd" ? 0 : 18),
+
+            // Snapshot van de werkelijk opgeslagen aankoopprijs; niet opnieuw herberekenen met latere marktprijzen.
+            savedOffer:
+              Number(x.purchase_price) || 0,
 
             weight:
               Number(
@@ -5087,9 +5182,7 @@ async function loadCloudData(){
             ) || 0,
 
           profit:
-            Number(
-              x.profit
-            ) || 0,
+            (Number(x.market_value) || 0) - (Number(x.total) || 0),
 
           note:
             x.note || "",
@@ -5144,6 +5237,10 @@ function mapCustomer(c){
 
     phone:
       c.phone ||
+      "",
+
+    email:
+      c.email ||
       "",
 
     iban:
@@ -5217,6 +5314,9 @@ async function savePurchaseCloud(p){
 
         phone:
           p.customer.phone,
+
+        email:
+          p.customer.email || null,
 
         iban:
           p.customer.iban,
