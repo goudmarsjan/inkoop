@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#111111">
-<meta name="app-build" content="2026-10-11-stability-fix">
+<meta name="app-build" content="2026-10-11-editable-purchases-v1">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -1550,6 +1550,9 @@ button:disabled{
       🧾 BON MAKEN
     </button>
 
+    <button id="saveEditedPurchaseBtn" class="green" style="display:none" onclick="saveEditedPurchase()">💾 WIJZIGINGEN OPSLAAN</button>
+    <button id="cancelEditPurchaseBtn" class="light" style="display:none" onclick="cancelEditPurchase()">ANNULEREN</button>
+
 
     <button
       class="green"
@@ -3090,50 +3093,29 @@ function valid(){
 let purchaseSaveInProgress = false;
 
 async function savePurchase(){
-
+  if(editingPurchase){
+    await saveEditedPurchase();
+    return;
+  }
   if(purchaseSaveInProgress) return;
   if(!valid()) return;
   purchaseSaveInProgress = true;
-
-  let p = data();
-
-
+  const p = data();
   try{
-
-    await savePurchaseCloud(p);
-
-
+    const saved = await savePurchaseCloud(p);
+    p.dbId = saved?.dbId;
+    p.customerDbId = saved?.customerDbId;
     purchases.unshift(p);
-
-
-    localStorage.setItem(
-      "goudmarsjan_purchases",
-      JSON.stringify(purchases)
-    );
-
-
-    renderHistory();
-
-
-    alert(
-      "Inkoop opgeslagen in de cloud!\n\n"+
-      p.id
-    );
-
-  }
-
-  catch(e){
+    localStorage.setItem("goudmarsjan_purchases", JSON.stringify(purchases));
+    renderHistory(); renderDashboard(); renderProfitPage();
+    alert("Inkoop opgeslagen in de cloud!\n\n" + p.id);
+  }catch(e){
     console.error(e);
-    alert(
-      "De aankoop kon niet naar Supabase worden opgeslagen.\n\n"+
-      (e.message || e)
-    );
-  } finally {
+    alert("De aankoop kon niet naar Supabase worden opgeslagen.\n\n" + (e.message || e));
+  }finally{
     purchaseSaveInProgress = false;
   }
-
 }
-
 
 /* =========================================================
    HISTORIE
@@ -3215,6 +3197,10 @@ onclick="printSaved('${p.id}')"
 🧾 BON
 </button>
 
+<button class="primary" onclick="editSaved('${p.id}')">✏️ BEWERKEN</button>
+
+<button class="light" onclick="viewEditHistory('${p.id}')">🕘 WIJZIGINGEN</button>
+
 <button
 class="danger"
 onclick="deletePurchase('${p.id}')"
@@ -3235,6 +3221,128 @@ onclick="deletePurchase('${p.id}')"
 
 }
 
+
+
+/* =========================================================
+   BEWERKEN VAN EEN OPGESLAGEN INKOOP
+========================================================= */
+function editSaved(id){
+  const p = purchases.find(x => x.id === id);
+  if(!p) return alert("Deze inkoop werd niet gevonden.");
+  if(!p.dbId || !p.customerDbId) return alert("Deze aankoop mist de cloud-ID. Ververs eerst de aankoophistoriek en probeer opnieuw.");
+  editingPurchase = id;
+  editingOriginal = JSON.parse(JSON.stringify(p));
+  const c = p.customer || {};
+  const fields = {
+    firstName:c.firstName, lastName:c.lastName, birthDate:c.birthDate,
+    phone:c.phone, customerEmail:c.email, iban:c.iban, idNumber:c.idNumber,
+    street:c.street, houseNumber:c.houseNumber, postalCode:c.postalCode,
+    city:c.city, customerNote:c.note, purchaseNote:p.note, reference:p.reference,
+    resalePrice:p.resalePrice, goldPrice:p.goldPrice, silverPrice:p.silverPrice
+  };
+  Object.entries(fields).forEach(([id,value])=>{ if($(id) && value !== undefined && value !== null) $(id).value = value; });
+  if($("idChecked")) $("idChecked").value = c.idChecked || "nee";
+  if($("idType")) $("idType").value = c.idType || "";
+  if($("paymentMethod")) $("paymentMethod").value = p.paymentMethod || "overschrijving";
+  items = JSON.parse(JSON.stringify(p.items || [])).map(it=>({
+    metal:it.metal||"goud", type:it.type||"Juweel", description:it.description||"",
+    fineness:Number(it.fineness||it.karat)||(it.metal==="zilver"?925:18),
+    karat:Number(it.karat||it.fineness)||(it.metal==="zilver"?925:18),
+    weight:Number(it.weight)||0, nonGold:Number(it.nonGold)||0,
+    manualOffer:Number(it.manualOffer ?? it.savedOffer)||0
+  }));
+  if(!items.length) items=[{metal:"goud",type:"Juweel",description:"",fineness:18,karat:18,weight:0,nonGold:0,manualOffer:0}];
+  renderItems(); calculate(); showPage("purchase");
+  $("saveEditedPurchaseBtn").style.display="inline-block";
+  $("cancelEditPurchaseBtn").style.display="inline-block";
+  document.querySelector('[onclick="savePurchase()"]')?.setAttribute("disabled","disabled");
+  const title = document.querySelector("#pagePurchase .page-title");
+  if(title) title.scrollIntoView({behavior:"smooth",block:"start"});
+  alert("Bewerkmodus geopend voor bon " + id + ". De originele handtekening blijft bewaard. Sla de correcties op wanneer je klaar bent.");
+}
+
+async function viewEditHistory(id){
+  const p=purchases.find(x=>x.id===id);
+  if(!p || !p.dbId) return alert("De cloud-ID van deze bon ontbreekt.");
+  try{
+    const {data,error}=await sb.from("purchase_edit_history")
+      .select("changed_at,changed_by,before_data,after_data")
+      .eq("business_id",currentBusinessId)
+      .eq("purchase_id",p.dbId)
+      .order("changed_at",{ascending:false});
+    if(error) throw error;
+    if(!data || !data.length) return alert("Er zijn nog geen wijzigingen geregistreerd voor bon "+id+".");
+    const ids=[...new Set(data.map(x=>x.changed_by).filter(Boolean))];
+    let names={};
+    if(ids.length){
+      const members=await sb.from("business_members").select("user_id,display_name").eq("business_id",currentBusinessId).in("user_id",ids);
+      (members.data||[]).forEach(m=>names[m.user_id]=m.display_name||m.user_id);
+    }
+    const lines=data.map((h,i)=>{
+      const before=h.before_data?.purchase||{}; const after=h.after_data?.purchase||{};
+      const beforeMarket=Number(before.market_value)||0, beforeTotal=Number(before.total)||0;
+      const afterMarket=Number(after.market_value)||0, afterTotal=Number(after.total)||0;
+      return `${i+1}. ${new Date(h.changed_at).toLocaleString("nl-BE")}\nDoor: ${names[h.changed_by]||h.changed_by}\nOud: metaalwaarde ${euro(beforeMarket)} · inkoop ${euro(beforeTotal)} · winst ${euro(beforeMarket-beforeTotal)}\nNieuw: metaalwaarde ${euro(afterMarket)} · inkoop ${euro(afterTotal)} · winst ${euro(afterMarket-afterTotal)}`;
+    });
+    alert(`Wijzigingshistoriek bon ${id}\n\n`+lines.join("\n\n--------------------\n\n"));
+  }catch(e){
+    console.error(e);
+    alert("De wijzigingshistoriek kon niet worden geladen. Controleer of de SQL voor de wijzigingshistoriek is uitgevoerd.\n\n"+(e.message||e));
+  }
+}
+
+function cancelEditPurchase(){
+  editingPurchase = null; editingOriginal = null;
+  $("saveEditedPurchaseBtn").style.display="none";
+  $("cancelEditPurchaseBtn").style.display="none";
+  document.querySelector('[onclick="savePurchase()"]')?.removeAttribute("disabled");
+  showPage("purchases");
+}
+
+async function saveEditedPurchase(){
+  if(!editingPurchase || !editingOriginal) return;
+  if(!valid()) return;
+  const current = purchases.find(x=>x.id===editingPurchase);
+  if(!current || !current.dbId || !current.customerDbId){ alert("De opgeslagen cloud-ID ontbreekt. Er zijn geen wijzigingen uitgevoerd."); return; }
+  const p = data();
+  p.id = current.id;
+  p.date = current.date;
+  p.reference = $("reference").value.trim();
+  p.signature = current.signature || "";
+  p.signedAt = current.signedAt || "";
+  p.dbId = current.dbId;
+  p.customerDbId = current.customerDbId;
+  const itemPayload = p.items.map(it=>{
+    const x=calc(it);
+    return {metal:it.metal||"goud",item_type:it.type||"Juweel",fineness:it.metal==="verzilverd"?0:Number(it.fineness||it.karat)||0,weight:Number(it.weight)||0,non_gold:Number(it.nonGold)||0,net_weight:Number(x.net)||0,metal_value:Number(x.market)||0,purchase_price:Number(x.offer)||0,description:it.description||""};
+  });
+  const customerPayload = {
+    first_name:p.customer.firstName,last_name:p.customer.lastName,birth_date:p.customer.birthDate||null,
+    phone:p.customer.phone||null,email:p.customer.email||null,iban:p.customer.iban||null,
+    id_checked:p.customer.idChecked==="ja",id_type:p.customer.idType||null,id_number:p.customer.idNumber||null,
+    street:p.customer.street||null,house_number:p.customer.houseNumber||null,postal_code:p.customer.postalCode||null,
+    city:p.customer.city||null,note:p.customer.note||null
+  };
+  const purchasePayload = {reference:current.id,payment_method:p.paymentMethod,gold_price:Number(p.goldPrice)||0,silver_price:Number(p.silverPrice)||0,market_value:Number(p.marketValue)||0,total:Number(p.total)||0,resale_price:Number(p.resalePrice)||0,profit:(Number(p.marketValue)||0)-(Number(p.total)||0),note:p.note||null,signature_data:p.signature||null,signed_at:p.signedAt||null};
+  const btn=$("saveEditedPurchaseBtn"); if(btn) btn.disabled=true;
+  try{
+    const {error} = await sb.rpc("update_goudmarsjan_purchase",{
+      p_purchase_id:current.dbId,p_business_id:currentBusinessId,p_customer_id:current.customerDbId,
+      p_purchase:purchasePayload,p_customer:customerPayload,p_items:itemPayload,
+      p_signature:p.signature||null,p_signed_at:p.signedAt||null
+    });
+    if(error) throw error;
+    await loadCloudData();
+    editingPurchase=null; editingOriginal=null;
+    $("saveEditedPurchaseBtn").style.display="none"; $("cancelEditPurchaseBtn").style.display="none";
+    document.querySelector('[onclick="savePurchase()"]')?.removeAttribute("disabled");
+    renderHistory(); renderDashboard(); renderProfitPage(); showPage("purchases");
+    alert("Bon bijgewerkt in Supabase. De wijziging is geregistreerd met datum en gebruiker.");
+  }catch(e){
+    console.error("saveEditedPurchase",e);
+    alert("De bon kon niet worden bijgewerkt. De database heeft de wijziging mogelijk geweigerd; controleer de SQL en probeer opnieuw.\n\n"+(e.message||e));
+  }finally{ if(btn) btn.disabled=false; }
+}
 
 /* =========================================================
    DELETE PURCHASE
@@ -3339,6 +3447,13 @@ async function clearHistory(){
 
 function newPurchase(){
 
+  if(editingPurchase){
+    if(!confirm("Bewerken annuleren en een nieuwe inkoop starten?")) return;
+    editingPurchase=null; editingOriginal=null;
+    if($("saveEditedPurchaseBtn")) $("saveEditedPurchaseBtn").style.display="none";
+    if($("cancelEditPurchaseBtn")) $("cancelEditPurchaseBtn").style.display="none";
+    document.querySelector('[onclick="savePurchase()"]')?.removeAttribute("disabled");
+  }
   pendingPurchase = null;
 
   if(
@@ -3680,11 +3795,18 @@ function openPrint(p){
 }
 
 let pendingPurchase = null;
+let editingPurchase = null;
+let editingOriginal = null;
 let signatureDrawing = false;
 let signatureHasInk = false;
 let signatureCtx = null;
 
 function printReceipt(){
+
+  if(editingPurchase){
+    alert("Je bewerkt een bestaande bon. Gebruik WIJZIGINGEN OPSLAAN om deze correctie op te slaan.");
+    return;
+  }
 
   if(!valid())
     return;
@@ -3826,7 +3948,9 @@ async function confirmSignature(){
   btns.forEach(b=>b.disabled=true);
 
   try{
-    await savePurchaseCloud(pendingPurchase);
+    const saved = await savePurchaseCloud(pendingPurchase);
+    pendingPurchase.dbId = saved?.dbId;
+    pendingPurchase.customerDbId = saved?.customerDbId;
     purchases.unshift(pendingPurchase);
     localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));
     renderHistory();
@@ -5029,6 +5153,7 @@ async function loadCloudData(){
 
 
     customers = customersResult.data || [];
+    const cachedPurchasesForSignatures = JSON.parse(localStorage.getItem("goudmarsjan_purchases") || "[]");
 
 
     let customerMap =
@@ -5134,6 +5259,11 @@ async function loadCloudData(){
           id:
             x.reference ||
             x.id,
+
+          dbId: x.id,
+          customerDbId: x.customer_id,
+          signature: x.signature_data || (cachedPurchasesForSignatures.find(cp => cp.id === (x.reference || x.id))?.signature) || "",
+          signedAt: x.signed_at || (cachedPurchasesForSignatures.find(cp => cp.id === (x.reference || x.id))?.signedAt) || "",
 
           date:
             x.created_at ||
@@ -5393,10 +5523,13 @@ async function savePurchaseCloud(p){
           p.resalePrice,
 
         profit:
-          p.profit,
+          (Number(p.marketValue)||0) - (Number(p.total)||0),
 
         note:
-          p.note
+          p.note,
+
+        signature_data: p.signature || null,
+        signed_at: p.signedAt || null
 
       })
       .select("id")
@@ -5510,6 +5643,8 @@ async function savePurchaseCloud(p){
     }
 
   }
+
+  return { dbId: row.id, customerDbId: c.id };
 
 }
 
