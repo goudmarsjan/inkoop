@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#111111">
-<meta name="app-build" content="2026-10-11-editable-purchases-v1">
+<meta name="app-build" content="2026-10-11-stability-fix">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <title>DE GOUDMARSJAN — Inkoop</title>
 
@@ -515,7 +516,7 @@ button:disabled{
 .signature-head{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:16px 20px;background:#111;color:#fff}
 .signature-head strong{display:block;font-size:18px;letter-spacing:.5px}.signature-head span{display:block;margin-top:4px;color:#d9bd62;font-size:13px}
 .signature-stage{padding:18px 20px}.signature-review{border:1px solid #ddd;border-radius:10px;padding:14px;background:#fafafa}
-.signature-review h3{margin:0 0 10px}.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:13px}.review-box{border:1px solid #ddd;border-radius:9px;padding:10px;background:#fff}.review-items{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}.review-items th,.review-items td{padding:7px;border-bottom:1px solid #ddd;text-align:left}.review-total{font-size:21px;font-weight:800;text-align:right;margin-top:12px}.signature-canvas{display:block;width:100%;height:260px;border:2px dashed #999;border-radius:10px;background:#fff;touch-action:none;cursor:crosshair}.signature-consent{margin-bottom:12px;font-size:14px}.signature-consent p{margin:5px 0;color:#555;font-size:12px}.signature-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}.signed-ok{padding:12px;border-radius:9px;background:#dff3e9;color:#17683f;font-weight:700}.final-preview{border:1px solid #ccc;border-radius:8px;max-height:430px;overflow:auto;margin-top:12px;background:#eee}.final-preview iframe{display:block;width:100%;height:700px;border:0;background:#fff}.flow-next{display:flex;justify-content:flex-end;margin-top:14px}.flow-note{font-size:11px;color:#666;margin-top:10px}.signature-modal .small{font-size:12px;color:#666}@media(max-width:650px){.review-grid{grid-template-columns:1fr}.signature-stage{padding:14px}.signature-canvas{height:220px}.signature-actions button{flex:1}}
+.signature-review h3{margin:0 0 10px}.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:13px}.review-box{border:1px solid #ddd;border-radius:9px;padding:10px;background:#fff}.review-items{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}.review-items th,.review-items td{padding:7px;border-bottom:1px solid #ddd;text-align:left}.review-total{font-size:21px;font-weight:800;text-align:right;margin-top:12px}.consent-list{display:grid;gap:10px;margin:12px 0}.consent-item{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid #ddd;border-radius:8px;background:#fafafa;font-size:14px;line-height:1.4}.consent-item input{width:20px;min-width:20px;height:20px;margin:0}.payment-card{border:1px solid #ddd;border-radius:12px;padding:15px;margin:12px 0;background:#fff}.payment-layout{display:grid;grid-template-columns:1fr 180px;gap:14px;align-items:center}.payment-qr{background:#fff;padding:10px;min-height:160px;display:flex;align-items:center;justify-content:center}.payment-qr img,.payment-qr canvas{max-width:100%;height:auto}.signature-canvas{display:block;width:100%;height:260px;border:2px dashed #999;border-radius:10px;background:#fff;touch-action:none;cursor:crosshair}.signature-consent{margin-bottom:12px;font-size:14px}.signature-consent p{margin:5px 0;color:#555;font-size:12px}.signature-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}.signed-ok{padding:12px;border-radius:9px;background:#dff3e9;color:#17683f;font-weight:700}.final-preview{border:1px solid #ccc;border-radius:8px;max-height:430px;overflow:auto;margin-top:12px;background:#eee}.final-preview iframe{display:block;width:100%;height:700px;border:0;background:#fff}.flow-next{display:flex;justify-content:flex-end;margin-top:14px}.flow-note{font-size:11px;color:#666;margin-top:10px}.signature-modal .small{font-size:12px;color:#666}@media(max-width:650px){.review-grid{grid-template-columns:1fr}.signature-stage{padding:14px}.signature-canvas{height:220px}.signature-actions button{flex:1}}
 </style>
 </head>
 
@@ -592,8 +593,16 @@ button:disabled{
 
     <div id="signaturePadStage" class="signature-stage" style="display:none">
       <div class="signature-consent">
-        <b>Handtekening verkoper</b>
-        <p>Ik bevestig dat de gegevens, de aangeboden goederen en het overeengekomen aankoopbedrag op dit aankoopdocument correct zijn.</p>
+        <b>Verklaring en akkoord van de verkoper</b>
+        <p>Lees alle verklaringen en vink ze zelf aan. Pas daarna kan je ondertekenen.</p>
+        <div class="consent-list">
+          <label class="consent-item"><input type="checkbox" class="seller-consent" data-consent="owner"><span>Ik verklaar dat ik de rechtmatige eigenaar ben van de aangeboden goederen of gemachtigd ben om ze te verkopen.</span></label>
+          <label class="consent-item"><input type="checkbox" class="seller-consent" data-consent="correct"><span>Ik bevestig dat mijn gegevens, de beschrijving van de goederen en de overeengekomen aankoopprijs correct zijn.</span></label>
+          <label class="consent-item"><input type="checkbox" class="seller-consent" data-consent="voluntary"><span>Ik verkoop de goederen vrijwillig en ga akkoord met de vermelde aankoopprijs.</span></label>
+          <label class="consent-item"><input type="checkbox" class="seller-consent" data-consent="melt"><span>Ik geef toestemming dat de aangekochte goederen verwerkt, gedemonteerd en/of gesmolten mogen worden.</span></label>
+          <label class="consent-item"><input type="checkbox" class="seller-consent" data-consent="terms"><span>Ik heb de volledige aankoopbon en de daarop vermelde verklaringen en voorwaarden gelezen en aanvaard.</span></label>
+          <label class="consent-item"><input type="checkbox" class="seller-consent" data-consent="understood"><span>Ik begrijp de inhoud en onderteken deze aankoop vrijwillig.</span></label>
+        </div>
       </div>
       <canvas id="signatureCanvas" class="signature-canvas"></canvas>
       <div class="signature-actions">
@@ -623,6 +632,7 @@ button:disabled{
   <button class="nav-btn" data-page="purchase" onclick="showPage('purchase')">🟡 Nieuwe inkoop</button>
   <button class="nav-btn" data-page="customers" onclick="showPage('customers')">👥 Klanten</button>
   <button class="nav-btn" data-page="purchases" onclick="showPage('purchases')">📋 Inkopen</button>
+  <button class="nav-btn" data-page="payments" onclick="showPage('payments')">💶 Nog te betalen</button>
   <button class="nav-btn" data-page="profits" onclick="showPage('profits')">📈 Winsten</button>
   <button id="adminNav" class="nav-btn" data-page="admin" onclick="showPage('admin')" style="display:none">⚙️ Beheer</button>
   <div class="nav-spacer"></div>
@@ -659,6 +669,10 @@ button:disabled{
   <div id="customerListPage" class="customer-grid"></div><div id="customerDetailPage" class="customer-detail"></div>
 </section>
 <section id="pagePurchases" class="app-page"></section>
+<section id="pagePayments" class="app-page">
+  <div class="page-title"><h2>Nog te betalen</h2><p>QR-codes voor overschrijvingen naar de verkoper. Controleer de gegevens in je bankapp vóór je bevestigt.</p></div>
+  <div class="dashboard-section"><div class="row"><div><label>Openstaand totaal</label><div class="value" id="paymentsOutstanding">€ 0,00</div></div><div><label>Aantal openstaande betalingen</label><div class="value" id="paymentsCount">0</div></div></div><div id="pendingPaymentsList" style="margin-top:12px"></div></div>
+</section>
 <section id="pageProfits" class="app-page">
   <div class="page-title"><h2>Winsten</h2><p>Overzicht van de verwachte bruto winst</p></div>
   <div class="profit-summary">
@@ -1550,9 +1564,6 @@ button:disabled{
       🧾 BON MAKEN
     </button>
 
-    <button id="saveEditedPurchaseBtn" class="green" style="display:none" onclick="saveEditedPurchase()">💾 WIJZIGINGEN OPSLAAN</button>
-    <button id="cancelEditPurchaseBtn" class="light" style="display:none" onclick="cancelEditPurchase()">ANNULEREN</button>
-
 
     <button
       class="green"
@@ -1665,6 +1676,7 @@ function showPage(page){
   if(page==='dashboard') renderDashboard();
   if(page==='customers') renderCustomersPage();
   if(page==='purchases') renderHistory();
+  if(page==='payments') renderPendingPayments();
   if(page==='profits') renderProfitPage();
   if(page==='admin' && currentMember?.role==='owner') loadMembers();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1710,6 +1722,43 @@ function showCustomerDetail(id){
   document.getElementById('customerDetailPage').innerHTML=`<div class="card"><div class="row"><div><h2>${esc(name)}</h2><span class="badge">${c.id_checked?'ID gecontroleerd':'ID niet gecontroleerd'}</span></div><button class="light" onclick="document.getElementById('customerDetailPage').innerHTML=''">Sluiten</button></div><div class="g3" style="margin-top:15px"><div><label>Geboortedatum</label><div class="value">${esc(c.birth_date||'—')}</div></div><div><label>Telefoon</label><div class="value">${esc(c.phone||'—')}</div></div><div><label>IBAN</label><div class="value">${esc(c.iban||'—')}</div></div><div><label>Adres</label><div class="value">${esc([c.street,c.house_number].filter(Boolean).join(' ')||'—')}</div></div><div><label>Postcode / gemeente</label><div class="value">${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'—')}</div></div><div><label>ID-document</label><div class="value">${esc([c.id_type,c.id_number].filter(Boolean).join(' — ')||'—')}</div></div></div><h3>Aankoopgeschiedenis</h3>${related.map(p=>`<div class="history"><b>${esc(p.id)}</b> · ${new Date(p.date).toLocaleDateString('nl-BE')}<br><b>${euro(p.total)}</b> · winst ${euro(grossProfit(p))}</div>`).join('')||'<div class="note">Geen aankoophistorie gevonden.</div>'}</div>`;
   document.getElementById('customerDetailPage').scrollIntoView({behavior:'smooth'});
 }
+function paymentIban(c){ return String(c?.iban || "").replace(/\s+/g,"").toUpperCase(); }
+function validBelgianIban(iban){ return /^BE\d{14}$/.test(iban); }
+function sepaQrPayload(p){
+  const c=p.customer||{}; const iban=paymentIban(c); const amount=(Number(p.total)||0).toFixed(2);
+  if(!validBelgianIban(iban)) return null;
+  const name=String(((c.firstName||"")+" "+(c.lastName||"")).trim()||"Verkoper").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9 .,'()+?\-]/g,"").slice(0,70);
+  const remittance=String("Goudmarsjan "+(p.id||"")).replace(/[^A-Za-z0-9 .,'()+?\-]/g,"").slice(0,140);
+  return ["BCD","002","1","SCT","",name,iban,"EUR"+amount,"","",remittance,""] .join("\n");
+}
+function renderPendingPayments(){
+  const el=document.getElementById('pendingPaymentsList'); if(!el)return;
+  const arr=purchases.filter(p=>(p.paymentMethod||'overschrijving')==='overschrijving' && (p.paymentStatus||'pending')!=='paid');
+  const sum=arr.reduce((a,p)=>a+(Number(p.total)||0),0);
+  document.getElementById('paymentsOutstanding').textContent=euro(sum);
+  document.getElementById('paymentsCount').textContent=String(arr.length);
+  if(!arr.length){el.innerHTML='<div class="ok">Geen openstaande overschrijvingen.</div>';return;}
+  el.innerHTML=arr.map((p,i)=>{const c=p.customer||{};const iban=paymentIban(c);const good=validBelgianIban(iban);return `<div class="payment-card"><div class="payment-layout"><div><h3>${esc(c.firstName||'')} ${esc(c.lastName||'')}</h3><div><b>Bon:</b> ${esc(p.id||'')}</div><div><b>Bedrag:</b> ${euro(p.total)}</div><div><b>IBAN:</b> ${esc(iban||'Niet ingevuld')}</div><div><b>Status:</b> <span class="badge">Nog te betalen</span></div>${good?'<p class="note">Scan de QR-code met je bankapp en controleer alle gegevens voordat je de betaling bevestigt.</p>':'<p class="warning">Geen geldig Belgisch IBAN gevonden. Controleer de klantgegevens; er wordt geen QR-code aangemaakt.</p>'}<div class="row"><button class="green" onclick="markPaymentPaid('${String(p.id||'').replace(/'/g,"\\'")}')">Markeer als betaald</button><button class="light" onclick="printPaymentQr('${String(p.id||'').replace(/'/g,"\\'")}")">QR afdrukken</button></div></div><div class="payment-qr" id="paymentQr${i}">${good?'':'—'}</div></div></div>`}).join('');
+  arr.forEach((p,i)=>{const payload=sepaQrPayload(p);const target=document.getElementById('paymentQr'+i);if(payload&&target&&window.QRCode){target.innerHTML='';new QRCode(target,{text:payload,width:160,height:160,correctLevel:QRCode.CorrectLevel.M});}});
+}
+async function markPaymentPaid(reference){
+  const p=purchases.find(x=>String(x.id)===String(reference)); if(!p)return;
+  if(!confirm('Betaling voor bon '+reference+' als betaald markeren? Controleer eerst je bankapp.'))return;
+  p.paymentStatus='paid';p.paymentPaidAt=new Date().toISOString();
+  try{
+    if(sb&&currentBusinessId){
+      let q=sb.from('purchases').update({payment_status:'paid',payment_paid_at:p.paymentPaidAt}).eq('business_id',currentBusinessId).eq('reference',reference);
+      const {error}=await q;if(error)throw error;
+    }
+    localStorage.setItem('goudmarsjan_purchases',JSON.stringify(purchases));renderPendingPayments();
+  }catch(e){p.paymentStatus='pending';alert('Status kon niet in Supabase worden opgeslagen. Voer de SQL uit en probeer opnieuw.\n'+(e.message||e));}
+}
+function printPaymentQr(reference){
+  const p=purchases.find(x=>String(x.id)===String(reference));if(!p)return;const payload=sepaQrPayload(p);if(!payload){alert('Geen geldig Belgisch IBAN beschikbaar.');return;}
+  const w=window.open('','_blank');if(!w){alert('Sta pop-ups toe om de QR-code af te drukken.');return;}
+  w.document.write('<!doctype html><html lang="nl"><meta charset="utf-8"><title>Betaling '+esc(p.id)+'</title><body style="font-family:Arial;padding:25px;text-align:center"><h2>DE GOUDMARSJAN — BETALING</h2><p>Bon '+esc(p.id)+'</p><p>'+esc((p.customer?.firstName||'')+' '+(p.customer?.lastName||''))+'</p><h2>'+euro(p.total)+'</h2><div id="qr" style="display:inline-block"></div><p>Scan met je bankapp en controleer de gegevens.</p><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><script>new QRCode(document.getElementById("qr"),{text:'+JSON.stringify(payload)+',width:220,height:220});window.onload=()=>setTimeout(()=>window.print(),300)<\/script></body></html>');w.document.close();
+}
+
 function renderProfitPage(){
   if(!document.getElementById('profitCount'))return;
   const total=k=>purchases.reduce((a,p)=>a+(Number(p[k])||0),0);
@@ -3093,29 +3142,50 @@ function valid(){
 let purchaseSaveInProgress = false;
 
 async function savePurchase(){
-  if(editingPurchase){
-    await saveEditedPurchase();
-    return;
-  }
+
   if(purchaseSaveInProgress) return;
   if(!valid()) return;
   purchaseSaveInProgress = true;
-  const p = data();
+
+  let p = data();
+
+
   try{
-    const saved = await savePurchaseCloud(p);
-    p.dbId = saved?.dbId;
-    p.customerDbId = saved?.customerDbId;
+
+    await savePurchaseCloud(p);
+
+
     purchases.unshift(p);
-    localStorage.setItem("goudmarsjan_purchases", JSON.stringify(purchases));
-    renderHistory(); renderDashboard(); renderProfitPage();
-    alert("Inkoop opgeslagen in de cloud!\n\n" + p.id);
-  }catch(e){
+
+
+    localStorage.setItem(
+      "goudmarsjan_purchases",
+      JSON.stringify(purchases)
+    );
+
+
+    renderHistory();
+
+
+    alert(
+      "Inkoop opgeslagen in de cloud!\n\n"+
+      p.id
+    );
+
+  }
+
+  catch(e){
     console.error(e);
-    alert("De aankoop kon niet naar Supabase worden opgeslagen.\n\n" + (e.message || e));
-  }finally{
+    alert(
+      "De aankoop kon niet naar Supabase worden opgeslagen.\n\n"+
+      (e.message || e)
+    );
+  } finally {
     purchaseSaveInProgress = false;
   }
+
 }
+
 
 /* =========================================================
    HISTORIE
@@ -3197,10 +3267,6 @@ onclick="printSaved('${p.id}')"
 🧾 BON
 </button>
 
-<button class="primary" onclick="editSaved('${p.id}')">✏️ BEWERKEN</button>
-
-<button class="light" onclick="viewEditHistory('${p.id}')">🕘 WIJZIGINGEN</button>
-
 <button
 class="danger"
 onclick="deletePurchase('${p.id}')"
@@ -3221,128 +3287,6 @@ onclick="deletePurchase('${p.id}')"
 
 }
 
-
-
-/* =========================================================
-   BEWERKEN VAN EEN OPGESLAGEN INKOOP
-========================================================= */
-function editSaved(id){
-  const p = purchases.find(x => x.id === id);
-  if(!p) return alert("Deze inkoop werd niet gevonden.");
-  if(!p.dbId || !p.customerDbId) return alert("Deze aankoop mist de cloud-ID. Ververs eerst de aankoophistoriek en probeer opnieuw.");
-  editingPurchase = id;
-  editingOriginal = JSON.parse(JSON.stringify(p));
-  const c = p.customer || {};
-  const fields = {
-    firstName:c.firstName, lastName:c.lastName, birthDate:c.birthDate,
-    phone:c.phone, customerEmail:c.email, iban:c.iban, idNumber:c.idNumber,
-    street:c.street, houseNumber:c.houseNumber, postalCode:c.postalCode,
-    city:c.city, customerNote:c.note, purchaseNote:p.note, reference:p.reference,
-    resalePrice:p.resalePrice, goldPrice:p.goldPrice, silverPrice:p.silverPrice
-  };
-  Object.entries(fields).forEach(([id,value])=>{ if($(id) && value !== undefined && value !== null) $(id).value = value; });
-  if($("idChecked")) $("idChecked").value = c.idChecked || "nee";
-  if($("idType")) $("idType").value = c.idType || "";
-  if($("paymentMethod")) $("paymentMethod").value = p.paymentMethod || "overschrijving";
-  items = JSON.parse(JSON.stringify(p.items || [])).map(it=>({
-    metal:it.metal||"goud", type:it.type||"Juweel", description:it.description||"",
-    fineness:Number(it.fineness||it.karat)||(it.metal==="zilver"?925:18),
-    karat:Number(it.karat||it.fineness)||(it.metal==="zilver"?925:18),
-    weight:Number(it.weight)||0, nonGold:Number(it.nonGold)||0,
-    manualOffer:Number(it.manualOffer ?? it.savedOffer)||0
-  }));
-  if(!items.length) items=[{metal:"goud",type:"Juweel",description:"",fineness:18,karat:18,weight:0,nonGold:0,manualOffer:0}];
-  renderItems(); calculate(); showPage("purchase");
-  $("saveEditedPurchaseBtn").style.display="inline-block";
-  $("cancelEditPurchaseBtn").style.display="inline-block";
-  document.querySelector('[onclick="savePurchase()"]')?.setAttribute("disabled","disabled");
-  const title = document.querySelector("#pagePurchase .page-title");
-  if(title) title.scrollIntoView({behavior:"smooth",block:"start"});
-  alert("Bewerkmodus geopend voor bon " + id + ". De originele handtekening blijft bewaard. Sla de correcties op wanneer je klaar bent.");
-}
-
-async function viewEditHistory(id){
-  const p=purchases.find(x=>x.id===id);
-  if(!p || !p.dbId) return alert("De cloud-ID van deze bon ontbreekt.");
-  try{
-    const {data,error}=await sb.from("purchase_edit_history")
-      .select("changed_at,changed_by,before_data,after_data")
-      .eq("business_id",currentBusinessId)
-      .eq("purchase_id",p.dbId)
-      .order("changed_at",{ascending:false});
-    if(error) throw error;
-    if(!data || !data.length) return alert("Er zijn nog geen wijzigingen geregistreerd voor bon "+id+".");
-    const ids=[...new Set(data.map(x=>x.changed_by).filter(Boolean))];
-    let names={};
-    if(ids.length){
-      const members=await sb.from("business_members").select("user_id,display_name").eq("business_id",currentBusinessId).in("user_id",ids);
-      (members.data||[]).forEach(m=>names[m.user_id]=m.display_name||m.user_id);
-    }
-    const lines=data.map((h,i)=>{
-      const before=h.before_data?.purchase||{}; const after=h.after_data?.purchase||{};
-      const beforeMarket=Number(before.market_value)||0, beforeTotal=Number(before.total)||0;
-      const afterMarket=Number(after.market_value)||0, afterTotal=Number(after.total)||0;
-      return `${i+1}. ${new Date(h.changed_at).toLocaleString("nl-BE")}\nDoor: ${names[h.changed_by]||h.changed_by}\nOud: metaalwaarde ${euro(beforeMarket)} · inkoop ${euro(beforeTotal)} · winst ${euro(beforeMarket-beforeTotal)}\nNieuw: metaalwaarde ${euro(afterMarket)} · inkoop ${euro(afterTotal)} · winst ${euro(afterMarket-afterTotal)}`;
-    });
-    alert(`Wijzigingshistoriek bon ${id}\n\n`+lines.join("\n\n--------------------\n\n"));
-  }catch(e){
-    console.error(e);
-    alert("De wijzigingshistoriek kon niet worden geladen. Controleer of de SQL voor de wijzigingshistoriek is uitgevoerd.\n\n"+(e.message||e));
-  }
-}
-
-function cancelEditPurchase(){
-  editingPurchase = null; editingOriginal = null;
-  $("saveEditedPurchaseBtn").style.display="none";
-  $("cancelEditPurchaseBtn").style.display="none";
-  document.querySelector('[onclick="savePurchase()"]')?.removeAttribute("disabled");
-  showPage("purchases");
-}
-
-async function saveEditedPurchase(){
-  if(!editingPurchase || !editingOriginal) return;
-  if(!valid()) return;
-  const current = purchases.find(x=>x.id===editingPurchase);
-  if(!current || !current.dbId || !current.customerDbId){ alert("De opgeslagen cloud-ID ontbreekt. Er zijn geen wijzigingen uitgevoerd."); return; }
-  const p = data();
-  p.id = current.id;
-  p.date = current.date;
-  p.reference = $("reference").value.trim();
-  p.signature = current.signature || "";
-  p.signedAt = current.signedAt || "";
-  p.dbId = current.dbId;
-  p.customerDbId = current.customerDbId;
-  const itemPayload = p.items.map(it=>{
-    const x=calc(it);
-    return {metal:it.metal||"goud",item_type:it.type||"Juweel",fineness:it.metal==="verzilverd"?0:Number(it.fineness||it.karat)||0,weight:Number(it.weight)||0,non_gold:Number(it.nonGold)||0,net_weight:Number(x.net)||0,metal_value:Number(x.market)||0,purchase_price:Number(x.offer)||0,description:it.description||""};
-  });
-  const customerPayload = {
-    first_name:p.customer.firstName,last_name:p.customer.lastName,birth_date:p.customer.birthDate||null,
-    phone:p.customer.phone||null,email:p.customer.email||null,iban:p.customer.iban||null,
-    id_checked:p.customer.idChecked==="ja",id_type:p.customer.idType||null,id_number:p.customer.idNumber||null,
-    street:p.customer.street||null,house_number:p.customer.houseNumber||null,postal_code:p.customer.postalCode||null,
-    city:p.customer.city||null,note:p.customer.note||null
-  };
-  const purchasePayload = {reference:current.id,payment_method:p.paymentMethod,gold_price:Number(p.goldPrice)||0,silver_price:Number(p.silverPrice)||0,market_value:Number(p.marketValue)||0,total:Number(p.total)||0,resale_price:Number(p.resalePrice)||0,profit:(Number(p.marketValue)||0)-(Number(p.total)||0),note:p.note||null,signature_data:p.signature||null,signed_at:p.signedAt||null};
-  const btn=$("saveEditedPurchaseBtn"); if(btn) btn.disabled=true;
-  try{
-    const {error} = await sb.rpc("update_goudmarsjan_purchase",{
-      p_purchase_id:current.dbId,p_business_id:currentBusinessId,p_customer_id:current.customerDbId,
-      p_purchase:purchasePayload,p_customer:customerPayload,p_items:itemPayload,
-      p_signature:p.signature||null,p_signed_at:p.signedAt||null
-    });
-    if(error) throw error;
-    await loadCloudData();
-    editingPurchase=null; editingOriginal=null;
-    $("saveEditedPurchaseBtn").style.display="none"; $("cancelEditPurchaseBtn").style.display="none";
-    document.querySelector('[onclick="savePurchase()"]')?.removeAttribute("disabled");
-    renderHistory(); renderDashboard(); renderProfitPage(); showPage("purchases");
-    alert("Bon bijgewerkt in Supabase. De wijziging is geregistreerd met datum en gebruiker.");
-  }catch(e){
-    console.error("saveEditedPurchase",e);
-    alert("De bon kon niet worden bijgewerkt. De database heeft de wijziging mogelijk geweigerd; controleer de SQL en probeer opnieuw.\n\n"+(e.message||e));
-  }finally{ if(btn) btn.disabled=false; }
-}
 
 /* =========================================================
    DELETE PURCHASE
@@ -3447,13 +3391,6 @@ async function clearHistory(){
 
 function newPurchase(){
 
-  if(editingPurchase){
-    if(!confirm("Bewerken annuleren en een nieuwe inkoop starten?")) return;
-    editingPurchase=null; editingOriginal=null;
-    if($("saveEditedPurchaseBtn")) $("saveEditedPurchaseBtn").style.display="none";
-    if($("cancelEditPurchaseBtn")) $("cancelEditPurchaseBtn").style.display="none";
-    document.querySelector('[onclick="savePurchase()"]')?.removeAttribute("disabled");
-  }
   pendingPurchase = null;
 
   if(
@@ -3748,6 +3685,9 @@ td{
 ${p.reference ? `<div class="section"><b>Referentie:</b> ${esc(p.reference)}</div>` : ""}
 ${p.note ? `<div class="section"><b>Opmerking:</b> ${esc(p.note)}</div>` : ""}
 
+<div class="section checks"><b>AKKOORDVERKLARINGEN VERKOPER</b><br>
+☒ Rechtmatige eigenaar of gemachtigd om te verkopen.<br>☒ Gegevens, goederen en aankoopprijs correct.<br>☒ Vrijwillige verkoop en akkoord met aankoopprijs.<br>☒ Toestemming voor verwerking, demontage en/of smelten van de goederen.<br>☒ Aankoopbon en vermelde voorwaarden gelezen en aanvaard.<br>☒ Inhoud begrepen en vrijwillig ondertekend.<br><span class="muted">Akkoord geregistreerd op: ${p.signedAt ? new Date(p.signedAt).toLocaleString("nl-BE") : "—"}</span></div>
+
 <div class="sig">
 <div class="sigbox"><b>VERKOPER — handtekening</b>${p.signature ? `<img src="${p.signature}" alt="Handtekening verkoper">` : ""}<br><span class="muted">Naam: ${esc(c.firstName||"")} ${esc(c.lastName||"")}</span></div>
 <div class="sigbox"><b>DE GOUDMARSJAN — handtekening</b><br><br><span class="muted">Naam: ______________________________</span></div>
@@ -3795,18 +3735,11 @@ function openPrint(p){
 }
 
 let pendingPurchase = null;
-let editingPurchase = null;
-let editingOriginal = null;
 let signatureDrawing = false;
 let signatureHasInk = false;
 let signatureCtx = null;
 
 function printReceipt(){
-
-  if(editingPurchase){
-    alert("Je bewerkt een bestaande bon. Gebruik WIJZIGINGEN OPSLAAN om deze correctie op te slaan.");
-    return;
-  }
 
   if(!valid())
     return;
@@ -3874,6 +3807,13 @@ function goToSignaturePad(){
   $("signatureReview").style.display = "none";
   $("signaturePadStage").style.display = "block";
   $("signatureFinalStage").style.display = "none";
+  document.querySelectorAll('.seller-consent').forEach(cb=>cb.checked=false);
+  const confirmBtn=document.querySelector('#signaturePadStage button.primary');
+  if(confirmBtn) confirmBtn.disabled=true;
+  document.querySelectorAll('.seller-consent').forEach(cb=>cb.onchange=()=>{
+    const all=[...document.querySelectorAll('.seller-consent')].every(x=>x.checked);
+    if(confirmBtn) confirmBtn.disabled=!all;
+  });
   setupSignatureCanvas();
 
 }
@@ -3940,17 +3880,40 @@ async function confirmSignature(){
     return;
   }
 
+  const consentBoxes=[...document.querySelectorAll('.seller-consent')];
+  if(consentBoxes.length && !consentBoxes.every(x=>x.checked)){
+    alert("De klant moet eerst alle verklaringen zelf aanvinken.");
+    return;
+  }
   const canvas = $("signatureCanvas");
   pendingPurchase.signature = canvas.toDataURL("image/png");
   pendingPurchase.signedAt = new Date().toISOString();
+  pendingPurchase.sellerConsent = {
+    owner: true, correct: true, voluntary: true, melt: true, terms: true, understood: true,
+    acceptedAt: pendingPurchase.signedAt,
+    acceptedBy: (currentUser && (currentUser.email || currentUser.id)) || null,
+    statements: [
+      "Rechtmatige eigenaar of gemachtigd om te verkopen",
+      "Gegevens, goederen en aankoopprijs correct",
+      "Vrijwillige verkoop en akkoord met aankoopprijs",
+      "Toestemming voor verwerking/demontage/smelten",
+      "Aankoopbon en voorwaarden gelezen en aanvaard",
+      "Inhoud begrepen en vrijwillig ondertekend"
+    ]
+  };
+  if(pendingPurchase.paymentMethod === 'overschrijving'){
+    pendingPurchase.paymentStatus = 'pending';
+    pendingPurchase.paymentCreatedAt = new Date().toISOString();
+  } else {
+    pendingPurchase.paymentStatus = 'paid';
+    pendingPurchase.paymentCreatedAt = new Date().toISOString();
+  }
 
   const btns = document.querySelectorAll("#signaturePadStage button");
   btns.forEach(b=>b.disabled=true);
 
   try{
-    const saved = await savePurchaseCloud(pendingPurchase);
-    pendingPurchase.dbId = saved?.dbId;
-    pendingPurchase.customerDbId = saved?.customerDbId;
+    await savePurchaseCloud(pendingPurchase);
     purchases.unshift(pendingPurchase);
     localStorage.setItem("goudmarsjan_purchases",JSON.stringify(purchases));
     renderHistory();
@@ -5153,7 +5116,6 @@ async function loadCloudData(){
 
 
     customers = customersResult.data || [];
-    const cachedPurchasesForSignatures = JSON.parse(localStorage.getItem("goudmarsjan_purchases") || "[]");
 
 
     let customerMap =
@@ -5260,11 +5222,6 @@ async function loadCloudData(){
             x.reference ||
             x.id,
 
-          dbId: x.id,
-          customerDbId: x.customer_id,
-          signature: x.signature_data || (cachedPurchasesForSignatures.find(cp => cp.id === (x.reference || x.id))?.signature) || "",
-          signedAt: x.signed_at || (cachedPurchasesForSignatures.find(cp => cp.id === (x.reference || x.id))?.signedAt) || "",
-
           date:
             x.created_at ||
             new Date()
@@ -5318,8 +5275,12 @@ async function loadCloudData(){
             x.note || "",
 
           reference:
-            x.reference ||
-            x.id
+            x.reference || x.id,
+          paymentStatus: x.payment_status || (x.payment_method === "overschrijving" ? "pending" : "paid"),
+          paymentCreatedAt: x.payment_created_at || null,
+          sellerConsent: x.seller_consent || null,
+          signedAt: x.seller_signed_at || null,
+          cloudPurchaseId: x.id
 
         })
       );
@@ -5327,10 +5288,9 @@ async function loadCloudData(){
 
     localStorage.setItem(
       "goudmarsjan_purchases",
-      JSON.stringify(
-        purchases
-      )
+      JSON.stringify(purchases)
     );
+    if(document.getElementById('pagePayments')?.classList.contains('active')) renderPendingPayments();
 
   }
 
@@ -5523,13 +5483,14 @@ async function savePurchaseCloud(p){
           p.resalePrice,
 
         profit:
-          (Number(p.marketValue)||0) - (Number(p.total)||0),
+          p.profit,
 
         note:
           p.note,
-
-        signature_data: p.signature || null,
-        signed_at: p.signedAt || null
+        payment_status: p.paymentStatus || (p.paymentMethod === "overschrijving" ? "pending" : "paid"),
+        payment_created_at: p.paymentCreatedAt || new Date().toISOString(),
+        seller_consent: p.sellerConsent || null,
+        seller_signed_at: p.signedAt || null
 
       })
       .select("id")
@@ -5643,8 +5604,6 @@ async function savePurchaseCloud(p){
     }
 
   }
-
-  return { dbId: row.id, customerDbId: c.id };
 
 }
 
