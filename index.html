@@ -603,11 +603,13 @@ button:disabled{
           <label class="consent-item"><input type="checkbox" class="seller-consent" data-consent="terms"><span>Ik heb de volledige aankoopbon en de daarop vermelde verklaringen en voorwaarden gelezen en aanvaard.</span></label>
           <label class="consent-item"><input type="checkbox" class="seller-consent" data-consent="understood"><span>Ik begrijp de inhoud en onderteken deze aankoop vrijwillig.</span></label>
         </div>
+        <button class="primary full" type="button" id="acceptAllConsentsBtn" onclick="acceptAllSellerConsents()">✓ IK GA AKKOORD MET ALLE 6 VERKLARINGEN</button>
+        <p class="mini">Door deze knop te gebruiken bevestigt de verkoper uitdrukkelijk akkoord te gaan met alle zes verklaringen.</p>
       </div>
       <canvas id="signatureCanvas" class="signature-canvas"></canvas>
       <div class="signature-actions">
         <button class="light" type="button" onclick="clearSignature()">↺ OPNIEUW</button>
-        <button class="primary" type="button" onclick="confirmSignature()">✓ HANDTEKENING BEVESTIGEN</button>
+        <button id="signatureConfirmBtn" class="primary" type="button" onclick="confirmSignature()" disabled>✓ HANDTEKENING BEVESTIGEN</button>
       </div>
     </div>
 
@@ -1106,6 +1108,13 @@ button:disabled{
     👤 Klantgegevens
   </h2>
 
+
+  <div class="returning-customer-box" style="background:#f7f4eb;border:1px solid #e2d5ad;border-radius:10px;padding:14px;margin-bottom:14px">
+    <label for="returningCustomerSearch">Bestaande klant zoeken (vul gegevens automatisch in)</label>
+    <input id="returningCustomerSearch" type="search" placeholder="Zoek naam, telefoon of ID-nummer…" oninput="renderReturningCustomerMatches()" autocomplete="off">
+    <div id="returningCustomerMatches" style="margin-top:8px"></div>
+    <div id="selectedCustomerNotice" class="mini" style="margin-top:6px">Nieuwe klant? Laat dit veld leeg en vul de gegevens hieronder in.</div>
+  </div>
 
   <div class="g3">
 
@@ -1713,7 +1722,7 @@ function renderDashboard(){
 function renderCustomersPage(){
   const q=(document.getElementById('customerSearchPage')?.value||'').toLowerCase().trim();
   const arr=customers.filter(c=>[c.first_name,c.last_name,c.phone,c.id_number,c.city,c.postal_code].join(' ').toLowerCase().includes(q));
-  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')"><b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b><small>${esc(c.phone||'Geen telefoon')}</small><small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small><small>${esc(c.id_number||'Geen ID-nummer')}</small></div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
+  document.getElementById('customerListPage').innerHTML=arr.map(c=>`<div class="customer-card" onclick="showCustomerDetail('${c.id}')"><b>${esc(c.first_name||'')} ${esc(c.last_name||'')}</b><small>${esc(c.phone||'Geen telefoon')}</small><small>${esc([c.postal_code,c.city].filter(Boolean).join(' ')||'')}</small><small>${esc(c.id_number||'Geen ID-nummer')}</small><small><b>${customerVisitCount(c)}</b> eerdere aankoop/aankopen</small></div>`).join('')||'<div class="note">Geen klanten gevonden.</div>';
 }
 function showCustomerDetail(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
@@ -1842,6 +1851,7 @@ const defaults = {
 let items = [];
 
 let customers = [];
+let selectedExistingCustomerId = null;
 
 let purchases =
   JSON.parse(
@@ -3389,9 +3399,55 @@ async function clearHistory(){
    NIEUWE INKOOP
 ========================================================= */
 
+function normalizeCustomerValue(v){return String(v||"").trim().toLocaleLowerCase("nl-BE").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ");}
+function customerVisitCount(c){
+  const keyId=c?.id;
+  const idNumber=normalizeCustomerValue(c?.id_number);
+  const name=normalizeCustomerValue((c?.first_name||"")+" "+(c?.last_name||""));
+  const birth=String(c?.birth_date||"");
+  return purchases.filter(p=>{
+    const pc=p.customer||{};
+    if(keyId && p.customer_id && String(p.customer_id)===String(keyId)) return true;
+    const pId=normalizeCustomerValue(pc.idNumber||pc.id_number);
+    const pName=normalizeCustomerValue((pc.firstName||pc.first_name||"")+" "+(pc.lastName||pc.last_name||""));
+    const pBirth=String(pc.birthDate||pc.birth_date||"");
+    if(idNumber && pId) return idNumber===pId;
+    return !!name && name===pName && !!birth && birth===pBirth;
+  }).length;
+}
+function renderReturningCustomerMatches(){
+  const input=$("returningCustomerSearch"), target=$("returningCustomerMatches"); if(!input||!target)return;
+  const q=normalizeCustomerValue(input.value);
+  if(!q){target.innerHTML="";return;}
+  const matches=customers.filter(c=>[c.first_name,c.last_name,c.phone,c.id_number,c.city].some(v=>normalizeCustomerValue(v).includes(q))).slice(0,8);
+  target.innerHTML=matches.length?matches.map(c=>`<button type="button" class="light" style="display:block;width:100%;text-align:left;margin:5px 0" onclick="selectExistingCustomer('${String(c.id).replace(/'/g,"\\'")}')"><b>${esc(c.first_name||"")} ${esc(c.last_name||"")}</b> · ${esc(c.phone||"geen telefoon")} · ${customerVisitCount(c)} eerdere aankoop/aankopen</button>`).join(""):'<div class="note">Geen bestaande klant gevonden. Je kunt hieronder een nieuwe klant invoeren.</div>';
+}
+function selectExistingCustomer(id){
+  const c=customers.find(x=>String(x.id)===String(id)); if(!c)return;
+  selectedExistingCustomerId=c.id;
+  const fields={firstName:c.first_name,lastName:c.last_name,birthDate:c.birth_date,phone:c.phone,customerEmail:c.email,iban:c.iban,idChecked:c.id_checked?'ja':'nee',idType:c.id_type,idNumber:c.id_number,street:c.street,houseNumber:c.house_number,postalCode:c.postal_code,city:c.city,customerNote:c.note};
+  Object.entries(fields).forEach(([key,value])=>{const el=$(key);if(el)el.value=value??"";});
+  const visits=customerVisitCount(c);
+  $("returningCustomerSearch").value=`${c.first_name||""} ${c.last_name||""}`.trim();
+  $("returningCustomerMatches").innerHTML="";
+  $("selectedCustomerNotice").textContent=`Bestaande klant geselecteerd · ${visits} eerdere aankoop/aankopen. De volgende aankoop wordt aan dit klantendossier gekoppeld.`;
+}
+function acceptAllSellerConsents(){
+  const boxes=[...document.querySelectorAll('.seller-consent')];
+  if(!boxes.length)return;
+  if(!confirm('Bevestigt de verkoper uitdrukkelijk akkoord te gaan met alle zes verklaringen, inclusief toestemming voor verwerking en smelten?'))return;
+  boxes.forEach(cb=>cb.checked=true);
+  const btn=document.getElementById('signatureConfirmBtn');
+  if(btn)btn.disabled=false;
+}
+
 function newPurchase(){
 
   pendingPurchase = null;
+  selectedExistingCustomerId = null;
+  if($("returningCustomerSearch")) $("returningCustomerSearch").value = "";
+  if($("returningCustomerMatches")) $("returningCustomerMatches").innerHTML = "";
+  if($("selectedCustomerNotice")) $("selectedCustomerNotice").textContent = "Nieuwe klant? Laat dit veld leeg en vul de gegevens hieronder in.";
 
   if(
     !confirm(
@@ -3808,7 +3864,7 @@ function goToSignaturePad(){
   $("signaturePadStage").style.display = "block";
   $("signatureFinalStage").style.display = "none";
   document.querySelectorAll('.seller-consent').forEach(cb=>cb.checked=false);
-  const confirmBtn=document.querySelector('#signaturePadStage button.primary');
+  const confirmBtn=document.getElementById('signatureConfirmBtn');
   if(confirmBtn) confirmBtn.disabled=true;
   document.querySelectorAll('.seller-consent').forEach(cb=>cb.onchange=()=>{
     const all=[...document.querySelectorAll('.seller-consent')].every(x=>x.checked);
@@ -5221,6 +5277,7 @@ async function loadCloudData(){
           id:
             x.reference ||
             x.id,
+          customer_id: x.customer_id,
 
           date:
             x.created_at ||
@@ -5382,66 +5439,71 @@ function mapCustomer(c){
 
 async function savePurchaseCloud(p){
 
-  let {
-    data:c,
-    error:ce
-  } =
-    await sb
-      .from("customers")
-      .insert({
+  const customerPayload = {
+    business_id: currentBusinessId,
+    first_name: p.customer.firstName,
+    last_name: p.customer.lastName,
+    birth_date: p.customer.birthDate || null,
+    phone: p.customer.phone || null,
+    email: p.customer.email || null,
+    iban: p.customer.iban || null,
+    id_checked: p.customer.idChecked === "ja",
+    id_type: p.customer.idType || null,
+    id_number: p.customer.idNumber || null,
+    street: p.customer.street || null,
+    house_number: p.customer.houseNumber || null,
+    postal_code: p.customer.postalCode || null,
+    city: p.customer.city || null,
+    note: p.customer.note || null
+  };
 
-        business_id:
-          currentBusinessId,
+  // Match an explicitly selected existing customer first; otherwise use ID number,
+  // then name + birth date, then phone + name. Keep matching scoped to this business.
+  let existingCustomer = null;
+  if(selectedExistingCustomerId){
+    const {data,error}=await sb.from("customers").select("*").eq("business_id",currentBusinessId).eq("id",selectedExistingCustomerId).maybeSingle();
+    if(error) throw error;
+    if(data){
+      const sameId=customerPayload.id_number && normalizeCustomerValue(data.id_number)===normalizeCustomerValue(customerPayload.id_number);
+      const sameIdentity=normalizeCustomerValue(data.first_name)===normalizeCustomerValue(customerPayload.first_name) && normalizeCustomerValue(data.last_name)===normalizeCustomerValue(customerPayload.last_name) && String(data.birth_date||"")===String(customerPayload.birth_date||"");
+      if(sameId || sameIdentity) existingCustomer=data;
+      else selectedExistingCustomerId=null;
+    }
+  }
+  if(!existingCustomer && customerPayload.id_number){
+    const {data,error}=await sb.from("customers").select("*").eq("business_id",currentBusinessId).eq("id_number",customerPayload.id_number).limit(1).maybeSingle();
+    if(error) throw error;
+    existingCustomer=data;
+  }
+  if(!existingCustomer && customerPayload.birth_date){
+    let q=sb.from("customers").select("*").eq("business_id",currentBusinessId).eq("birth_date",customerPayload.birth_date).ilike("first_name",customerPayload.first_name).ilike("last_name",customerPayload.last_name).limit(1);
+    const {data,error}=await q.maybeSingle();
+    if(error) throw error;
+    existingCustomer=data;
+  }
+  if(!existingCustomer && customerPayload.phone){
+    const {data,error}=await sb.from("customers").select("*").eq("business_id",currentBusinessId).eq("phone",customerPayload.phone).ilike("first_name",customerPayload.first_name).ilike("last_name",customerPayload.last_name).limit(1).maybeSingle();
+    if(error) throw error;
+    existingCustomer=data;
+  }
 
-        first_name:
-          p.customer.firstName,
-
-        last_name:
-          p.customer.lastName,
-
-        birth_date:
-          p.customer.birthDate,
-
-        phone:
-          p.customer.phone,
-
-        email:
-          p.customer.email || null,
-
-        iban:
-          p.customer.iban,
-
-        id_checked:
-          p.customer.idChecked === "ja",
-
-        id_type:
-          p.customer.idType,
-
-        id_number:
-          p.customer.idNumber,
-
-        street:
-          p.customer.street,
-
-        house_number:
-          p.customer.houseNumber,
-
-        postal_code:
-          p.customer.postalCode,
-
-        city:
-          p.customer.city,
-
-        note:
-          p.customer.note
-
-      })
-      .select("id")
-      .single();
-
-
-  if(ce)
-    throw ce;
+  let c;
+  if(existingCustomer){
+    // Update the existing customer dossier instead of inserting a duplicate.
+    const {data,error}=await sb.from("customers").update(customerPayload).eq("business_id",currentBusinessId).eq("id",existingCustomer.id).select("id").single();
+    if(error) throw error;
+    c=data;
+  }else{
+    const {data,error}=await sb.from("customers").insert(customerPayload).select("id").single();
+    if(error) throw error;
+    c=data;
+  }
+  p.customerId=c.id;
+  selectedExistingCustomerId=c.id;
+  const cachedCustomer={id:c.id,...customerPayload};
+  const cachedIndex=customers.findIndex(x=>String(x.id)===String(c.id));
+  if(cachedIndex>=0) customers[cachedIndex]={...customers[cachedIndex],...cachedCustomer};
+  else customers.push(cachedCustomer);
 
 
   let {
