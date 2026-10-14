@@ -609,7 +609,7 @@ button:disabled{
       <canvas id="signatureCanvas" class="signature-canvas"></canvas>
       <div class="signature-actions">
         <button class="light" type="button" onclick="clearSignature()">↺ OPNIEUW</button>
-        <button class="primary" type="button" onclick="confirmSignature()">✓ HANDTEKENING BEVESTIGEN</button>
+        <button id="signatureConfirmBtn" class="primary" type="button" onclick="confirmSignature()" disabled>✓ HANDTEKENING BEVESTIGEN</button>
       </div>
     </div>
 
@@ -3477,8 +3477,7 @@ function acceptAllSellerConsents(){
   if(!boxes.length)return;
   if(!confirm('Bevestigt de verkoper uitdrukkelijk akkoord te gaan met alle zes verklaringen, inclusief toestemming voor verwerking en smelten?'))return;
   boxes.forEach(cb=>cb.checked=true);
-  const btn=document.querySelector('#signaturePadStage button.primary');
-  if(btn)btn.disabled=false;
+  updateSignatureConfirmButton();
 }
 
 function newPurchase(){
@@ -3955,77 +3954,107 @@ function openPurchaseReview(p){
   document.body.style.overflow = "hidden";
 }
 
+function updateSignatureConfirmButton(){
+  const btn=document.getElementById('signatureConfirmBtn');
+  if(!btn)return;
+  const boxes=[...document.querySelectorAll('.seller-consent')];
+  const allConsents=boxes.length>0 && boxes.every(x=>x.checked);
+  btn.disabled=!(allConsents && signatureHasInk);
+  btn.title=btn.disabled
+    ? (!allConsents ? 'Bevestig eerst alle zes verklaringen.' : 'Laat de verkoper eerst een handtekening zetten.')
+    : 'Handtekening bevestigen';
+}
+
 function goToSignaturePad(){
-
-  if(!pendingPurchase) return;
-  $("signatureStepTitle").textContent = "2. KLANT LAAT HANDTEKENEN";
-  $("signatureStepText").textContent = "Laat de verkoper rechtstreeks op de tablet tekenen.";
-  $("signatureReview").style.display = "none";
-  $("signaturePadStage").style.display = "block";
-  $("signatureFinalStage").style.display = "none";
-  document.querySelectorAll('.seller-consent').forEach(cb=>cb.checked=false);
-  const confirmBtn=document.querySelector('#signaturePadStage button.primary');
-  if(confirmBtn) confirmBtn.disabled=true;
-  document.querySelectorAll('.seller-consent').forEach(cb=>cb.onchange=()=>{
-    const all=[...document.querySelectorAll('.seller-consent')].every(x=>x.checked);
-    if(confirmBtn) confirmBtn.disabled=!all;
+  if(!pendingPurchase)return;
+  $('signatureStepTitle').textContent='2. KLANT LAAT HANDTEKENEN';
+  $('signatureStepText').textContent='Laat de verkoper rechtstreeks op de tablet tekenen.';
+  $('signatureReview').style.display='none';
+  $('signaturePadStage').style.display='block';
+  $('signatureFinalStage').style.display='none';
+  document.querySelectorAll('.seller-consent').forEach(cb=>{
+    cb.checked=false;
+    cb.onchange=updateSignatureConfirmButton;
   });
-  setupSignatureCanvas();
-
+  signatureHasInk=false;
+  updateSignatureConfirmButton();
+  // Wait until the modal/canvas has a real layout size before sizing its drawing surface.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    setupSignatureCanvas();
+    updateSignatureConfirmButton();
+  }));
 }
 
 function setupSignatureCanvas(){
+  const canvas=$('signatureCanvas');
+  if(!canvas)return;
+  const rect=canvas.getBoundingClientRect();
+  if(rect.width<10 || rect.height<10){
+    // On slower tablets the modal may not have finished laying out yet.
+    setTimeout(setupSignatureCanvas,80);
+    return;
+  }
+  const ratio=Math.max(1,window.devicePixelRatio||1);
+  canvas.width=Math.round(rect.width*ratio);
+  canvas.height=Math.round(rect.height*ratio);
+  const ctx=canvas.getContext('2d');
+  if(!ctx)return;
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.lineWidth=2.4;
+  ctx.lineCap='round';
+  ctx.lineJoin='round';
+  ctx.strokeStyle='#111';
+  signatureCtx=ctx;
+  signatureDrawing=false;
+  signatureHasInk=false;
+  updateSignatureConfirmButton();
 
-  const canvas = $("signatureCanvas");
-  if(!canvas) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const ratio = Math.max(1, window.devicePixelRatio || 1);
-  canvas.width = Math.round(rect.width * ratio);
-  canvas.height = Math.round(rect.height * ratio);
-  signatureCtx = canvas.getContext("2d");
-  signatureCtx.scale(ratio,ratio);
-  signatureCtx.lineWidth = 2.2;
-  signatureCtx.lineCap = "round";
-  signatureCtx.lineJoin = "round";
-  signatureCtx.strokeStyle = "#111";
-  signatureHasInk = false;
-
-  const point = e => {
-    const r = canvas.getBoundingClientRect();
-    const t = e.touches ? e.touches[0] : e;
-    return {x:t.clientX-r.left,y:t.clientY-r.top};
+  const point=e=>{
+    const r=canvas.getBoundingClientRect();
+    return {x:Math.max(0,Math.min(r.width,e.clientX-r.left)),y:Math.max(0,Math.min(r.height,e.clientY-r.top))};
   };
-
-  canvas.onpointerdown = e => {
+  canvas.onpointerdown=e=>{
+    if(e.pointerType==='mouse' && e.button!==0)return;
     e.preventDefault();
-    signatureDrawing = true;
-    signatureHasInk = true;
-    const p = point(e);
-    signatureCtx.beginPath();
-    signatureCtx.moveTo(p.x,p.y);
-    canvas.setPointerCapture?.(e.pointerId);
+    const p=point(e);
+    signatureDrawing=true;
+    signatureHasInk=true;
+    try{canvas.setPointerCapture(e.pointerId);}catch(_){}
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,1.2,0,Math.PI*2);
+    ctx.fillStyle='#111';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y);
+    updateSignatureConfirmButton();
   };
-
-  canvas.onpointermove = e => {
-    if(!signatureDrawing) return;
+  canvas.onpointermove=e=>{
+    if(!signatureDrawing)return;
     e.preventDefault();
-    const p = point(e);
-    signatureCtx.lineTo(p.x,p.y);
-    signatureCtx.stroke();
+    const p=point(e);
+    ctx.lineTo(p.x,p.y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y);
   };
-
-  canvas.onpointerup = e => { signatureDrawing=false; canvas.releasePointerCapture?.(e.pointerId); };
-  canvas.onpointercancel = () => { signatureDrawing=false; };
-
+  const finish=e=>{
+    signatureDrawing=false;
+    if(e && e.pointerId!==undefined){try{canvas.releasePointerCapture(e.pointerId);}catch(_){}}
+    updateSignatureConfirmButton();
+  };
+  canvas.onpointerup=finish;
+  canvas.onpointercancel=finish;
+  canvas.onlostpointercapture=()=>{signatureDrawing=false;};
 }
 
 function clearSignature(){
-  const canvas = $("signatureCanvas");
-  if(!canvas || !signatureCtx) return;
-  const r = canvas.getBoundingClientRect();
-  signatureCtx.clearRect(0,0,r.width,r.height);
-  signatureHasInk = false;
+  const canvas=$('signatureCanvas');
+  if(!canvas)return;
+  const rect=canvas.getBoundingClientRect();
+  if(signatureCtx)signatureCtx.clearRect(0,0,rect.width,rect.height);
+  signatureDrawing=false;
+  signatureHasInk=false;
+  updateSignatureConfirmButton();
 }
 
 async function confirmSignature(){
@@ -4076,6 +4105,7 @@ async function confirmSignature(){
   }
   catch(e){
     btns.forEach(b=>b.disabled=false);
+    updateSignatureConfirmButton();
     console.error(e);
     alert("De aankoop kon niet naar Supabase worden opgeslagen. De handtekening is niet definitief verwerkt.\n\n"+(e.message||e));
     return;
